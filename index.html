@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HVTPETSHOP</title>
+    <link rel="icon" type="image/x-icon" href="./icons/pet.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-200">
+
+    <main class="w-full max-w-sm bg-white/90 rounded-2xl shadow-xl p-8 animate-fade-in">
+        <div class="flex flex-col items-center mb-6">
+            <img src="./icons/pet.jpg" alt="Logo Petshop" class="w-14 h-14 rounded-full shadow mb-2">
+            <h1 class="text-3xl font-bold text-blue-700 text-center">HVTPETSHOP</h1>
+        </div>
+        <p class="text-gray-700 text-base mb-6 text-center">
+            Gerencie e acompanhe os pets com facilidade.<br>
+            <span class="text-blue-500 font-medium">Tudo em um só lugar.</span>
+        </p>
+        <div class="flex flex-col gap-3">
+            <a href="login.html" class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow transition">
+                <i class="fa-solid fa-right-to-bracket"></i> Entrar
+            </a>
+            <a href="cadastro.html" class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg shadow transition">
+                <i class="fa-solid fa-user-plus"></i> Registrar
+            </a>
+        </div>
+    </main>
+
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(30px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .animate-fade-in {
+            animation: fade-in 0.8s ease;
+        }
+    </style>
+
+</body>
+</html>
