@@ -20,7 +20,8 @@ $usuarioId = $_SESSION['usuario_id'];
 // Consulta as informações do agendamento, pet e tutor
 $query = "SELECT a.*, p.nome as pet_nome, p.especie, p.raca, p.idade, p.sexo, p.peso, p.pelagem, 
                  t.nome as tutor_nome, t.telefone as tutor_telefone, s.nome as servico_nome,
-                 f.id as ficha_id, f.altura_pelos, f.doenca_pre_existente, f.doenca_ouvido, f.doenca_pele, f.observacoes
+                 f.id as ficha_id, f.altura_pelos, f.doenca_pre_existente, f.doenca_ouvido, f.doenca_pele, f.observacoes,
+                 f.comportamento_pet, f.recomendacoes_tutor
           FROM agendamentos a
           JOIN pets p ON a.pet_id = p.id
           JOIN tutores t ON p.tutor_id = t.id
@@ -72,6 +73,10 @@ $stmtServicosSolicitados->execute([
 ]);
 $servicosSolicitados = $stmtServicosSolicitados->fetchAll(PDO::FETCH_ASSOC);
 
+// Buscar TODOS os serviços para a seleção
+$todosServicos = $pdo->query("SELECT id, nome FROM servicos WHERE id != 99 ORDER BY nome")->fetchAll(PDO::FETCH_ASSOC);
+
+
 // Processar o formulário da ficha se for enviado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
@@ -82,6 +87,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $doenca_ouvido = $_POST['doenca_ouvido'];
         $doenca_pele = $_POST['doenca_pele'];
         $observacoes = $_POST['observacoes'];
+        $comportamento_pet = $_POST['comportamento_pet'];
+        $recomendacoes_tutor = $_POST['recomendacoes_tutor'];
+        $nova_data = $_POST['data'];
+        $novo_horario = $_POST['horario'];
+        $nova_data_hora = $nova_data . ' ' . $novo_horario;
         $status = 'Finalizado';
 
         // Verifica se já existe ficha para este agendamento
@@ -93,7 +103,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             doenca_pre_existente = :doenca_pre_existente,
                             doenca_ouvido = :doenca_ouvido,
                             doenca_pele = :doenca_pele,
-                            observacoes = :observacoes
+                            observacoes = :observacoes,
+                            comportamento_pet = :comportamento_pet,
+                            recomendacoes_tutor = :recomendacoes_tutor
                             WHERE id = :id";
             
             $stmtUpdate = $pdo->prepare($queryUpdate);
@@ -102,6 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtUpdate->bindValue(':doenca_ouvido', $doenca_ouvido);
             $stmtUpdate->bindValue(':doenca_pele', $doenca_pele);
             $stmtUpdate->bindValue(':observacoes', $observacoes);
+            $stmtUpdate->bindValue(':comportamento_pet', $comportamento_pet);
+            $stmtUpdate->bindValue(':recomendacoes_tutor', $recomendacoes_tutor);
             $stmtUpdate->bindValue(':id', $fichaId);
             $stmtUpdate->execute();
             
@@ -111,8 +125,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Cria nova ficha
             $queryInsert = "INSERT INTO fichas_petshop 
-                           (agendamento_id, funcionario_id, altura_pelos, doenca_pre_existente, doenca_ouvido, doenca_pele, observacoes)
-                           VALUES (:agendamento_id, :funcionario_id, :altura_pelos, :doenca_pre_existente, :doenca_ouvido, :doenca_pele, :observacoes)";
+                           (agendamento_id, funcionario_id, altura_pelos, doenca_pre_existente, doenca_ouvido, doenca_pele, observacoes, comportamento_pet, recomendacoes_tutor)
+                           VALUES (:agendamento_id, :funcionario_id, :altura_pelos, :doenca_pre_existente, :doenca_ouvido, :doenca_pele, :observacoes, :comportamento_pet, :recomendacoes_tutor)";
             
             $stmtInsert = $pdo->prepare($queryInsert);
             $stmtInsert->bindValue(':agendamento_id', $agendamentoId);
@@ -122,6 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtInsert->bindValue(':doenca_ouvido', $doenca_ouvido);
             $stmtInsert->bindValue(':doenca_pele', $doenca_pele);
             $stmtInsert->bindValue(':observacoes', $observacoes);
+            $stmtInsert->bindValue(':comportamento_pet', $comportamento_pet);
+            $stmtInsert->bindValue(':recomendacoes_tutor', $recomendacoes_tutor);
             $stmtInsert->execute();
             
             $fichaId = $pdo->lastInsertId();
@@ -136,16 +152,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Apaga serviços antigos da ficha (se existir)
-        $pdo->prepare("DELETE FROM ficha_servicos_realizados WHERE ficha_id = ?")->execute([$fichaId]);
-
-        // Insere todos os serviços solicitados no agendamento, pois todos foram realizados
-        $stmtServ = $pdo->prepare("INSERT INTO ficha_servicos_realizados (ficha_id, servico_id, outros_detalhes) VALUES (?, ?, NULL)");
-        foreach ($servicosSolicitados as $servico) {
-            $stmtServ->execute([$fichaId, $servico['id']]);
+        // Insere os serviços que foram efetivamente realizados (marcados no form)
+        $stmtServ = $pdo->prepare("INSERT INTO ficha_servicos_realizados (ficha_id, servico_id) VALUES (?, ?)");
+        if (isset($_POST['servicos_realizados'])) {
+            foreach ($_POST['servicos_realizados'] as $servicoId) {
+                $stmtServ->execute([$fichaId, $servicoId]);
+            }
         }
 
-        // Se tiver "Outros" preenchido, insere também
+        // Se o campo "Outros" foi preenchido, insere-o
         if (!empty($_POST['servicos_realizados_outros'])) {
             $outrosDetalhes = trim($_POST['servicos_realizados_outros']);
             if ($outrosDetalhes !== '') {
@@ -154,11 +169,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Atualiza status do agendamento
-        $pdo->prepare("UPDATE agendamentos SET status = ? WHERE id = ?")->execute([$status, $agendamentoId]);
+        // Atualiza a data e hora de TODOS os agendamentos desse atendimento se houver mudança
+        if ($nova_data_hora !== $agendamento['data_hora']) {
+            $stmtUpdateData = $pdo->prepare("UPDATE agendamentos SET data_hora = ? WHERE pet_id = ? AND data_hora = ?");
+            $stmtUpdateData->execute([$nova_data_hora, $agendamento['pet_id'], $agendamento['data_hora']]);
+            $agendamento['data_hora'] = $nova_data_hora; // Atualiza a variável para a próxima query
+        }
 
         // Atualiza status de TODOS os agendamentos desse atendimento (mesmo pet, mesma data/hora)
-        $pdo->prepare("UPDATE agendamentos SET status = ? WHERE pet_id = ? AND data_hora = ?")->execute([$status, $agendamento['pet_id'], $agendamento['data_hora']]);
+        $stmtUpdateStatus = $pdo->prepare("
+            UPDATE agendamentos 
+            SET status = :status 
+            WHERE pet_id = :pet_id AND data_hora = :data_hora
+        ");
+        $stmtUpdateStatus->bindValue(':status', $status);
+        $stmtUpdateStatus->bindValue(':pet_id', $agendamento['pet_id']);
+        $stmtUpdateStatus->bindValue(':data_hora', $agendamento['data_hora']);
+        $stmtUpdateStatus->execute();
 
         $pdo->commit();
 
@@ -191,133 +218,94 @@ function formatarTelefone($telefone) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ficha do Petshop - HVTPETSHOP</title>
+    <title>Ficha do Petshop - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="../../icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
 
-    <!-- Navbar padrão -->
-    <nav class="w-full bg-white/90 shadow flex items-center justify-between px-6 py-3">
-        <div class="flex items-center gap-3">
-            <img src="../../icons/pet.jpg" alt="Logo Petshop" class="w-10 h-10 rounded-full shadow">
-            <span class="text-2xl font-bold text-blue-700 tracking-tight">HVTPETSHOP</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <a href="../../dashboard.php" class="text-blue-600 hover:text-blue-800 font-semibold transition"><i class="fa fa-home mr-1"></i>Dashboard</a>
-            <a href="../cadastrar_pet.php" class="text-green-600 hover:text-green-800 font-semibold transition"><i class="fa fa-plus mr-1"></i>Novo Pet</a>
-            <a href="../../tutores/listar_tutores.php" class="text-blue-500 hover:text-blue-700 font-semibold transition"><i class="fa fa-users mr-1"></i>Tutores</a>
-            <a href="../../auth/logout.php" class="text-red-500 hover:text-red-700 font-semibold transition"><i class="fa fa-sign-out-alt mr-1"></i>Sair</a>
-        </div>
-    </nav>
+    <?php
+    $path_prefix = '../../';
+    include '../../components/navbar.php';
+    ?>
+    <?php include '../../components/toast.php'; ?>
 
-    <main class="flex-1 w-full max-w-3xl mx-auto mt-10 p-4">
-        <!-- Mensagens de feedback -->
-        <?php if (isset($_SESSION['mensagem'])): ?>
-            <div class="mb-6 p-4 rounded-lg <?= $_SESSION['tipo_mensagem'] === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                <div class="flex items-center">
-                    <i class="fas <?= $_SESSION['tipo_mensagem'] === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle' ?> mr-3"></i>
-                    <span><?= htmlspecialchars($_SESSION['mensagem']) ?></span>
-                </div>
-                <?php unset($_SESSION['mensagem']); unset($_SESSION['tipo_mensagem']); ?>
-            </div>
-        <?php endif; ?>
+    <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
+        <!-- Cabeçalho -->
+        <div class="mb-8 animate-fade-in">
+            <h1 class="text-3xl font-bold text-slate-800">Ficha de Atendimento</h1>
+            <p class="text-slate-500 mt-1">Preencha os detalhes do atendimento do pet.</p>
+        </div>
 
-        <div class="bg-white/90 p-8 rounded-2xl shadow-xl animate-fade-in">
-            <div class="mb-8 text-center">
-                <h1 class="text-2xl font-bold text-blue-700 mb-1 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-file-medical"></i> Ficha do Salão de Beleza
-                </h1>
-                <div class="text-gray-500 text-sm">Hospital Veterinário Lourival Rodrigues</div>
-            </div>
+        <div class="bg-white p-6 md:p-8 rounded-lg shadow-sm animate-fade-in">
 
             <form method="POST" class="space-y-8">
                 <!-- DADOS DO TUTOR E PET -->
-                <div class="mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="border-b border-slate-200 pb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Tutor -->
-                        <div class="bg-blue-50/70 rounded-xl p-4 flex flex-col gap-2 border border-blue-100">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fa fa-user text-blue-400"></i>
-                                <span class="font-semibold text-blue-700">Tutor</span>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-amber-100 text-amber-500 w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-user"></i>
                             </div>
-                            <div class="flex flex-col gap-1">
-                                <div>
-                                    <span class="text-gray-500 text-xs">Nome</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($agendamento['tutor_nome']) ?></div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 text-xs">Telefone</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars(formatarTelefone($agendamento['tutor_telefone'])) ?></div>
-                                </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800"><?= htmlspecialchars($agendamento['tutor_nome']) ?></h3>
+                                <p class="text-sm text-slate-500">Tutor</p>
+                                <p class="text-sm text-slate-600 mt-1"><?= htmlspecialchars(formatarTelefone($agendamento['tutor_telefone'])) ?></p>
                             </div>
                         </div>
                         <!-- Pet -->
-                        <div class="bg-blue-50/70 rounded-xl p-4 flex flex-col gap-2 border border-blue-100">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fa-solid fa-dog text-blue-400"></i>
-                                <span class="font-semibold text-blue-700">Pet</span>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-violet-100 text-violet-500 w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-dog"></i>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <span class="text-gray-500 text-xs">Nome</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($agendamento['pet_nome']) ?></div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 text-xs">Sexo</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($agendamento['sexo']) ?></div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 text-xs">Espécie</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($agendamento['especie']) ?></div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 text-xs">Raça</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($agendamento['raca']) ?></div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 text-xs">Idade</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($agendamento['idade']) ?></div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 text-xs">Peso</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($agendamento['peso']) ?> kg</div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 text-xs">Pelagem</span>
-                                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($agendamento['pelagem']) ?></div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800"><?= htmlspecialchars($agendamento['pet_nome']) ?></h3>
+                                <p class="text-sm text-slate-500">Pet</p>
+                                <div class="text-sm text-slate-600 mt-1">
+                                    <span><?= htmlspecialchars($agendamento['especie']) ?></span>,
+                                    <span><?= htmlspecialchars($agendamento['raca']) ?></span>,
+                                    <span><?= htmlspecialchars($agendamento['sexo']) ?></span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SEPARADOR -->
-                <div class="flex items-center gap-3 my-6">
-                    <div class="flex-1 h-px bg-blue-200"></div>
-                    <span class="flex items-center gap-2 text-blue-400 font-bold text-sm uppercase tracking-widest">
-                        <i class="fa-solid fa-eye"></i> Avaliação Visual
-                    </span>
-                    <div class="flex-1 h-px bg-blue-200"></div>
+                <!-- Data e Hora do Agendamento -->
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-calendar-alt text-sky-500"></i> Data e Hora do Agendamento
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="data" class="block text-sm font-medium text-slate-600 mb-1">Data</label>
+                            <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= date('Y-m-d', strtotime($agendamento['data_hora'])) ?>" required>
+                        </div>
+                        <div>
+                            <label for="horario" class="block text-sm font-medium text-slate-600 mb-1">Horário</label>
+                            <input type="time" name="horario" id="horario" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= date('H:i', strtotime($agendamento['data_hora'])) ?>" required>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Observação Visual -->
                 <div>
-                    <div class="font-semibold text-blue-700 mb-2 flex items-center gap-2">
-                        Observação Visual do Animal
-                    </div>
-                    <div class="flex flex-wrap gap-3">
+                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-eye text-sky-500"></i> Avaliação Visual
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <?php foreach ($observacoesVisuais as $obs): ?>
-                            <label class="inline-flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg shadow-sm cursor-pointer transition hover:bg-blue-100">
+                            <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
                                 <input type="checkbox" name="observacao_visual[<?= $obs['id'] ?>]" value="1"
                                     <?= isset($observacoesMarcadas[$obs['id']]) ? 'checked' : '' ?>
-                                    class="accent-blue-600 w-5 h-5 rounded border-gray-300 focus:ring-blue-500">
-                                <span class="ml-2 text-gray-700"><?= htmlspecialchars($obs['descricao']) ?></span>
+                                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-slate-700"><?= htmlspecialchars($obs['descricao']) ?></span>
                                 <?php if ($obs['id'] == 7): ?>
                                     <input type="text" name="observacao_visual_outros"
                                         value="<?= isset($observacoesMarcadas[7]) ? htmlspecialchars($observacoesMarcadas[7]) : '' ?>"
-                                        class="ml-2 border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-400"
+                                        class="ml-2 w-full p-1 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                         placeholder="Outros detalhes">
                                 <?php endif; ?>
                             </label>
@@ -325,109 +313,107 @@ function formatarTelefone($telefone) {
                     </div>
                 </div>
 
-                <!-- SEPARADOR -->
-                <div class="flex items-center gap-3 my-6">
-                    <div class="flex-1 h-px bg-blue-200"></div>
-                    <span class="flex items-center gap-2 text-blue-400 font-bold text-sm uppercase tracking-widest">
-                        <i class="fa-solid fa-scissors"></i> Serviços Realizados
-                    </span>
-                    <div class="flex-1 h-px bg-blue-200"></div>
-                </div>
-
                 <!-- Serviços Realizados -->
                 <div>
-                    <div class="font-semibold text-blue-700 mb-2 flex items-center gap-2">
-                        Serviços Solicitados
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        <?php foreach ($servicosSolicitados as $servico): ?>
-                            <!-- Envia automaticamente -->
-                            <input type="hidden" name="servicos_solicitados[]" value="<?= $servico['id'] ?>">
-                            <!-- Mostra visualmente ao usuário -->
-                            <span class="inline-flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg shadow-sm text-gray-700">
-                                <i class="fa fa-check text-green-600 mr-2"></i> <?= htmlspecialchars($servico['nome']) ?>
-                            </span>
+                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-scissors text-green-500"></i> Serviços Realizados
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <?php foreach ($todosServicos as $servico): ?>
+                            <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" name="servicos_realizados[]" value="<?= $servico['id'] ?>"
+                                       <?php
+                                            // Verifica se o serviço foi solicitado OU se já foi marcado na ficha
+                                            $isSolicitado = in_array($servico['id'], array_column($servicosSolicitados, 'id'));
+                                            $isRealizado = isset($servicosRealizados[$servico['id']]);
+                                            if ($isSolicitado || $isRealizado) echo 'checked';
+                                       ?>
+                                       class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-slate-700"><?= htmlspecialchars($servico['nome']) ?></span>
+                            </label>
                         <?php endforeach; ?>
                         
                         <!-- Campo para "Outros" -->
-                        <label class="inline-flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg shadow-sm cursor-pointer transition hover:bg-blue-100">
-                            <span class="text-gray-700 mr-2">Outros:</span>
+                        <div class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg">
+                            <span class="text-slate-700 font-medium">Outros:</span>
                             <input type="text" name="servicos_realizados_outros"
-                                   value="<?= isset($servicosRealizados[99]) ? htmlspecialchars($servicosRealizados[99]) : '' ?>"
-                                   class="ml-2 border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-400"
-                                   placeholder="Outros detalhes (opcional)">
-                        </label>
+                                   value="<?= htmlspecialchars($servicosRealizados[99] ?? '') ?>"
+                                   class="w-full p-1 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                   placeholder="Serviço extra (opcional)">
+                        </div>
                     </div>
-                </div>
-
-                <!-- SEPARADOR -->
-                <div class="flex items-center gap-3 my-6">
-                    <div class="flex-1 h-px bg-blue-200"></div>
-                    <span class="flex items-center gap-2 text-blue-400 font-bold text-sm uppercase tracking-widest">
-                        <i class="fa-solid fa-heart-pulse"></i> Saúde e Observações
-                    </span>
-                    <div class="flex-1 h-px bg-blue-200"></div>
                 </div>
 
                 <!-- Doenças e Observações -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-gray-700 text-sm mb-1">Doença Pré-Existente</label>
-                        <input type="text" name="doenca_pre_existente" value="<?= htmlspecialchars($agendamento['doenca_pre_existente']) ?>" class="border rounded px-2 py-1 w-full">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-heart-pulse text-red-500"></i> Saúde e Observações
+                    </h3>
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Doença Pré-Existente</label>
+                                <input type="text" name="doenca_pre_existente" value="<?= htmlspecialchars($agendamento['doenca_pre_existente'] ?? '') ?>" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Cardiopata, diabético">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Doença Canal Auditivo/Otite</label>
+                                <input type="text" name="doenca_ouvido" value="<?= htmlspecialchars($agendamento['doenca_ouvido'] ?? '') ?>" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Otite crônica">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Doença de Pele</label>
+                                <input type="text" name="doenca_pele" value="<?= htmlspecialchars($agendamento['doenca_pele'] ?? '') ?>" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Dermatite atópica">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Observações Adicionais</label>
+                            <textarea name="observacoes" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Qualquer outra informação relevante sobre a saúde do pet."><?= htmlspecialchars($agendamento['observacoes'] ?? '') ?></textarea>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm mb-1">Doença Canal Auditivo/Otite</label>
-                        <input type="text" name="doenca_ouvido" value="<?= htmlspecialchars($agendamento['doenca_ouvido']) ?>" class="border rounded px-2 py-1 w-full">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm mb-1">Doença de Pele</label>
-                        <input type="text" name="doenca_pele" value="<?= htmlspecialchars($agendamento['doenca_pele']) ?>" class="border rounded px-2 py-1 w-full">
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <label class="block text-gray-700 text-sm mb-1">Observações Adicionais</label>
-                    <textarea name="observacoes" class="border rounded px-2 py-1 w-full" rows="3"><?= htmlspecialchars($agendamento['observacoes']) ?></textarea>
-                </div>
-
-                <!-- SEPARADOR -->
-                <div class="flex items-center gap-3 my-6">
-                    <div class="flex-1 h-px bg-blue-200"></div>
-                    <span class="flex items-center gap-2 text-blue-400 font-bold text-sm uppercase tracking-widest">
-                        <i class="fa-solid fa-ruler-vertical"></i> Cumprimento/altura dos pelos
-                    </span>
-                    <div class="flex-1 h-px bg-blue-200"></div>
                 </div>
 
                 <!-- Cumprimento/altura dos pelos -->
                 <div>
-                    <div class="font-semibold text-blue-700 mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-ruler-vertical"></i> Cumprimento/altura dos pelos
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        <input type="text" name="altura_pelos" value="<?= htmlspecialchars($agendamento['altura_pelos']) ?>"
-                            class="border rounded px-3 py-2 w-full md:w-1/2 focus:ring-2 focus:ring-blue-400 text-gray-700 shadow-sm"
+                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-ruler-vertical text-amber-500"></i> Detalhes da Tosa
+                    </h3>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Altura dos Pelos</label>
+                        <input type="text" name="altura_pelos" value="<?= htmlspecialchars($agendamento['altura_pelos'] ?? '') ?>"
+                            class="w-full md:w-1/2 p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Ex: Curto, Médio, Longo ou valor em cm">
                     </div>
                 </div>
 
-                <div class="mt-8 flex justify-center">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg flex items-center gap-2 font-semibold shadow">
-                        <i class="fas fa-save"></i> Salvar Ficha
+                <!-- Comportamento e Recomendações -->
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-comment-dots text-teal-500"></i> Comentários Finais
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Comportamento do Pet</label>
+                            <textarea name="comportamento_pet" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Como o pet se comportou durante o atendimento? (Ex: Calmo, agitado, agressivo com secador)"><?= htmlspecialchars($agendamento['comportamento_pet'] ?? '') ?></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Recomendações para o Tutor</label>
+                            <textarea name="recomendacoes_tutor" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Alguma recomendação para o tutor? (Ex: Escovar o pelo diariamente, retornar em 30 dias)"><?= htmlspecialchars($agendamento['recomendacoes_tutor'] ?? '') ?></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4 pt-8 mt-8 border-t border-slate-200">
+                    <a href="../visualizar_pet.php?id=<?= $agendamento['pet_id'] ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
+                        <i class="fa fa-arrow-left"></i> Voltar
+                    </a>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
+                        <i class="fas fa-save"></i> Salvar Ficha e Finalizar
                     </button>
                 </div>
             </form>
-
-            <div class="mt-8 text-center text-xs text-gray-400">
-                Av. Dr. Edilberto Frota, 1103 - Fatima II – Crateús/CE – CEP: 63702-030<br>
-                Celular/WhatsApp: (88) 9.9673-1101
-            </div>
         </div>
     </main>
 
-    <footer class="w-full py-3 bg-white/80 text-center text-gray-400 text-xs mt-8">
-        &copy; 2025 HVTPETSHOP. Todos os direitos reservados.
-    </footer>
-
+    <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(30px);}

@@ -11,13 +11,14 @@ if (!isset($_SESSION['usuario_id'])) {
 // Indicadores principais
 $totalPets = $pdo->query("SELECT COUNT(*) FROM pets")->fetchColumn();
 $totalTutores = $pdo->query("SELECT COUNT(*) FROM tutores")->fetchColumn();
-$totalAtendimentos = $pdo->query("SELECT COUNT(*) FROM agendamentos")->fetchColumn();
+$totalAtendimentos = $pdo->query("SELECT COUNT(DISTINCT pet_id, data_hora) FROM agendamentos WHERE status = 'Finalizado'")->fetchColumn();
 
 // Serviços mais realizados
 $servicosMais = $pdo->query("
-    SELECT s.nome, COUNT(*) as total
-    FROM ficha_servicos_realizados fsr
-    JOIN servicos s ON fsr.servico_id = s.id
+    SELECT s.nome, COUNT(a.id) as total
+    FROM agendamentos a
+    JOIN servicos s ON a.servico_id = s.id
+    WHERE a.status = 'Finalizado'
     GROUP BY s.nome
     ORDER BY total DESC
     LIMIT 5
@@ -26,7 +27,7 @@ $servicosMais = $pdo->query("
 // Atendimentos por dia (últimos 15 dias)
 $atendimentosDia = $pdo->query("
     SELECT DATE(data_hora) as dia, COUNT(*) as total
-    FROM agendamentos
+    FROM agendamentos WHERE status = 'Finalizado'
     GROUP BY dia
     ORDER BY dia DESC
     LIMIT 15
@@ -36,59 +37,94 @@ $atendimentosDia = $pdo->query("
 foreach ($atendimentosDia as &$dia) {
     $dateObj = DateTime::createFromFormat('Y-m-d', $dia['dia']);
     if ($dateObj) {
-        $dia['dia'] = $dateObj->format('d/m/Y');
+        $dia['dia'] = $dateObj->format('d/m');
     }
 }
 unset($dia);
+
+// Define o prefixo do caminho para o navbar. Como estamos em uma subpasta, é '../'
+$path_prefix = '../';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - Indicadores</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Indicadores - CereniaPet</title>
+    <link rel="icon" type="image/x-icon" href="<?= $path_prefix ?>icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-blue-200 min-h-screen">
-    <nav class="w-full bg-white/90 shadow flex items-center justify-between px-6 py-3">
-        <div class="flex items-center gap-3">
-            <img src="../icons/pet.jpg" alt="Logo Petshop" class="w-10 h-10 rounded-full shadow">
-            <span class="text-2xl font-bold text-blue-700 tracking-tight">HVTPETSHOP</span>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
+
+    <?php include '../components/navbar.php'; ?>
+    <?php include '../components/toast.php'; ?>
+
+    <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
+        <!-- Cabeçalho da Página -->
+        <div class="mb-8 animate-fade-in">
+            <h1 class="text-3xl font-bold text-slate-800">Indicadores do Sistema</h1>
+            <p class="text-slate-500 mt-1">Visão geral e estatísticas de desempenho.</p>
         </div>
-        <div class="flex items-center gap-4">
-            <a href="../dashboard.php" class="text-blue-600 hover:text-blue-800 font-semibold transition"><i class="fa fa-home mr-1"></i>Dashboard</a>
-            <a href="../pets/agendamentos/indicadores.php" class="text-blue-700 font-bold transition"><i class="fa fa-chart-bar mr-1"></i>Indicadores</a>
-            <a href="../auth/logout.php" class="text-red-500 hover:text-red-700 font-semibold transition"><i class="fa fa-sign-out-alt mr-1"></i>Sair</a>
+
+        <!-- Indicadores Principais (KPIs) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 animate-fade-in">
+            <!-- Card Total de Pets -->
+            <div class="bg-white border-l-4 border-violet-500 rounded-r-lg p-5 shadow-sm">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-slate-500">Total de Pets</p>
+                    <i class="fa-solid fa-paw text-violet-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalPets ?></p>
+            </div>
+            <!-- Card Total de Tutores -->
+            <div class="bg-white border-l-4 border-amber-500 rounded-r-lg p-5 shadow-sm">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-slate-500">Total de Tutores</p>
+                    <i class="fa-solid fa-users text-amber-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalTutores ?></p>
+            </div>
+            <!-- Card Total de Atendimentos Finalizados -->
+            <div class="bg-white border-l-4 border-sky-500 rounded-r-lg p-5 shadow-sm">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-slate-500">Atendimentos Finalizados</p>
+                    <i class="fa-solid fa-calendar-check text-sky-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalAtendimentos ?></p>
+            </div>
         </div>
-    </nav>
-    <main class="max-w-5xl mx-auto mt-10 p-4">
-        <h1 class="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2"><i class="fa fa-chart-bar"></i> Dashboard de Indicadores</h1>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-                <span class="text-blue-600 text-3xl font-bold"><?= $totalPets ?></span>
-                <span class="text-gray-500 mt-2">Pets ativos</span>
-            </div>
-            <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-                <span class="text-blue-600 text-3xl font-bold"><?= $totalTutores ?></span>
-                <span class="text-gray-500 mt-2">Tutores</span>
-            </div>
-            <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-                <span class="text-blue-600 text-3xl font-bold"><?= $totalAtendimentos ?></span>
-                <span class="text-gray-500 mt-2">Atendimentos</span>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-white rounded-xl shadow p-6">
-                <h2 class="text-lg font-semibold text-blue-700 mb-4">Serviços Mais Realizados</h2>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-chart-pie text-violet-500"></i>
+                    Serviços Mais Realizados
+                </h2>
                 <canvas id="servicosChart" height="200"></canvas>
             </div>
-            <div class="bg-white rounded-xl shadow p-6">
-                <h2 class="text-lg font-semibold text-blue-700 mb-4">Atendimentos por Dia</h2>
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-chart-line text-sky-500"></i>
+                    Atendimentos por Dia
+                </h2>
                 <canvas id="atendimentosChart" height="200"></canvas>
             </div>
         </div>
     </main>
+
+    <?php include $path_prefix . 'components/footer.php'; ?>
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(30px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .animate-fade-in {
+            animation: fade-in 0.8s ease;
+        }
+    </style>
     <script>
         // Serviços mais realizados
         const servicosLabels = <?= json_encode(array_column($servicosMais, 'nome')) ?>;
@@ -101,7 +137,11 @@ unset($dia);
                     label: 'Quantidade',
                     data: servicosData,
                     backgroundColor: [
-                        '#2563eb', '#60a5fa', '#818cf8', '#38bdf8', '#f472b6'
+                        '#8b5cf6', // violet-500
+                        '#3b82f6', // blue-500
+                        '#f59e0b', // amber-500
+                        '#0ea5e9', // sky-500
+                        '#ec4899'  // pink-500 (ou outra cor de destaque)
                     ],
                     borderRadius: 8,
                     borderSkipped: false
@@ -115,22 +155,22 @@ unset($dia);
                         display: false
                     },
                     tooltip: {
-                        backgroundColor: '#2563eb',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        borderColor: '#fff',
-                        borderWidth: 1
+                        backgroundColor: '#1e293b', // slate-800
+                        titleFont: { weight: 'bold' },
+                        bodyFont: { size: 14 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        boxPadding: 4
                     }
                 },
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#2563eb', font: { weight: 'bold' } }
+                        ticks: { color: '#475569', font: { weight: 'bold' } } // slate-600
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: '#e0e7ef' },
-                        ticks: { color: '#2563eb', font: { weight: 'bold' } }
+                        ticks: { color: '#475569', font: { weight: 'bold' } } // slate-600
                     }
                 }
             }
@@ -146,13 +186,13 @@ unset($dia);
                 datasets: [{
                     label: 'Atendimentos',
                     data: atendimentosData,
-                    borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37,99,235,0.15)',
+                    borderColor: '#0ea5e9', // sky-500
+                    backgroundColor: 'rgba(14, 165, 233, 0.15)',
                     fill: true,
                     tension: 0.4,
-                    pointBackgroundColor: '#2563eb',
+                    pointBackgroundColor: '#0ea5e9',
                     pointBorderColor: '#fff',
-                    pointRadius: 5,
+                    pointRadius: 4,
                     pointHoverRadius: 7,
                     pointStyle: 'circle'
                 }]
@@ -161,24 +201,24 @@ unset($dia);
                 responsive: true,
                 plugins: {
                     legend: { display: false },
-                    title: { display: false },
                     tooltip: {
-                        backgroundColor: '#2563eb',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        borderColor: '#fff',
-                        borderWidth: 1
+                        backgroundColor: '#1e293b', // slate-800
+                        titleFont: { weight: 'bold' },
+                        bodyFont: { size: 14 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        boxPadding: 4
                     }
                 },
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#2563eb', font: { weight: 'bold' } }
+                        ticks: { color: '#475569' } // slate-600
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: '#e0e7ef' },
-                        ticks: { color: '#2563eb', font: { weight: 'bold' } }
+                        grid: { color: '#e2e8f0' }, // slate-200
+                        ticks: { color: '#475569' } // slate-600
                     }
                 }
             }

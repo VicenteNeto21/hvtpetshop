@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 01/07/2025 às 19:41
+-- Tempo de geração: 11/11/2025 às 15:23
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -45,9 +45,23 @@ CREATE TABLE `agendamentos` (
 --
 
 INSERT INTO `agendamentos` (`id`, `pet_id`, `usuario_id`, `data_hora`, `servico_id`, `transporte`, `status`, `criado_em`, `observacoes`, `atualizado_em`) VALUES
-(15, 3, 1, '2025-07-02 15:30:00', 4, 'Sim', 'Pendente', '2025-07-01 17:31:34', '', NULL),
-(16, 3, 1, '2025-07-02 15:30:00', 7, 'Sim', 'Pendente', '2025-07-01 17:31:34', '', NULL),
-(17, 3, 1, '2025-07-02 15:30:00', 9, 'Sim', 'Pendente', '2025-07-01 17:31:34', '', NULL);
+(15, 3, 1, '2025-07-02 15:30:00', 4, 'Sim', 'Finalizado', '2025-07-01 17:31:34', '', '2025-07-01 18:51:34'),
+(16, 3, 1, '2025-07-02 15:30:00', 7, 'Sim', 'Finalizado', '2025-07-01 17:31:34', '', '2025-07-01 23:21:20'),
+(17, 3, 1, '2025-07-02 15:30:00', 9, 'Sim', 'Finalizado', '2025-07-01 17:31:34', '', '2025-07-01 23:45:57'),
+(22, 2, 1, '2025-07-02 17:00:00', 4, 'Não', 'Finalizado', '2025-07-01 23:38:05', '', '2025-07-01 23:38:24'),
+(23, 2, 1, '2025-07-02 17:00:00', 8, 'Não', 'Finalizado', '2025-07-01 23:38:05', '', '2025-07-01 23:42:32'),
+(24, 2, 1, '2025-07-02 17:00:00', 11, 'Não', 'Finalizado', '2025-07-01 23:38:05', '', '2025-07-01 23:42:36'),
+(25, 2, 1, '2025-07-02 17:00:00', 10, 'Não', 'Finalizado', '2025-07-01 23:38:05', '', '2025-07-01 23:45:17'),
+(26, 2, 1, '2025-07-02 17:00:00', 5, 'Não', 'Finalizado', '2025-07-01 23:38:05', '', '2025-07-01 23:45:17'),
+(27, 2, 1, '2025-07-02 17:00:00', 9, 'Não', 'Finalizado', '2025-07-01 23:38:05', '', '2025-07-01 23:45:17'),
+(31, 3, 1, '2025-11-11 12:00:00', 4, 'Sim', 'Cancelado', '2025-11-11 13:22:29', '', '2025-11-11 14:15:06'),
+(32, 3, 1, '2025-11-11 12:00:00', 11, 'Sim', 'Cancelado', '2025-11-11 13:22:29', '', '2025-11-11 14:15:06'),
+(33, 3, 1, '2025-11-11 12:00:00', 10, 'Sim', 'Cancelado', '2025-11-11 13:22:29', '', '2025-11-11 14:15:06'),
+(34, 3, 1, '2025-11-11 12:00:00', 5, 'Sim', 'Cancelado', '2025-11-11 13:22:29', '', '2025-11-11 14:15:06'),
+(35, 3, 1, '2025-11-11 12:00:00', 6, 'Sim', 'Cancelado', '2025-11-11 13:22:29', '', '2025-11-11 14:15:06'),
+(36, 3, 1, '2025-11-11 12:00:00', 7, 'Sim', 'Cancelado', '2025-11-11 13:22:29', '', '2025-11-11 14:15:06'),
+(37, 3, 1, '2025-11-11 12:00:00', 8, 'Sim', 'Cancelado', '2025-11-11 13:22:29', '', '2025-11-11 14:15:06'),
+(38, 3, 1, '2025-11-11 12:00:00', 9, 'Sim', 'Cancelado', '2025-11-11 13:22:29', '', '2025-11-11 14:15:06');
 
 -- --------------------------------------------------------
 
@@ -67,6 +81,20 @@ CREATE TABLE `fichas_petshop` (
   `observacoes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `fichas_petshop`
+--
+
+INSERT INTO `fichas_petshop` (`id`, `agendamento_id`, `funcionario_id`, `data_preenchimento`, `altura_pelos`, `doenca_pre_existente`, `doenca_ouvido`, `doenca_pele`, `observacoes`) VALUES
+(6, 15, 1, '2025-07-01 15:51:34', '', '', '', '', ''),
+(7, 16, 1, '2025-07-01 20:21:19', '20 ', 'Não', 'Não', 'Não', 'Sem dados'),
+(12, 22, 1, '2025-07-01 20:38:23', '10', 'Não', 'Não', 'Não', ''),
+(13, 23, 1, '2025-07-01 20:42:32', '', '', '', '', ''),
+(14, 24, 1, '2025-07-01 20:42:36', '', '', '', '', ''),
+(15, 25, 1, '2025-07-01 20:45:17', '', '', '', '', ''),
+(16, 17, 1, '2025-07-01 20:45:57', '10', 'Não', 'Não', 'Não', ''),
+(19, 31, 1, '2025-11-11 10:25:39', '', '', '', '', '');
+
 -- --------------------------------------------------------
 
 --
@@ -79,6 +107,27 @@ CREATE TABLE `ficha_observacoes` (
   `outros_detalhes` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `ficha_observacoes`
+--
+
+INSERT INTO `ficha_observacoes` (`ficha_id`, `observacao_id`, `outros_detalhes`) VALUES
+(6, 1, NULL),
+(6, 2, NULL),
+(6, 3, NULL),
+(6, 4, NULL),
+(6, 5, NULL),
+(7, 1, NULL),
+(7, 6, NULL),
+(12, 2, NULL),
+(12, 3, NULL),
+(16, 1, NULL),
+(16, 2, NULL),
+(16, 3, NULL),
+(16, 4, NULL),
+(16, 5, NULL),
+(16, 6, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -90,6 +139,53 @@ CREATE TABLE `ficha_servicos_realizados` (
   `servico_id` int(11) NOT NULL,
   `outros_detalhes` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `ficha_servicos_realizados`
+--
+
+INSERT INTO `ficha_servicos_realizados` (`ficha_id`, `servico_id`, `outros_detalhes`) VALUES
+(6, 4, NULL),
+(6, 7, NULL),
+(6, 9, NULL),
+(7, 4, NULL),
+(7, 7, NULL),
+(7, 9, NULL),
+(12, 4, NULL),
+(12, 5, NULL),
+(12, 8, NULL),
+(12, 9, NULL),
+(12, 10, NULL),
+(12, 11, NULL),
+(13, 4, NULL),
+(13, 5, NULL),
+(13, 8, NULL),
+(13, 9, NULL),
+(13, 10, NULL),
+(13, 11, NULL),
+(14, 4, NULL),
+(14, 5, NULL),
+(14, 8, NULL),
+(14, 9, NULL),
+(14, 10, NULL),
+(14, 11, NULL),
+(15, 4, NULL),
+(15, 5, NULL),
+(15, 8, NULL),
+(15, 9, NULL),
+(15, 10, NULL),
+(15, 11, NULL),
+(16, 4, NULL),
+(16, 7, NULL),
+(16, 9, NULL),
+(19, 4, NULL),
+(19, 5, NULL),
+(19, 6, NULL),
+(19, 7, NULL),
+(19, 8, NULL),
+(19, 9, NULL),
+(19, 10, NULL),
+(19, 11, NULL);
 
 -- --------------------------------------------------------
 
@@ -247,8 +343,8 @@ CREATE TABLE `tutores` (
 --
 
 INSERT INTO `tutores` (`id`, `nome`, `email`, `telefone`, `atualizado_em`, `cep`, `rua`, `numero`, `bairro`, `cidade`, `uf`) VALUES
-(7, 'Vicente Neto', 'vneto500@gmail.com', '(88) 99227-4307', '2025-07-01 00:19:19', NULL, NULL, NULL, NULL, NULL, NULL),
-(8, 'Marcelo', '1@gmail.com', '(88) 99546-8541', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+(7, 'Vicente Fernandes Duarte Neto', 'vneto500@gmail.com', '(88) 99227-4307', '2025-11-11 12:36:41', '63700-019', 'Rua Francisco Sá', '0', 'Centro', 'Crateús', 'CE'),
+(8, 'João Marcelo da Cosa', 'marcelo.costa@gmail.com', '(88) 99546-8541', '2025-11-11 13:57:51', '59156-246', 'Rua Caminho do Cerrado', '7', 'Cajupiranga', 'Parnamirim', 'RN');
 
 -- --------------------------------------------------------
 
@@ -272,7 +368,28 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `tipo`, `criado_em`, `atualizado_em`) VALUES
 (1, 'Vicente Neto', 'vneto500@gmail.com', '$2y$10$psg0OT5ZUsAoVPbvRuARXucDm2bKgHVRScFkFH0Z9QMlc8PMZqoM.', 'funcionario', '2025-06-19 12:20:09', NULL),
-(2, 'teste', 'teste@teste.com', '$2y$10$uLSxE6ugtaNWz8xzYbYn/OsMsV7xDwEBd4I0CuBmIO7u6RFOCFQym', 'funcionario', '2025-06-20 12:49:17', NULL);
+(2, 'teste', 'teste@teste.com', '$2y$10$uLSxE6ugtaNWz8xzYbYn/OsMsV7xDwEBd4I0CuBmIO7u6RFOCFQym', 'funcionario', '2025-06-20 12:49:17', NULL),
+(3, 'Lucas Gomes', 'admin@hvtpetshop.com', '$2y$10$n8MmIbRlfrJ7NeQ1sScSe.ozG/KMMcVHCr0HqspOJOxoLcOhFd9.a', 'funcionario', '2025-11-11 10:38:19', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `vendas`
+--
+
+CREATE TABLE `vendas` (
+  `id` int(11) NOT NULL,
+  `tutor_id` int(11) DEFAULT NULL,
+  `data_hora` datetime NOT NULL,
+  `valor_total` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `vendas`
+--
+
+INSERT INTO `vendas` (`id`, `tutor_id`, `data_hora`, `valor_total`) VALUES
+(1, 8, '2025-07-01 21:04:34', 10.00);
 
 -- --------------------------------------------------------
 
@@ -286,7 +403,9 @@ CREATE TABLE `view_agendamentos_completos` (
 ,`status_agendamento` enum('Pendente','Em Atendimento','Finalizado','Cancelado')
 ,`transporte` enum('Sim','Não')
 ,`obs_agendamento` text
+,`pet_id` int(11)
 ,`pet_nome` varchar(100)
+,`tutor_id` int(11)
 ,`tutor_nome` varchar(100)
 ,`servico_nome` varchar(255)
 ,`servico_preco` decimal(10,2)
@@ -314,7 +433,7 @@ CREATE TABLE `view_historico_servicos` (
 --
 DROP TABLE IF EXISTS `view_agendamentos_completos`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_agendamentos_completos`  AS SELECT `a`.`id` AS `agendamento_id`, `a`.`data_hora` AS `data_hora`, `a`.`status` AS `status_agendamento`, `a`.`transporte` AS `transporte`, `a`.`observacoes` AS `obs_agendamento`, `p`.`nome` AS `pet_nome`, `t`.`nome` AS `tutor_nome`, `s`.`nome` AS `servico_nome`, `s`.`preco` AS `servico_preco` FROM (((`agendamentos` `a` join `pets` `p` on(`a`.`pet_id` = `p`.`id`)) join `tutores` `t` on(`p`.`tutor_id` = `t`.`id`)) join `servicos` `s` on(`a`.`servico_id` = `s`.`id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_agendamentos_completos`  AS SELECT `a`.`id` AS `agendamento_id`, `a`.`data_hora` AS `data_hora`, `a`.`status` AS `status_agendamento`, `a`.`transporte` AS `transporte`, `a`.`observacoes` AS `obs_agendamento`, `p`.`id` AS `pet_id`, `p`.`nome` AS `pet_nome`, `t`.`id` AS `tutor_id`, `t`.`nome` AS `tutor_nome`, `s`.`nome` AS `servico_nome`, `s`.`preco` AS `servico_preco` FROM (((`agendamentos` `a` join `pets` `p` on(`a`.`pet_id` = `p`.`id`)) join `tutores` `t` on(`p`.`tutor_id` = `t`.`id`)) join `servicos` `s` on(`a`.`servico_id` = `s`.`id`)) ;
 
 -- --------------------------------------------------------
 
@@ -424,6 +543,13 @@ ALTER TABLE `usuarios`
   ADD UNIQUE KEY `email` (`email`);
 
 --
+-- Índices de tabela `vendas`
+--
+ALTER TABLE `vendas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tutor_id` (`tutor_id`);
+
+--
 -- AUTO_INCREMENT para tabelas despejadas
 --
 
@@ -431,13 +557,13 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `agendamentos`
 --
 ALTER TABLE `agendamentos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT de tabela `fichas_petshop`
 --
 ALTER TABLE `fichas_petshop`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de tabela `historico_servicos`
@@ -461,7 +587,7 @@ ALTER TABLE `observacoes_visuais`
 -- AUTO_INCREMENT de tabela `pets`
 --
 ALTER TABLE `pets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `servicos`
@@ -479,7 +605,13 @@ ALTER TABLE `tutores`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de tabela `vendas`
+--
+ALTER TABLE `vendas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Restrições para tabelas despejadas
@@ -511,8 +643,8 @@ ALTER TABLE `ficha_observacoes`
 -- Restrições para tabelas `ficha_servicos_realizados`
 --
 ALTER TABLE `ficha_servicos_realizados`
-  ADD CONSTRAINT `ficha_servicos_realizados_ibfk_1` FOREIGN KEY (`ficha_id`) REFERENCES `fichas_petshop` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `ficha_servicos_realizados_ibfk_2` FOREIGN KEY (`servico_id`) REFERENCES `servicos` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_ficha` FOREIGN KEY (`ficha_id`) REFERENCES `fichas_petshop` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_servico` FOREIGN KEY (`servico_id`) REFERENCES `servicos` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `historico_servicos`
@@ -535,6 +667,12 @@ ALTER TABLE `historico_status_agendamento`
 --
 ALTER TABLE `pets`
   ADD CONSTRAINT `pets_ibfk_1` FOREIGN KEY (`tutor_id`) REFERENCES `tutores` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `vendas`
+--
+ALTER TABLE `vendas`
+  ADD CONSTRAINT `vendas_ibfk_1` FOREIGN KEY (`tutor_id`) REFERENCES `tutores` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

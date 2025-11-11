@@ -16,17 +16,27 @@ if (!isset($_GET['id'])) {
 
 $petId = $_GET['id'];
 
-// Deleta os agendamentos relacionados ao pet
-$queryAgendamentos = "DELETE FROM agendamentos WHERE pet_id = :pet_id";
-$stmtAgendamentos = $pdo->prepare($queryAgendamentos);
-$stmtAgendamentos->bindValue(':pet_id', $petId);
-$stmtAgendamentos->execute();
+try {
+    $pdo->beginTransaction();
 
-// Deleta o pet
-$queryPet = "DELETE FROM pets WHERE id = :id";
-$stmtPet = $pdo->prepare($queryPet);
-$stmtPet->bindValue(':id', $petId);
-$stmtPet->execute();
+    // Deleta os agendamentos relacionados ao pet
+    $stmtAgendamentos = $pdo->prepare("DELETE FROM agendamentos WHERE pet_id = :pet_id");
+    $stmtAgendamentos->bindValue(':pet_id', $petId);
+    $stmtAgendamentos->execute();
+
+    // Deleta o pet
+    $stmtPet = $pdo->prepare("DELETE FROM pets WHERE id = :id");
+    $stmtPet->bindValue(':id', $petId);
+    $stmtPet->execute();
+
+    $pdo->commit();
+    $_SESSION['mensagem'] = "Pet e todos os seus registros foram excluídos com sucesso.";
+    $_SESSION['tipo_mensagem'] = "success";
+} catch (Exception $e) {
+    $pdo->rollBack();
+    $_SESSION['mensagem'] = "Erro ao excluir o pet: " . $e->getMessage();
+    $_SESSION['tipo_mensagem'] = "error";
+}
 
 // Redireciona para o dashboard após a exclusão
 header("Location: ../dashboard.php");

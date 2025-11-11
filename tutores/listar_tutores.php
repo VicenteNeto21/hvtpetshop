@@ -8,25 +8,6 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// Deletar tutor (e opcionalmente os pets dele)
-if (isset($_GET['delete_id'])) {
-    $delete_id = $_GET['delete_id'];
-    try {
-        $pdo->beginTransaction();
-        $pdo->prepare("DELETE FROM pets WHERE tutor_id = ?")->execute([$delete_id]);
-        $pdo->prepare("DELETE FROM tutores WHERE id = ?")->execute([$delete_id]);
-        $pdo->commit();
-        $_SESSION['mensagem'] = "Tutor e seus pets excluídos com sucesso!";
-        $_SESSION['tipo_mensagem'] = "success";
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        $_SESSION['mensagem'] = "Erro ao excluir tutor: " . $e->getMessage();
-        $_SESSION['tipo_mensagem'] = "error";
-    }
-    header("Location: listar_tutores.php");
-    exit();
-}
-
 // Busca todos os tutores e a quantidade de pets de cada um
 $busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
 $params = [];
@@ -68,115 +49,90 @@ function buscarPets($pdo, $tutor_id) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Tutores - HVTPETSHOP</title>
+    <title>Lista de Tutores - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="../icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
 
-    <!-- Navbar padrão -->
-    <nav class="w-full bg-white/90 shadow flex items-center justify-between px-6 py-3">
-        <div class="flex items-center gap-3">
-            <img src="../icons/pet.jpg" alt="Logo Petshop" class="w-10 h-10 rounded-full shadow">
-            <span class="text-2xl font-bold text-blue-700 tracking-tight">HVTPETSHOP</span>
+    <?php
+    // Define o prefixo do caminho para o navbar. Como estamos em uma subpasta, é '../'
+    $path_prefix = '../';
+    include '../components/navbar.php';
+    ?>
+
+    <?php include '../components/toast.php'; ?>
+
+    <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
+        <!-- Cabeçalho da Página -->
+        <div class="mb-8 animate-fade-in">
+            <h1 class="text-3xl font-bold text-slate-800">Tutores Cadastrados</h1>
+            <p class="text-slate-500 mt-1">Gerencie os tutores e seus pets.</p>
         </div>
-        <div class="flex items-center gap-4">
-            <a href="../dashboard.php" class="text-blue-600 hover:text-blue-800 font-semibold transition"><i class="fa fa-home mr-1"></i>Dashboard</a>
-            <a href="../pets/cadastrar_pet.php" class="text-green-600 hover:text-green-800 font-semibold transition"><i class="fa fa-plus mr-1"></i>Novo Pet</a>
-            <a href="listar_tutores.php" class="text-blue-500 hover:text-blue-700 font-semibold transition"><i class="fa fa-users mr-1"></i>Tutores</a>
-            <a href="../auth/logout.php" class="text-red-500 hover:text-red-700 font-semibold transition"><i class="fa fa-sign-out-alt mr-1"></i>Sair</a>
-        </div>
-    </nav>
 
-    <main class="flex-1 w-full max-w-6xl mx-auto mt-10 p-4">
-        <div class="bg-white/90 rounded-2xl shadow-xl p-8 animate-fade-in mb-8">
-            <h2 class="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
-                <i class="fa fa-users"></i> Lista de Tutores
-            </h2>
-
-            <!-- Busca -->
-            <form method="get" class="mb-8 flex items-center gap-2 max-w-md">
-                <div class="relative w-full">
-                    <input type="text" name="busca" value="<?= htmlspecialchars($busca) ?>" placeholder="Pesquisar por nome, e-mail ou telefone..." class="w-full border border-blue-200 rounded-lg px-4 py-2 pl-10 focus:ring-2 focus:ring-blue-400 shadow-sm text-gray-700" />
-                    <span class="absolute left-3 top-2.5 text-blue-400"><i class="fa fa-search"></i></span>
+        <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                    <i class="fa-solid fa-users text-amber-500"></i>
+                    Lista de Tutores
+                </h2>
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <!-- Busca -->
+                    <form method="get" class="relative w-full md:w-auto md:max-w-xs flex-grow">
+                        <input type="text" name="busca" value="<?= htmlspecialchars($busca) ?>" placeholder="Pesquisar tutor..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm" />
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </form>
+                    <a href="cadastrar_tutor.php" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition flex items-center gap-2 text-sm whitespace-nowrap">
+                        <i class="fa fa-plus"></i> Novo Tutor
+                    </a>
                 </div>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow transition flex items-center gap-2">
-                    <i class="fa fa-search"></i> Buscar
-                </button>
-                <?php if ($busca): ?>
-                    <a href="listar_tutores.php" class="ml-2 text-xs text-blue-600 hover:underline">Limpar</a>
-                <?php endif; ?>
-            </form>
-
-            <?php if (isset($_SESSION['mensagem'])): ?>
-                <div class="mb-6 p-4 rounded-lg <?= $_SESSION['tipo_mensagem'] === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                    <div class="flex items-center">
-                        <i class="fas <?= $_SESSION['tipo_mensagem'] === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle' ?> mr-3"></i>
-                        <span><?= htmlspecialchars($_SESSION['mensagem']) ?></span>
-                    </div>
-                    <?php unset($_SESSION['mensagem']); unset($_SESSION['tipo_mensagem']); ?>
-                </div>
-            <?php endif; ?>
+            </div>
 
             <?php if (empty($tutores)): ?>
-                <div class="text-center text-gray-500 py-8">Nenhum tutor cadastrado.</div>
+                <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum tutor encontrado com os filtros atuais.</div>
             <?php else: ?>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <?php foreach ($tutores as $tutor): ?>
-                        <div class="bg-white border border-blue-100 rounded-2xl shadow-lg p-6 flex flex-col gap-4 hover:shadow-2xl transition-shadow duration-300 group cursor-pointer relative"
-                             onclick="window.location='visualizar_tutor.php?id=<?= $tutor['id'] ?>'">
-                            <div class="flex items-center gap-4 mb-2">
-                                <div class="bg-gradient-to-br from-blue-200 to-blue-400 text-blue-900 rounded-full w-14 h-14 flex items-center justify-center text-2xl font-bold shadow-inner border-2 border-white">
-                                    <i class="fa fa-user"></i>
-                                </div>
-                                <div>
-                                    <div class="font-bold text-xl text-blue-800"><?= htmlspecialchars($tutor['nome']) ?></div>
-                                    <div class="text-xs text-gray-500 flex items-center gap-1">
-                                        <i class="fa fa-envelope text-blue-300"></i>
-                                        <?= htmlspecialchars($tutor['email']) ?>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex flex-wrap gap-4 items-center text-gray-700 text-sm">
-                                <div class="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full shadow-sm">
-                                    <i class="fa fa-phone text-blue-400"></i>
-                                    <span><?= htmlspecialchars(formatarTelefone($tutor['telefone'])) ?></span>
-                                </div>
-                                <div class="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full shadow-sm">
-                                    <i class="fa fa-paw text-green-500"></i>
-                                    <span><?= $tutor['total_pets'] ?> pet(s)</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-2 mt-2">
-                                <a href="editar_tutor.php?id=<?= $tutor['id'] ?>"
-                                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 shadow z-10"
-                                   title="Editar" onclick="event.stopPropagation();">
-                                    <i class="fa fa-edit"></i> Editar
-                                </a>
-                                <a href="listar_tutores.php?delete_id=<?= $tutor['id'] ?>"
-                                   class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 shadow z-10"
-                                   onclick="event.stopPropagation(); return confirm('Tem certeza que deseja excluir este tutor e todos os seus pets?')"
-                                   title="Excluir">
-                                    <i class="fa fa-trash"></i> Excluir
-                                </a>
-                            </div>
-                            <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
-                                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow flex items-center gap-1">
-                                    <i class="fa fa-eye"></i> Visualizar
-                                </span>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="border-b-2 border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Contato</th>
+                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Pets</th>
+                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <?php foreach ($tutores as $tutor): ?>
+                                <tr class="hover:bg-slate-50 group cursor-pointer" onclick="window.location='visualizar_tutor.php?id=<?= $tutor['id']; ?>'">
+                                    <td class="px-4 py-4 font-semibold text-slate-800 whitespace-nowrap">
+                                        <?= htmlspecialchars($tutor['nome']) ?>
+                                    </td>
+                                    <td class="px-4 py-4" onclick="event.stopPropagation();">
+                                        <div class="flex flex-col">
+                                            <span class="text-slate-600"><?= htmlspecialchars($tutor['email']) ?></span>
+                                            <span class="text-slate-500 text-xs"><?= htmlspecialchars(formatarTelefone($tutor['telefone'])) ?></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 text-center text-slate-500">
+                                        <?= $tutor['total_pets'] ?>
+                                    </td>
+                                    <td class="px-4 py-4" onclick="event.stopPropagation();">
+                                        <div class="flex items-center justify-center gap-4">
+                                            <a href="editar_tutor.php?id=<?= $tutor['id']; ?>" class="text-amber-600 hover:text-amber-800" title="Editar Tutor"><i class="fas fa-edit"></i></a>
+                                            <a href="javascript:void(0);" onclick="openConfirmationModal('Excluir Tutor', 'Tem certeza que deseja excluir o tutor \'<?= htmlspecialchars($tutor['nome'], ENT_QUOTES) ?>\'? Todos os pets e agendamentos associados também serão removidos. Esta ação não pode ser desfeita.', 'excluir_tutor.php?id=<?= $tutor['id']; ?>')" class="text-red-600 hover:text-red-800" title="Excluir Tutor"><i class="fas fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             <?php endif; ?>
         </div>
     </main>
 
-    <footer class="w-full py-3 bg-white/80 text-center text-gray-400 text-xs mt-8">
-        &copy; 2025 HVTPETSHOP. Todos os direitos reservados.
-    </footer>
-
+    <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(30px);}

@@ -17,7 +17,7 @@ if (!isset($_GET['id'])) {
 $agendamentoId = $_GET['id'];
 
 // Consulta para verificar se o agendamento existe
-$query = "SELECT pet_id FROM agendamentos WHERE id = :id";
+$query = "SELECT pet_id, data_hora FROM agendamentos WHERE id = :id";
 $stmt = $pdo->prepare($query);
 $stmt->bindValue(':id', $agendamentoId);
 $stmt->execute();
@@ -32,35 +32,40 @@ if (!$agendamento) {
 }
 
 $petId = $agendamento['pet_id'];
+$dataHora = $agendamento['data_hora'];
 
 try {
-    // Excluir fichas e dependências antes do agendamento
-    $stmt = $pdo->prepare("DELETE FROM ficha_servicos_realizados WHERE ficha_id IN (SELECT id FROM fichas_petshop WHERE agendamento_id = :id)");
-    $stmt->bindValue(':id', $agendamentoId);
-    $stmt->execute();
+    $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare("DELETE FROM ficha_observacoes WHERE ficha_id IN (SELECT id FROM fichas_petshop WHERE agendamento_id = :id)");
-    $stmt->bindValue(':id', $agendamentoId);
-    $stmt->execute();
+    // 1. Encontra todos os IDs de agendamento para este grupo (mesmo pet, mesma data/hora)
+    $stmtAgendamentosGrupo = $pdo->prepare("SELECT id FROM agendamentos WHERE pet_id = :pet_id AND data_hora = :data_hora");
+    $stmtAgendamentosGrupo->execute([':pet_id' => $petId, ':data_hora' => $dataHora]);
+    $agendamentoIds = $stmtAgendamentosGrupo->fetchAll(PDO::FETCH_COLUMN);
 
-    $stmt = $pdo->prepare("DELETE FROM fichas_petshop WHERE agendamento_id = :id");
-    $stmt->bindValue(':id', $agendamentoId);
-    $stmt->execute();
+    if (!empty($agendamentoIds)) {
+        // Cria uma string de placeholders (?,?,?) para a cláusula IN
+        $placeholders = implode(',', array_fill(0, count($agendamentoIds), '?'));
 
-    // Excluir o agendamento
-    $queryDelete = "DELETE FROM agendamentos WHERE id = :id";
-    $stmtDelete = $pdo->prepare($queryDelete);
-    $stmtDelete->bindValue(':id', $agendamentoId);
-    $stmtDelete->execute();
+        // 2. Deleta as fichas e suas dependências (o ON DELETE CASCADE no DB cuida disso)
+        $stmtDeleteFichas = $pdo->prepare("DELETE FROM fichas_petshop WHERE agendamento_id IN ($placeholders)");
+        $stmtDeleteFichas->execute($agendamentoIds);
+
+        // 3. Deleta todos os agendamentos do grupo
+        $stmtDeleteAgendamentos = $pdo->prepare("DELETE FROM agendamentos WHERE id IN ($placeholders)");
+        $stmtDeleteAgendamentos->execute($agendamentoIds);
+    }
+
+    $pdo->commit();
 
     $_SESSION['mensagem'] = "Agendamento excluído com sucesso!";
     $_SESSION['tipo_mensagem'] = "success";
-    header("Location: ../../visualizar_pet.php?id=$petId");
+    header("Location: ../visualizar_pet.php?id=$petId");
     exit();
 } catch (Exception $e) {
+    $pdo->rollBack();
     $_SESSION['mensagem'] = "Erro ao excluir agendamento: " . $e->getMessage();
     $_SESSION['tipo_mensagem'] = "error";
-    header("Location: ../../visualizar_pet.php?id=$petId");
+    header("Location: ../visualizar_pet.php?id=$petId");
     exit();
 }
 ?>

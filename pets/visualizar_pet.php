@@ -17,7 +17,7 @@ if (!isset($_GET['id'])) {
 $petId = $_GET['id'];
 
 // Consulta as informações do pet e do tutor
-$query = "SELECT p.*, t.nome as tutor_nome, t.email, t.telefone 
+$query = "SELECT p.*, t.nome as tutor_nome, t.email, t.telefone, t.telefone_is_whatsapp
           FROM pets p 
           JOIN tutores t ON p.tutor_id = t.id 
           WHERE p.id = :id";
@@ -109,168 +109,178 @@ $totalPaginas = ceil($totalAgendamentos / $agendamentosPorPagina);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizar Pet - HVTPETSHOP</title>
+    <title>Visualizar Pet - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="../icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
+    <?php
+    $path_prefix = '../';
+    include '../components/navbar.php';
+    ?>
+    <?php include '../components/toast.php'; ?>
 
-    <!-- Navbar padrão -->
-    <nav class="w-full bg-white/90 shadow flex items-center justify-between px-6 py-3">
-        <div class="flex items-center gap-3">
-            <img src="../icons/pet.jpg" alt="Logo Petshop" class="w-10 h-10 rounded-full shadow">
-            <span class="text-2xl font-bold text-blue-700 tracking-tight">HVTPETSHOP</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <a href="../dashboard.php" class="text-blue-600 hover:text-blue-800 font-semibold transition"><i class="fa fa-home mr-1"></i>Dashboard</a>
-            <a href="cadastrar_pet.php" class="text-green-600 hover:text-green-800 font-semibold transition"><i class="fa fa-plus mr-1"></i>Novo Pet</a>
-            <a href="../tutores/listar_tutores.php" class="text-blue-500 hover:text-blue-700 font-semibold transition"><i class="fa fa-users mr-1"></i>Tutores</a>
-            <a href="../auth/logout.php" class="text-red-500 hover:text-red-700 font-semibold transition"><i class="fa fa-sign-out-alt mr-1"></i>Sair</a>
-        </div>
-    </nav>
-
-    <main class="flex-1 w-full max-w-4xl mx-auto mt-10 p-4">
-        <!-- Card de informações do pet e tutor -->
-        <div class="bg-white/90 rounded-2xl shadow-xl p-8 mb-8 animate-fade-in">
-            <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
-                <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-blue-700 mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-dog text-blue-400"></i>
+    <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
+        <!-- Cabeçalho da Página -->
+        <div class="mb-8 animate-fade-in">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fa-solid fa-dog text-violet-500"></i>
                         <?= htmlspecialchars($pet['nome']); ?>
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <div class="text-gray-500 text-xs">Tutor</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['tutor_nome']); ?></div>
-                        </div>
-                        <div>
-                            <div class="text-gray-500 text-xs">Telefone</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars(formatarTelefone($pet['telefone'])); ?></div>
-                        </div>
-                        <div class="md:col-span-2">
-                            <div class="text-gray-500 text-xs">E-mail</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['email']); ?></div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                        <div>
-                            <div class="text-gray-500 text-xs">Espécie</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['especie']); ?></div>
-                        </div>
-                        <div>
-                            <div class="text-gray-500 text-xs">Raça</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['raca']); ?></div>
-                        </div>
-                        <div>
-                            <div class="text-gray-500 text-xs">Sexo</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['sexo']); ?></div>
-                        </div>
-                        <div>
-                            <div class="text-gray-500 text-xs">Idade</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['idade']); ?> ano(s)</div>
-                        </div>
-                        <div>
-                            <div class="text-gray-500 text-xs">Peso</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['peso']); ?> kg</div>
-                        </div>
-                        <div>
-                            <div class="text-gray-500 text-xs">Pelagem</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['pelagem']); ?></div>
-                        </div>
-                        <div class="md:col-span-2">
-                            <div class="text-gray-500 text-xs">Observações</div>
-                            <div class="font-semibold text-gray-700"><?= htmlspecialchars($pet['observacoes'] ?: 'Nenhuma observação'); ?></div>
-                        </div>
-                    </div>
+                    </h1>
+                    <p class="text-slate-500 mt-1">Perfil detalhado e histórico de atendimentos.</p>
                 </div>
-                <div class="flex flex-col gap-2 min-w-[180px]">
-                    <a href="editar_pet.php?id=<?= $pet['id'] ?>" 
-                       class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 transition">
+                <div class="flex items-center gap-2">
+                    <a href="editar_pet.php?id=<?= $pet['id'] ?>" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-2">
                         <i class="fas fa-edit"></i> Editar Pet
                     </a>
-                    <a href="agendamentos/agendar_banho_tosa.php?pet_id=<?= $pet['id'] ?>" 
-                       class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 transition">
+                    <a href="agendamentos/agendar_servico.php?pet_id=<?= $pet['id'] ?>" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-2">
                         <i class="fas fa-calendar-plus"></i> Agendar Serviço
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Card de histórico de agendamentos -->
-        <div class="bg-white/90 rounded-2xl shadow-xl p-8 animate-fade-in">
-            <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-                <h2 class="text-xl font-bold text-blue-700">Histórico de Agendamentos</h2>
-                <!-- Filtros -->
-                <form method="GET" class="flex flex-col sm:flex-row gap-2">
+        <!-- Informações do Pet e Tutor -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <!-- Coluna de Informações do Pet -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">Informações do Pet</h2>
+                <dl class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+                    <div>
+                        <dt class="font-medium text-slate-500">Espécie</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['especie']); ?></dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Raça</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['raca']); ?></dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Sexo</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['sexo']); ?></dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Idade</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['idade']); ?> ano(s)</dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Peso</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['peso']); ?> kg</dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Pelagem</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['pelagem'] ?: 'N/A'); ?></dd>
+                    </div>
+                    <div class="col-span-full">
+                        <dt class="font-medium text-slate-500">Observações</dt>
+                        <dd class="text-slate-800 font-semibold whitespace-pre-wrap"><?= htmlspecialchars($pet['observacoes'] ?: 'Nenhuma observação.'); ?></dd>
+                    </div>
+                </dl>
+            </div>
+            <!-- Coluna de Informações do Tutor -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">Informações do Tutor</h2>
+                <dl class="space-y-4 text-sm">
+                    <div>
+                        <dt class="font-medium text-slate-500">Nome</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['tutor_nome']); ?></dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Telefone</dt>
+                        <dd class="text-slate-800 font-semibold flex items-center gap-3">
+                            <span><?= htmlspecialchars(formatarTelefone($pet['telefone'])); ?></span>
+                            <?php if (($pet['telefone_is_whatsapp'] ?? 'Não') === 'Sim'): ?>
+                                <?php
+                                    // Remove caracteres não numéricos para criar o link
+                                    $whatsappNumber = preg_replace('/[^0-9]/', '', $pet['telefone']);
+                                ?>
+                                <a href="https://wa.me/55<?= $whatsappNumber ?>" target="_blank" class="text-green-500 hover:text-green-600" title="Enviar mensagem no WhatsApp">
+                                    <i class="fab fa-whatsapp fa-lg"></i>
+                                </a>
+                            <?php endif; ?>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">E-mail</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['email']); ?></dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Histórico de Agendamentos -->
+        <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                    <i class="fa fa-history text-sky-500"></i>
+                    Histórico de Atendimentos
+                </h2>
+                <form method="GET" class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     <input type="hidden" name="id" value="<?= $petId ?>">
-                    <select name="status" class="p-2 border border-gray-200 rounded-lg text-sm">
+                    <select name="status" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         <option value="">Todos status</option>
                         <option value="Pendente" <?= $statusFilter === 'Pendente' ? 'selected' : '' ?>>Pendente</option>
                         <option value="Em Atendimento" <?= $statusFilter === 'Em Atendimento' ? 'selected' : '' ?>>Em Atendimento</option>
                         <option value="Finalizado" <?= $statusFilter === 'Finalizado' ? 'selected' : '' ?>>Finalizado</option>
                         <option value="Cancelado" <?= $statusFilter === 'Cancelado' ? 'selected' : '' ?>>Cancelado</option>
                     </select>
-                    <input type="date" name="data" value="<?= $dataFilter ?>" class="p-2 border border-gray-200 rounded-lg text-sm">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-1 transition">
+                    <input type="date" name="data" value="<?= $dataFilter ?>" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-1 transition">
                         <i class="fas fa-filter"></i> Filtrar
                     </button>
-                    <a href="visualizar_pet.php?id=<?= $petId ?>" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-1 transition">
+                    <a href="visualizar_pet.php?id=<?= $petId ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg flex items-center justify-center gap-1 transition">
                         <i class="fas fa-times"></i> Limpar
                     </a>
                 </form>
             </div>
 
-            <!-- Tabela de agendamentos agrupados -->
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
+                <table class="min-w-full text-sm">
                     <thead>
-                        <tr class="bg-gray-100 text-left">
-                            <th class="p-3 text-sm font-semibold text-gray-700">Data e Hora</th>
-                            <th class="p-3 text-sm font-semibold text-gray-700">Serviços</th>
-                            <th class="p-3 text-sm font-semibold text-gray-700">Status</th>
-                            <th class="p-3 text-sm font-semibold text-gray-700">Ações</th>
+                        <tr class="border-b-2 border-slate-200">
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Data e Hora</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Serviços</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         <?php if (empty($agendamentos)) : ?>
                             <tr>
-                                <td colspan="4" class="p-4 text-center text-gray-500">Não há agendamentos registrados.</td>
+                                <td colspan="4" class="p-4 text-center text-slate-500">Não há agendamentos para os filtros selecionados.</td>
                             </tr>
                         <?php else : ?>
                             <?php foreach ($agendamentos as $agendamento) : ?>
-                                <tr class="border-t border-gray-200 hover:bg-gray-50">
-                                    <td class="p-3 text-sm text-gray-700"><?= date("d/m/Y H:i", strtotime($agendamento['data_hora'])); ?></td>
-                                    <td class="p-3 text-sm text-gray-700"><?= htmlspecialchars($agendamento['servicos']); ?></td>
-                                    <td class="p-3">
-                                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white
-                                            <?= $agendamento['status'] == 'Pendente' ? 'bg-yellow-500' : 
-                                               ($agendamento['status'] == 'Em Atendimento' ? 'bg-blue-500' : 
-                                               ($agendamento['status'] == 'Finalizado' ? 'bg-green-500' : 
-                                               ($agendamento['status'] == 'Cancelado' ? 'bg-red-500' : 'bg-gray-500'))); ?>">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-4 text-slate-700 whitespace-nowrap"><?= date("d/m/Y H:i", strtotime($agendamento['data_hora'])); ?></td>
+                                    <td class="px-4 py-4 text-slate-600"><?= htmlspecialchars($agendamento['servicos']); ?></td>
+                                    <td class="px-4 py-4">
+                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold
+                                            <?= $agendamento['status'] == 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 
+                                               ($agendamento['status'] == 'Em Atendimento' ? 'bg-blue-100 text-blue-800' : 
+                                               ($agendamento['status'] == 'Finalizado' ? 'bg-green-100 text-green-800' : 
+                                               ($agendamento['status'] == 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800'))); ?>">
                                             <?= htmlspecialchars($agendamento['status']); ?>
                                         </span>
                                     </td>
-                                    <td class="p-3">
-                                        <div class="flex gap-2">
+                                    <td class="px-4 py-4">
+                                        <div class="flex items-center justify-center gap-2">
                                             <a href="agendamentos/visualizar_ficha.php?id=<?= $agendamento['id'] ?>" 
-                                               class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg flex items-center justify-center transition" title="Visualizar">
+                                               class="text-blue-600 hover:text-blue-800" title="Visualizar Ficha">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="agendamentos/editar_agendamento.php?id=<?= $agendamento['id'] ?>" 
-                                               class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg flex items-center justify-center transition" title="Editar">
+                                               class="text-amber-600 hover:text-amber-800" title="Editar">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <?php if ($agendamento['status'] == 'Pendente') : ?>
-                                                <a href="../pets/agendamentos/cancelar_agendamento.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>" 
-                                                   class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg flex items-center justify-center transition"
-                                                   onclick="return confirm('Tem certeza que deseja cancelar este agendamento?')" title="Cancelar">
+                                                <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'agendamentos/cancelar_agendamento_action.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>')" class="text-red-600 hover:text-red-800" title="Cancelar">
                                                     <i class="fas fa-times"></i>
                                                 </a>
                                             <?php endif; ?>
-                                            <a href="../pets/agendamentos/excluir_agendamento.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>"
-                                               class="bg-gray-700 hover:bg-black text-white p-2 rounded-lg flex items-center justify-center transition"
-                                               onclick="return confirm('Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.')" title="Excluir">
+                                            <a href="javascript:void(0);" onclick="openConfirmationModal('Excluir Agendamento', 'Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.', 'agendamentos/excluir_agendamento.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>')" class="text-slate-500 hover:text-red-600" title="Excluir">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </div>
@@ -284,11 +294,11 @@ $totalPaginas = ceil($totalAgendamentos / $agendamentosPorPagina);
 
             <!-- Paginação -->
             <?php if ($totalPaginas > 1) : ?>
-                <div class="flex justify-center mt-6">
+                <div class="flex justify-center mt-6 pt-4 border-t border-slate-200">
                     <div class="flex items-center gap-1">
                         <?php for ($i = 1; $i <= $totalPaginas; $i++) : ?>
                             <a href="?id=<?= $petId ?>&pagina=<?= $i ?><?= $statusFilter ? '&status='.$statusFilter : '' ?><?= $dataFilter ? '&data='.$dataFilter : '' ?>" 
-                               class="px-3 py-1 text-sm rounded-md <?= $i == $paginaAtual ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100' ?>">
+                               class="px-3 py-1 text-sm rounded-md <?= $i == $paginaAtual ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100' ?>">
                                 <?= $i ?>
                             </a>
                         <?php endfor; ?>
@@ -298,10 +308,7 @@ $totalPaginas = ceil($totalAgendamentos / $agendamentosPorPagina);
         </div>
     </main>
 
-    <footer class="w-full py-3 bg-white/80 text-center text-gray-400 text-xs mt-8">
-        &copy; 2025 HVTPETSHOP. Todos os direitos reservados.
-    </footer>
-
+    <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(30px);}
@@ -310,6 +317,6 @@ $totalPaginas = ceil($totalAgendamentos / $agendamentosPorPagina);
         .animate-fade-in {
             animation: fade-in 0.8s ease;
         }
-    </style>
+    </script>
 </body>
 </html>

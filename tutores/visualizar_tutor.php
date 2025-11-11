@@ -35,145 +35,205 @@ $stmt->execute([$tutorId]);
 $pets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Busca os últimos agendamentos dos pets do tutor (últimos 10)
+// Agrupando por data_hora para consolidar serviços
 $stmt = $pdo->prepare("
-    SELECT a.*, p.nome AS nome_pet 
+    SELECT 
+        MIN(a.id) as id,
+        a.data_hora, 
+        a.status,
+        p.nome AS nome_pet,
+        GROUP_CONCAT(s.nome ORDER BY s.nome SEPARATOR ', ') AS servicos
     FROM agendamentos a
     INNER JOIN pets p ON a.pet_id = p.id
+    INNER JOIN servicos s ON a.servico_id = s.id
     WHERE p.tutor_id = ?
-    ORDER BY a.data_hora DESC
-    LIMIT 10
+    GROUP BY a.data_hora, p.nome, a.status
+    ORDER BY a.data_hora DESC, p.nome ASC
+    LIMIT 15
 ");
 $stmt->execute([$tutorId]);
 $agendamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Função para formatar número de telefone
+function formatarTelefone($telefone) {
+    $telefone = preg_replace('/[^0-9]/', '', $telefone);
+    if (strlen($telefone) === 11) {
+        return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $telefone);
+    } elseif (strlen($telefone) === 10) {
+        return preg_replace('/(\d{2})(\d{4})(\d{4})/', '($1) $2-$3', $telefone);
+    }
+    return $telefone;
+}
+
+// Função para montar endereço completo do tutor
+function montarEndereco($tutor) {
+    $partes = [];
+    if (!empty($tutor['rua']))      $partes[] = $tutor['rua'];
+    if (!empty($tutor['numero']))   $partes[] = 'Nº ' . $tutor['numero'];
+    if (!empty($tutor['bairro']))   $partes[] = $tutor['bairro'];
+    if (!empty($tutor['cidade']) && !empty($tutor['uf'])) $partes[] = $tutor['cidade'] . '/' . $tutor['uf'];
+    return implode(', ', $partes) ?: 'Endereço não informado';
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Perfil do Tutor - HVTPETSHOP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil do Tutor - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="../icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-blue-200 flex flex-col">
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
 
-    <!-- Navbar -->
-    <nav class="w-full bg-white/90 shadow flex items-center justify-between px-6 py-3">
-        <div class="flex items-center gap-3">
-            <img src="../icons/pet.jpg" alt="Logo Petshop" class="w-10 h-10 rounded-full shadow">
-            <span class="text-2xl font-bold text-blue-700 tracking-tight">HVTPETSHOP</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <a href="../dashboard.php" class="text-blue-600 hover:text-blue-800 font-semibold transition"><i class="fa fa-home mr-1"></i>Dashboard</a>
-            <a href="listar_tutores.php" class="text-blue-500 hover:text-blue-700 font-semibold transition"><i class="fa fa-users mr-1"></i>Tutores</a>
-            <a href="../auth/logout.php" class="text-red-500 hover:text-red-700 font-semibold transition"><i class="fa fa-sign-out-alt mr-1"></i>Sair</a>
-        </div>
-    </nav>
+    <?php
+    $path_prefix = '../';
+    include '../components/navbar.php';
+    ?>
+    <?php include '../components/toast.php'; ?>
 
-    <main class="flex-1 w-full max-w-5xl mx-auto mt-10 p-4">
-        <div class="bg-white/95 p-0 md:p-8 rounded-3xl shadow-2xl animate-fade-in flex flex-col md:flex-row gap-8">
-            <!-- Perfil do Tutor -->
-            <aside class="md:w-1/3 w-full bg-gradient-to-br from-blue-200 to-blue-50 rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none p-8 flex flex-col items-center justify-center shadow-inner">
-                <div class="bg-blue-100 border-4 border-white rounded-full w-32 h-32 flex items-center justify-center shadow-lg mb-4">
-                    <i class="fa fa-user text-blue-400 text-6xl"></i>
+    <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
+        <!-- Cabeçalho da Página -->
+        <div class="mb-8 animate-fade-in">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fa-solid fa-user text-amber-500"></i>
+                        <?= htmlspecialchars($tutor['nome']); ?>
+                    </h1>
+                    <p class="text-slate-500 mt-1">Perfil detalhado do tutor e seus pets.</p>
                 </div>
-                <div class="text-center">
-                    <h1 class="text-2xl font-bold text-blue-700 mb-1"><?= htmlspecialchars($tutor['nome']) ?></h1>
-                    <div class="text-gray-600 text-sm flex items-center gap-2 justify-center mb-1">
-                        <i class="fa fa-envelope text-blue-300"></i> <?= htmlspecialchars($tutor['email']) ?>
-                    </div>
-                    <div class="text-gray-600 text-sm flex items-center gap-2 justify-center mb-1">
-                        <i class="fa fa-phone text-blue-300"></i> <?= htmlspecialchars($tutor['telefone']) ?>
-                    </div>
-                    <div class="flex flex-col items-center gap-1 mb-2">
-                        <div class="text-gray-600 text-xs flex items-center gap-2 justify-center">
-                            <i class="fa fa-map-marker-alt text-blue-300"></i>
-                            <span>
-                                <?= htmlspecialchars($tutor['rua'] ?? '') ?>
-                                <?= $tutor['numero'] ? ', ' . htmlspecialchars($tutor['numero']) : '' ?>
-                                <?= $tutor['bairro'] ? ' - ' . htmlspecialchars($tutor['bairro']) : '' ?>
-                            </span>
-                        </div>
-                        <div class="text-gray-600 text-xs flex items-center gap-2 justify-center">
-                            <?= htmlspecialchars($tutor['cidade'] ?? '') ?>
-                            <?= $tutor['uf'] ? ' - ' . htmlspecialchars($tutor['uf']) : '' ?>
-                            <?= !empty($tutor['cep']) ? '<span class="ml-2 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">CEP: ' . htmlspecialchars($tutor['cep']) . '</span>' : '' ?>
-                        </div>
-                    </div>
-                    <a href="editar_tutor.php?id=<?= $tutor['id'] ?>" class="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg font-semibold shadow transition mt-4">
-                        <i class="fa fa-edit"></i> Editar Dados
+                <div class="flex items-center gap-2">
+                    <a href="editar_tutor.php?id=<?= $tutor['id'] ?>" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-2">
+                        <i class="fas fa-edit"></i> Editar Tutor
+                    </a>
+                    <a href="../pets/adicionar_pet.php?tutor_id=<?= $tutor['id'] ?>" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Adicionar Pet
                     </a>
                 </div>
-            </aside>
+            </div>
+        </div>
 
-            <!-- Conteúdo principal -->
-            <section class="md:w-2/3 w-full flex flex-col gap-10 p-6">
-                <!-- Pets do Tutor -->
-                <div>
-                    <div class="font-bold text-blue-700 text-lg mb-3 flex items-center gap-2">
-                        <i class="fa fa-paw"></i> Pets cadastrados
-                        <a href="../pets/adicionar_pet.php?tutor_id=<?= $tutor['id'] ?>"
-                           class="ml-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow flex items-center gap-2 transition"
-                           title="Adicionar novo pet">
-                            <i class="fa fa-plus"></i> Novo Pet
-                        </a>
-                    </div>
-                    <?php if (empty($pets)): ?>
-                        <div class="text-gray-400 text-sm">Nenhum pet cadastrado para este tutor.</div>
-                    <?php else: ?>
-                        <div class="flex flex-wrap gap-2">
-                            <?php foreach ($pets as $pet): ?>
-                                <a href="../pets/visualizar_pet.php?id=<?= $pet['id'] ?>"
-                                   class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold px-4 py-2 rounded-full shadow transition text-sm flex items-center gap-2">
-                                    <i class="fa fa-paw"></i> <?= htmlspecialchars($pet['nome']) ?>
+        <!-- Conteúdo Principal -->
+        <div class="space-y-10">
+            <!-- Informações do Tutor -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">Dados do Tutor</h2>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+                    <div>
+                        <dt class="font-medium text-slate-500">Telefone</dt>
+                        <dd class="text-slate-800 font-semibold flex items-center gap-3">
+                            <span><?= htmlspecialchars(formatarTelefone($tutor['telefone'])); ?></span>
+                            <?php if (($tutor['telefone_is_whatsapp'] ?? 'Não') === 'Sim'): ?>
+                                <?php
+                                    // Remove caracteres não numéricos para criar o link
+                                    $whatsappNumber = preg_replace('/[^0-9]/', '', $tutor['telefone']);
+                                ?>
+                                <a href="https://wa.me/55<?= $whatsappNumber ?>" target="_blank" class="text-green-500 hover:text-green-600" title="Enviar mensagem no WhatsApp">
+                                    <i class="fab fa-whatsapp fa-lg"></i>
                                 </a>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Últimos Agendamentos -->
-                <div>
-                    <div class="font-bold text-blue-700 text-lg mb-3 flex items-center gap-2">
-                        <i class="fa fa-calendar-alt"></i> Últimos Agendamentos
+                            <?php endif; ?>
+                        </dd>
                     </div>
-                    <?php if (empty($agendamentos)): ?>
-                        <div class="text-gray-400 text-sm">Nenhum agendamento encontrado para os pets deste tutor.</div>
-                    <?php else: ?>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-blue-100 bg-white rounded-xl shadow">
-                                <thead class="bg-blue-50">
-                                    <tr>
-                                        <th class="px-4 py-2 text-left text-xs font-bold text-blue-700 uppercase">Pet</th>
-                                        <th class="px-4 py-2 text-left text-xs font-bold text-blue-700 uppercase">Data/Hora</th>
-                                        <th class="px-4 py-2 text-left text-xs font-bold text-blue-700 uppercase">Status</th>
-                                        <th class="px-4 py-2 text-left text-xs font-bold text-blue-700 uppercase">Serviços</th>
+                    <div>
+                        <dt class="font-medium text-slate-500">E-mail</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($tutor['email']); ?></dd>
+                    </div>
+                    <div class="lg:col-span-1">
+                        <dt class="font-medium text-slate-500">Endereço</dt>
+                        <dd class="text-slate-800 font-semibold">
+                            <?= htmlspecialchars(montarEndereco($tutor)) ?>
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Pets do Tutor -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-paw text-violet-500"></i>
+                    Pets Cadastrados
+                </h2>
+                <?php if (empty($pets)): ?>
+                    <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum pet cadastrado para este tutor.</div>
+                <?php else: ?>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="border-b-2 border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Nome</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Espécie</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Raça</th>
+                                    <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <?php foreach ($pets as $pet): ?>
+                                    <tr class="hover:bg-slate-50 group cursor-pointer" onclick="window.location='../pets/visualizar_pet.php?id=<?= $pet['id'] ?>'">
+                                        <td class="px-4 py-4 font-semibold text-slate-800 whitespace-nowrap"><?= htmlspecialchars($pet['nome']) ?></td>
+                                        <td class="px-4 py-4 text-slate-600 whitespace-nowrap"><?= htmlspecialchars($pet['especie']) ?></td>
+                                        <td class="px-4 py-4 text-slate-600 whitespace-nowrap"><?= htmlspecialchars($pet['raca']) ?></td>
+                                        <td class="px-4 py-4 text-center" onclick="event.stopPropagation();">
+                                            <div class="flex items-center justify-center gap-4">
+                                                <a href="../pets/editar_pet.php?id=<?= $pet['id'] ?>" class="text-amber-600 hover:text-amber-800" title="Editar Pet"><i class="fas fa-edit"></i></a>
+                                                <a href="../pets/agendamentos/agendar_servico.php?pet_id=<?= $pet['id'] ?>" class="text-blue-600 hover:text-blue-800" title="Agendar Serviço"><i class="fas fa-calendar-plus"></i></a>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody class="divide-y divide-blue-50">
-                                    <?php foreach ($agendamentos as $ag): ?>
-                                        <tr>
-                                            <td class="px-4 py-2 text-blue-800 font-semibold"><?= htmlspecialchars($ag['nome_pet']) ?></td>
-                                            <td class="px-4 py-2"><?= date('d/m/Y H:i', strtotime($ag['data_hora'])) ?></td>
-                                            <td class="px-4 py-2">
-                                                <span class="px-2 py-1 rounded-full text-xs font-semibold
-                                                    <?= $ag['status'] === 'Cancelado' ? 'bg-red-100 text-red-700' : ($ag['status'] === 'Concluído' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700') ?>">
-                                                    <?= htmlspecialchars($ag['status']) ?>
-                                                </span>
-                                            </td>
-                                            <td class="px-4 py-2"><?= htmlspecialchars($ag['servicos'] ?? '-') ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </section>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Histórico de Agendamentos -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                    <i class="fa fa-history text-sky-500"></i>
+                    Histórico de Atendimentos
+                </h2>
+                <?php if (empty($agendamentos)): ?>
+                    <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum agendamento encontrado para os pets deste tutor.</div>
+                <?php else: ?>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="border-b-2 border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Data e Hora</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Pet</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Serviços</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <?php foreach ($agendamentos as $ag): ?>
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-4 py-4 text-slate-700 whitespace-nowrap"><?= date('d/m/Y H:i', strtotime($ag['data_hora'])) ?></td>
+                                        <td class="px-4 py-4 font-semibold text-slate-800"><?= htmlspecialchars($ag['nome_pet']) ?></td>
+                                        <td class="px-4 py-4 text-slate-600"><?= htmlspecialchars($ag['servicos'] ?? '-') ?></td>
+                                        <td class="px-4 py-4">
+                                            <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold
+                                                <?= $ag['status'] == 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 
+                                                   ($ag['status'] == 'Em Atendimento' ? 'bg-blue-100 text-blue-800' : 
+                                                   ($ag['status'] == 'Finalizado' ? 'bg-green-100 text-green-800' : 
+                                                   ($ag['status'] == 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800'))); ?>">
+                                                <?= htmlspecialchars($ag['status']) ?>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </main>
 
+    <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(30px);}

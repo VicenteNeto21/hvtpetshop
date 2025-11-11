@@ -8,13 +8,18 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// Controle do aviso de funcionalidades
-$mostrarAviso = !isset($_SESSION['aviso_funcionalidades_visto']);
-if (isset($_GET['fechar_aviso'])) {
-    $_SESSION['aviso_funcionalidades_visto'] = true;
-    header("Location: dashboard.php");
-    exit();
+// Controle do aviso de funcionalidades por versão
+$versao_atual_aviso = '1.1.0';
+
+// Garante que a versão vista esteja na sessão, buscando do DB se necessário
+if (isset($_SESSION['usuario_id']) && !isset($_SESSION['aviso_visto_versao'])) {
+    $stmt = $pdo->prepare("SELECT versao_aviso_visto FROM usuarios WHERE id = ?");
+    $stmt->execute([$_SESSION['usuario_id']]);
+    $versao_vista_db = $stmt->fetchColumn();
+    $_SESSION['aviso_visto_versao'] = $versao_vista_db;
 }
+
+$mostrarAviso = (!isset($_SESSION['aviso_visto_versao']) || $_SESSION['aviso_visto_versao'] !== $versao_atual_aviso);
 
 // Obtém o termo de busca, se houver
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -43,205 +48,278 @@ $totalPets = $pdo->query("SELECT COUNT(*) FROM pets")->fetchColumn();
 // Contagem total de tutores cadastrados
 $totalTutores = $pdo->query("SELECT COUNT(*) FROM tutores")->fetchColumn();
 
-// Consulta agendamentos do dia atual, mostrando apenas o próximo horário e apenas serviços NÃO finalizados
-$dataHoje = date('Y-m-d');
+// Contagem de agendamentos para o dia de hoje
+$totalAgendamentosHoje = $pdo->query("SELECT COUNT(DISTINCT pet_id, data_hora) FROM agendamentos WHERE DATE(data_hora) = CURDATE()")->fetchColumn();
+
+// Consulta agendamentos para uma data específica (padrão: hoje)
+$dataSelecionada = isset($_GET['data']) ? $_GET['data'] : date('Y-m-d');
+
 $stmtAgendamentos = $pdo->prepare("
     SELECT 
         MIN(agendamento_id) as agendamento_id,
+        pet_id,
+        tutor_id,
         pet_nome,
         tutor_nome,
         DATE_FORMAT(data_hora, '%H:%i') AS horario,
         GROUP_CONCAT(DISTINCT servico_nome ORDER BY servico_nome SEPARATOR ', ') AS servicos,
-        MIN(status_agendamento) AS status
+        CASE
+            WHEN SUM(CASE WHEN status_agendamento = 'Em Atendimento' THEN 1 ELSE 0 END) > 0 THEN 'Em Atendimento'
+            WHEN SUM(CASE WHEN status_agendamento = 'Pendente' THEN 1 ELSE 0 END) > 0 THEN 'Pendente'
+            ELSE MIN(status_agendamento)
+        END AS status
     FROM view_agendamentos_completos
-    WHERE DATE(data_hora) = :hoje
-      AND status_agendamento != 'Finalizado'
-    GROUP BY pet_nome, horario, tutor_nome
+    WHERE DATE(data_hora) = :data_selecionada
+    GROUP BY pet_id, tutor_id, pet_nome, tutor_nome, horario
     ORDER BY horario ASC
 ");
-$stmtAgendamentos->execute([':hoje' => $dataHoje]);
+$stmtAgendamentos->execute([':data_selecionada' => $dataSelecionada]);
 $agendamentosHoje = $stmtAgendamentos->fetchAll(PDO::FETCH_ASSOC);
+
+// Aniversariantes do dia
+$stmtAniversariantes = $pdo->prepare("
+    SELECT p.nome as pet_nome, t.nome as tutor_nome
+    FROM pets p
+    JOIN tutores t ON p.tutor_id = t.id
+    WHERE MONTH(p.nascimento) = MONTH(:data_selecionada) AND DAY(p.nascimento) = DAY(:data_selecionada)
+");
+$stmtAniversariantes->execute([':data_selecionada' => $dataSelecionada]);
+$aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - HVTPETSHOP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Dashboard - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="./icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Função para fechar o modal de aviso e marcar como visto
+        function fecharAvisoNovidades() {
+            fetch('./utils/marcar_aviso_visto.php', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('aviso-funcionalidades').remove();
+                    }
+                });
+        }
+    </script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
 
-    <!-- Navbar responsiva -->
-    <nav class="w-full bg-white/90 shadow flex items-center justify-between px-4 md:px-6 py-3">
-        <div class="flex items-center gap-3">
-            <img src="./icons/pet.jpg" alt="Logo Petshop" class="w-10 h-10 rounded-full shadow">
-            <span class="text-xl md:text-2xl font-bold text-blue-700 tracking-tight">HVTPETSHOP</span>
-        </div>
-        <!-- Botão hamburguer mobile -->
-        <button id="menu-toggle" class="md:hidden text-blue-700 text-2xl focus:outline-none">
-            <i class="fa fa-bars"></i>
-        </button>
-        <!-- Links da navbar -->
-        <div id="navbar-links" class="hidden md:flex flex-col md:flex-row md:items-center gap-4 absolute md:static top-16 left-0 w-full md:w-auto bg-white md:bg-transparent shadow md:shadow-none z-50 md:z-auto px-4 md:px-0 py-4 md:py-0">
-            <a href="dashboard.php" class="text-blue-600 hover:text-blue-800 font-semibold transition flex items-center gap-1"><i class="fa fa-home"></i><span>Dashboard</span></a>
-            <a href="pets/cadastrar_pet.php" class="text-green-600 hover:text-green-800 font-semibold transition flex items-center gap-1"><i class="fa fa-plus"></i><span>Novo Pet</span></a>
-            <a href="tutores/listar_tutores.php" class="text-blue-500 hover:text-blue-700 font-semibold transition flex items-center gap-1"><i class="fa fa-users"></i><span>Tutores</span></a>
-            <a href="dashboard/indicadores.php" class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold shadow flex items-center gap-2 transition">
-                <i class="fa fa-chart-bar"></i> <span>Indicadores</span>
-            </a>
-            <a href="#" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-semibold shadow flex items-center gap-2 transition">
-                <i class="fa fa-cash-register"></i> <span>PDV (em breve)</span>
-            </a>
-            <a href="auth/logout.php" class="text-red-500 hover:text-red-700 font-semibold transition flex items-center gap-1"><i class="fa fa-sign-out-alt"></i><span>Sair</span></a>
-        </div>
-    </nav>
-    <script>
-        // Navbar responsiva
-        const menuToggle = document.getElementById('menu-toggle');
-        const navbarLinks = document.getElementById('navbar-links');
-        menuToggle.addEventListener('click', () => {
-            navbarLinks.classList.toggle('hidden');
-        });
-        // Fecha menu ao clicar em link (mobile)
-        document.querySelectorAll('#navbar-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                if(window.innerWidth < 768) navbarLinks.classList.add('hidden');
-            });
-        });
-    </script>
+    <?php
+    // Define o prefixo do caminho para o navbar. Como estamos na raiz, é './'
+    $path_prefix = './';
+    include './components/navbar.php';
+    ?>
+
+    <?php include './components/toast.php'; ?>
 
     <?php if ($mostrarAviso): ?>
     <!-- Aviso de funcionalidades em desenvolvimento -->
     <div id="aviso-funcionalidades" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full text-center relative animate-fade-in">
-            <a href="?fechar_aviso=1" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold" title="Fechar">&times;</a>
-            <div class="flex flex-col items-center gap-2">
-                <i class="fa fa-info-circle text-blue-500 text-4xl mb-2"></i>
-                <h2 class="text-xl font-bold text-blue-700 mb-1">Atenção!</h2>
-                <p class="text-gray-700 mb-2">
-                    Novas funcionalidades estão sendo adicionadas ao sistema.<br>
-                    Algumas áreas podem ser atualizadas ou melhoradas nos próximos dias.<br>
-                    Se encontrar algum problema, entre em contato com o suporte.
-                </p>
-                <span class="text-xs text-gray-400 mt-2">Versão do sistema: <strong>AMPN 1.0.5</strong></span>
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-left relative animate-fade-in">
+            <button onclick="fecharAvisoNovidades()" class="absolute top-3 right-4 text-slate-400 hover:text-red-500 text-2xl font-bold" title="Fechar">&times;</button>
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-3 mb-2">
+                    <i class="fa-solid fa-star text-amber-500 text-3xl"></i>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Bem-vindo à Versão 1.1.0!</h2>
+                        <p class="text-slate-500">O sistema CereniaPet está mais completo e estável.</p>
+                    </div>
+                </div>
+                <ul class="space-y-2 text-slate-600 list-disc list-inside pl-2">
+                    <li><strong>Dashboard Inteligente:</strong> Navegue pela agenda, veja aniversariantes e tenha acesso rápido a tudo.</li>
+                    <li><strong>Gestão Completa:</strong> Cadastre e gerencie tutores e pets com históricos detalhados.</li>
+                    <li><strong>Fichas de Atendimento Profissionais:</strong> Registre todos os detalhes do serviço, da saúde ao comportamento do pet.</li>
+                    <li><strong>Geração de PDF:</strong> Exporte fichas de atendimento completas com um clique.</li>
+                    <li><strong>Nova Identidade:</strong> O sistema agora se chama oficialmente <strong>CereniaPet</strong>.</li>
+                </ul>
+                <div class="flex flex-col items-center mt-6">
+                    <button onclick="fecharAvisoNovidades()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition">Ok, entendi!</button>
+                    <p class="text-xs text-slate-400 mt-3">Esta mensagem aparecerá apenas uma vez por atualização.</p>
+                </div>
             </div>
         </div>
     </div>
     <?php endif; ?>
 
-    <main class="flex-1 w-full max-w-6xl mx-auto mt-6 md:mt-10 p-2 md:p-4">
-        <div class="bg-white/90 p-4 md:p-6 rounded-2xl shadow mb-6 text-center animate-fade-in">
-            <h2 class="text-xl md:text-2xl font-bold text-blue-600">Bem-vindo, <?= htmlspecialchars($_SESSION['usuario_nome']); ?>!</h2>
-        </div>
-
-        <!-- Barra de Pesquisa -->
-        <div class="flex justify-center mb-6">
-            <form action="dashboard.php" method="GET" class="relative w-full max-w-md">
-                <input type="text" name="search" value="<?= htmlspecialchars($search); ?>" placeholder="Pesquise por pet ou tutor..." 
-                       class="w-full p-3 pl-10 border border-gray-200 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-sm md:text-base">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            </form>
-        </div>
-
+    <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
         <!-- Estatísticas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
-            <div class="bg-gradient-to-tr from-blue-500 to-blue-400 text-white p-4 md:p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center relative overflow-hidden">
-                <div class="absolute right-4 top-4 opacity-20 text-5xl md:text-6xl pointer-events-none">
-                    <i class="fa-solid fa-paw"></i>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 animate-fade-in">
+            <!-- Card Agendamentos Hoje (Clicável) -->
+            <a href="pets/agendamentos/agendar_servico.php" class="bg-white border-l-4 border-sky-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-slate-500">Agendamentos Hoje</p>
+                    <i class="fa-solid fa-calendar-day text-sky-500"></i>
                 </div>
-                <h3 class="text-base md:text-lg font-semibold z-10">Total de Pets</h3>
-                <p class="text-3xl md:text-4xl font-extrabold mt-2 z-10"><?= $totalPets; ?></p>
+                <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalAgendamentosHoje; ?></p>
+            </a>
+            <!-- Card Total de Pets -->
+            <div class="bg-white border-l-4 border-violet-500 rounded-r-lg p-5 shadow-sm">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-slate-500">Total de Pets</p>
+                    <i class="fa-solid fa-paw text-violet-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalPets; ?></p>
             </div>
-            <a href="tutores/listar_tutores.php" class="bg-gradient-to-tr from-blue-700 to-blue-500 text-white p-4 md:p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center relative overflow-hidden hover:scale-105 transition-transform">
-                <div class="absolute right-4 top-4 opacity-20 text-5xl md:text-6xl pointer-events-none">
-                    <i class="fa-solid fa-users"></i>
+            <!-- Card Total de Tutores -->
+            <a href="tutores/listar_tutores.php" class="bg-white border-l-4 border-amber-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-slate-500">Total de Tutores</p>
+                    <i class="fa-solid fa-users text-amber-500"></i>
                 </div>
-                <h3 class="text-base md:text-lg font-semibold z-10">Total de Tutores</h3>
-                <p class="text-3xl md:text-4xl font-extrabold mt-2 z-10"><?= $totalTutores; ?></p>
+                <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalTutores; ?></p>
             </a>
         </div>
 
-        <!-- Listagem de Pets -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            <?php if (empty($pets)) : ?>
-                <div class="col-span-3 text-gray-600 text-center bg-white/80 rounded-lg p-6 shadow">
-                    Nenhum pet encontrado.
-                </div>
-            <?php else : ?>
-                <?php foreach ($pets as $pet): ?>
-                    <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6 flex flex-col gap-3 hover:shadow-2xl transition animate-fade-in">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="bg-blue-100 text-blue-500 rounded-full p-3">
-                                <i class="fa-solid fa-dog text-xl md:text-2xl"></i>
-                            </div>
-                            <h3 class="text-lg md:text-xl font-bold text-blue-700"><?= htmlspecialchars($pet['nome']); ?></h3>
-                        </div>
-                        <p class="text-gray-600 text-sm md:text-base"><i class="fa fa-user mr-1 text-blue-400"></i>Tutor: <span class="font-medium"><?= htmlspecialchars($pet['tutor']); ?></span></p>
-                        <div class="mt-2 flex justify-between items-center gap-2">
-                            <a href="pets/visualizar_pet.php?id=<?= $pet['id']; ?>" class="text-blue-500 hover:text-blue-700 flex items-center gap-1 font-semibold text-sm md:text-base">
-                                <i class="fas fa-eye"></i> <span class="hidden sm:inline">Visualizar</span>
+        <!-- Conteúdo Principal (Tabelas) -->
+        <div class="space-y-10">
+            <!-- Agendamentos do dia -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in"> 
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fa fa-clock text-sky-500"></i> Agenda para <?= date('d/m/Y', strtotime($dataSelecionada)) ?>
+                    </h2>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <?php
+                            $dataAnterior = date('Y-m-d', strtotime($dataSelecionada . ' -1 day'));
+                            $dataSeguinte = date('Y-m-d', strtotime($dataSelecionada . ' +1 day'));
+                            $isToday = ($dataSelecionada == date('Y-m-d'));
+                        ?>
+                        <a href="?data=<?= $dataAnterior ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
+                            &lt;
+                        </a>
+                        <?php if (!$isToday): ?>
+                            <a href="dashboard.php" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
+                                Hoje
                             </a>
-                            <a href="pets/atualizar_pet.php?id=<?= $pet['id']; ?>" class="text-yellow-500 hover:text-yellow-700 flex items-center gap-1 font-semibold text-sm md:text-base">
-                                <i class="fas fa-edit"></i> <span class="hidden sm:inline">Editar</span>
-                            </a>
-                            <a href="pets/scripts/deletar_pet.php?id=<?= $pet['id']; ?>" class="text-red-500 hover:text-red-700 flex items-center gap-1 font-semibold text-sm md:text-base" onclick="return confirm('Tem certeza que deseja excluir este pet?');">
-                                <i class="fas fa-trash"></i> <span class="hidden sm:inline">Excluir</span>
-                            </a>
-                        </div>
+                        <?php endif; ?>
+                        <a href="?data=<?= $dataSeguinte ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
+                            &gt;
+                        </a>
+                        <a href="pets/agendamentos/agendar_servico.php" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition flex items-center gap-2 text-sm whitespace-nowrap ml-2">
+                            <i class="fa fa-calendar-plus"></i> Novo Agendamento
+                        </a>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+                </div>
+                <?php if (empty($agendamentosHoje)): ?>
+                    <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum agendamento pendente para hoje.</div>
+                <?php else: ?>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="border-b-2 border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Horário</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Pet</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Serviços</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <?php foreach ($agendamentosHoje as $ag): ?>
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-4 py-4 font-medium text-slate-800 whitespace-nowrap"><?= htmlspecialchars($ag['horario']) ?></td>
+                                        <td class="px-4 py-4 text-slate-800 font-semibold">
+                                            <a href="./pets/visualizar_pet.php?id=<?= $ag['pet_id'] ?>" class="hover:underline"><?= htmlspecialchars($ag['pet_nome']) ?></a>
+                                        </td>
+                                        <td class="px-4 py-4 text-slate-500 whitespace-nowrap">
+                                            <a href="./tutores/visualizar_tutor.php?id=<?= $ag['tutor_id'] ?>" class="hover:underline"><?= htmlspecialchars($ag['tutor_nome']) ?></a>
+                                        </td>
+                                        <td class="px-4 py-4 text-slate-500"><?= htmlspecialchars($ag['servicos'] ?: 'N/A') ?></td>
+                                        <td class="px-4 py-4">
+                                            <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold
+                                                <?= $ag['status'] == 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 
+                                                   ($ag['status'] == 'Em Atendimento' ? 'bg-blue-100 text-blue-800' : 
+                                                   ($ag['status'] == 'Finalizado' ? 'bg-green-100 text-green-800' : 
+                                                   ($ag['status'] == 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800'))); ?>">
+                                                <?= htmlspecialchars($ag['status']) ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 text-center">
+                                            <div class="flex items-center justify-center gap-3">
+                                                <?php if ($ag['status'] == 'Pendente'): ?>
+                                                    <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="text-blue-600 hover:text-blue-800" title="Iniciar Atendimento"><i class="fas fa-play-circle fa-lg"></i></button>
+                                                    <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&pet_id=<?= $ag['pet_id'] ?>')" class="text-red-600 hover:text-red-800" title="Cancelar"><i class="fas fa-times-circle fa-lg"></i></a>
+                                                <?php elseif ($ag['status'] == 'Em Atendimento'): ?>
+                                                    <a href="./pets/agendamentos/editar_agendamento.php?id=<?= $ag['agendamento_id'] ?>" class="text-amber-600 hover:text-amber-800" title="Preencher Ficha"><i class="fas fa-file-alt fa-lg"></i></a>
+                                                <?php elseif ($ag['status'] == 'Finalizado'): ?>
+                                                    <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="text-green-600 hover:text-green-800" title="Visualizar Ficha"><i class="fas fa-eye fa-lg"></i></a>
+                                                <?php else: ?>
+                                                    <span class="text-slate-400" title="Agendamento Cancelado"><i class="fas fa-ban fa-lg"></i></span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
 
-        <!-- Agendamentos do dia (apenas não finalizados e um horário por pet) -->
-        <div class="bg-white/90 p-4 md:p-6 rounded-2xl shadow mb-8 mt-8 animate-fade-in">
-            <h2 class="text-lg md:text-xl font-bold text-blue-700 mb-4 flex items-center gap-2">
-                <i class="fa fa-calendar-day"></i> Agendamentos pendentes de hoje (<?= date('d/m/Y') ?>)
-            </h2>
-            <?php if (empty($agendamentosHoje)): ?>
-                <div class="text-gray-500 text-center">Nenhum agendamento pendente para hoje.</div>
-            <?php else: ?>
+            <!-- Aniversariantes do Dia -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-cake-candles text-pink-500"></i>
+                    Aniversariantes do Dia
+                </h2>
+                <?php if (empty($aniversariantes)): ?>
+                    <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum aniversariante hoje.</div>
+                <?php else: ?>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <?php foreach ($aniversariantes as $aniversariante): ?>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-center gap-3">
+                                <i class="fa-solid fa-paw text-violet-500 text-xl"></i>
+                                <div>
+                                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($aniversariante['pet_nome']) ?></p>
+                                    <p class="text-xs text-slate-500">Tutor: <?= htmlspecialchars($aniversariante['tutor_nome']) ?></p>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Listagem de Pets -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fa-solid fa-paw text-violet-500"></i>
+                        Pets Cadastrados
+                    </h2>
+                    <form action="dashboard.php" method="GET" class="relative w-full md:w-auto md:max-w-xs">
+                        <input type="text" id="searchInput" value="<?= htmlspecialchars($search); ?>" placeholder="Pesquisar por ID, pet ou tutor..." 
+                               class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </form>
+                </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-blue-100 bg-white rounded-xl shadow text-xs md:text-sm">
-                        <thead class="bg-blue-50">
+                    <table class="min-w-full text-sm">
+                        <thead class="border-b-2 border-slate-200">
                             <tr>
-                                <th class="px-2 md:px-4 py-2 text-left font-bold text-blue-700 uppercase">Horário</th>
-                                <th class="px-2 md:px-4 py-2 text-left font-bold text-blue-700 uppercase">Pet</th>
-                                <th class="px-2 md:px-4 py-2 text-left font-bold text-blue-700 uppercase">Tutor</th>
-                                <th class="px-2 md:px-4 py-2 text-left font-bold text-blue-700 uppercase">Status</th>
-                                <th class="px-2 md:px-4 py-2 text-left font-bold text-blue-700 uppercase">Serviços</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider w-16">ID</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Pet</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
+                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-blue-50">
-                            <?php foreach ($agendamentosHoje as $ag): ?>
-                                <tr>
-                                    <td class="px-2 md:px-4 py-2"><?= htmlspecialchars($ag['horario']) ?></td>
-                                    <td class="px-2 md:px-4 py-2">
-                                        <a href="./pets/agendamentos/editar_agendamento.php?id=<?= $ag['agendamento_id'] ?>" class="text-blue-700 font-bold hover:underline">
-                                            <?= htmlspecialchars($ag['pet_nome']) ?>
-                                        </a>
-                                    </td>
-                                    <td class="px-2 md:px-4 py-2"><?= htmlspecialchars($ag['tutor_nome']) ?></td>
-                                    <td class="px-2 md:px-4 py-2"><?= htmlspecialchars($ag['status']) ?></td>
-                                    <td class="px-2 md:px-4 py-2"><?= htmlspecialchars($ag['servicos']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
+                        <tbody id="pets-tbody" class="divide-y divide-slate-100">
+                            <!-- O conteúdo será carregado via AJAX -->
                         </tbody>
                     </table>
                 </div>
-            <?php endif; ?>
+            </div>
         </div>
     </main>
 
-    <footer class="w-full py-3 bg-white/80 text-center text-gray-400 text-xs mt-8">
-        &copy; 2025 HVTPETSHOP. Todos os direitos reservados.<br>
-        <span class="text-[11px] text-gray-400">Versão do sistema: <strong>AMPN 1.0.5</strong></span>
-    </footer>
-
+    <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(30px);}
@@ -250,6 +328,63 @@ $agendamentosHoje = $stmtAgendamentos->fetchAll(PDO::FETCH_ASSOC);
         .animate-fade-in {
             animation: fade-in 0.8s ease;
         }
+        @keyframes slide-in-right {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-slide-in-right { animation: slide-in-right 0.5s ease-out forwards; }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const petsTbody = document.getElementById('pets-tbody');
+
+            function buscarPets(termo = '') {
+                // Adiciona um efeito de loading
+                petsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando...</td></tr>';
+
+                fetch(`pets/buscar_pets.php?search=${encodeURIComponent(termo)}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        petsTbody.innerHTML = data;
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar pets:', error);
+                        petsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Erro ao carregar os dados.</td></tr>';
+                    });
+            }
+
+            // Busca inicial ao carregar a página
+            buscarPets(searchInput.value);
+
+            // Busca ao digitar
+            searchInput.addEventListener('keyup', () => buscarPets(searchInput.value));
+
+            // Função para atualizar status do agendamento via AJAX
+            window.updateAgendamentoStatus = function(agendamentoId, newStatus) {
+                const formData = new FormData();
+                formData.append('agendamento_id', agendamentoId);
+                formData.append('new_status', newStatus);
+
+                fetch('pets/agendamentos/atualizar_status_agendamento.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recarrega a página para refletir a mudança
+                        location.reload(); 
+                    } else {
+                        alert('Erro ao atualizar status: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na requisição AJAX:', error);
+                    alert('Erro de comunicação com o servidor.');
+                });
+            };
+        });
+    </script>
 </body>
 </html>

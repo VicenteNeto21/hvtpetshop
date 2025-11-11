@@ -1,28 +1,45 @@
 <?php
 include "../config/config.php";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nome = trim($_POST["nome"]);
-    $email = trim($_POST["email"]);
-    $senha = password_hash($_POST["senha"], PASSWORD_DEFAULT);
+header('Content-Type: application/json');
 
-    // Verifica se o e-mail já está cadastrado
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nome = trim($_POST['nome'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $senha = trim($_POST['senha'] ?? '');
+
+    // Validações do servidor
+    if (empty($nome) || empty($email) || empty($senha)) {
+        echo json_encode(['success' => false, 'message' => 'Todos os campos são obrigatórios.']);
+        exit();
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Formato de e-mail inválido.']);
+        exit();
+    }
+
+    if (strlen($senha) < 6) {
+        echo json_encode(['success' => false, 'message' => 'A senha deve ter no mínimo 6 caracteres.']);
+        exit();
+    }
+
+    // Verifica se o e-mail já existe
     $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
     $stmt->execute([$email]);
-    
-    if ($stmt->rowCount() > 0) {
-        echo "E-mail já cadastrado!";
+    if ($stmt->fetch()) {
+        echo json_encode(['success' => false, 'message' => 'Este e-mail já está cadastrado.']);
         exit();
     }
 
     // Insere o novo usuário
-    $sql = "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)";
-    $stmt = $pdo->prepare($sql);
-    if ($stmt->execute([$nome, $email, $senha])) {
-        header("Location: ../login.html");
-        exit();
+    $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)");
+    
+    if ($stmt->execute([$nome, $email, $senhaHash])) {
+        echo json_encode(['success' => true]);
     } else {
-        echo "Erro ao registrar.";
+        echo json_encode(['success' => false, 'message' => 'Ocorreu um erro ao criar a conta. Tente novamente.']);
     }
 }
 ?>

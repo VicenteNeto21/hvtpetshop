@@ -40,7 +40,7 @@ $ficha = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$ficha) {
     $_SESSION['mensagem'] = "Ficha não encontrada";
     $_SESSION['tipo_mensagem'] = "error";
-    header("Location: ../visualizar_pet.php?id=".$ficha['pet_id']);
+    header("Location: ../../dashboard.php"); // Redireciona para o dashboard se a ficha não for encontrada
     exit();
 }
 
@@ -109,7 +109,7 @@ function formatarData($data, $formato = 'd/m/Y H:i') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ficha do Petshop - HVTPETSHOP</title>
+    <title>Ficha do Petshop - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="../../icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -118,142 +118,119 @@ function formatarData($data, $formato = 'd/m/Y H:i') {
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
 
-    <!-- Navbar padrão -->
-    <nav class="w-full bg-white/90 shadow flex items-center justify-between px-6 py-3">
-        <div class="flex items-center gap-3">
-            <img src="../../icons/pet.jpg" alt="Logo Petshop" class="w-10 h-10 rounded-full shadow">
-            <span class="text-2xl font-bold text-blue-700 tracking-tight">HVTPETSHOP</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <a href="../../dashboard.php" class="text-blue-600 hover:text-blue-800 font-semibold transition"><i class="fa fa-home mr-1"></i>Dashboard</a>
-            <a href="../cadastrar_pet.php" class="text-green-600 hover:text-green-800 font-semibold transition"><i class="fa fa-plus mr-1"></i>Novo Pet</a>
-            <a href="../../tutores/listar_tutores.php" class="text-blue-500 hover:text-blue-700 font-semibold transition"><i class="fa fa-users mr-1"></i>Tutores</a>
-            <a href="../../auth/logout.php" class="text-red-500 hover:text-red-700 font-semibold transition"><i class="fa fa-sign-out-alt mr-1"></i>Sair</a>
-        </div>
-    </nav>
+    <?php
+    $path_prefix = '../../';
+    include '../../components/navbar.php';
+    ?>
+    <?php include '../../components/toast.php'; ?>
 
-    <main class="flex-1 w-full max-w-3xl mx-auto mt-10 p-4">
-        <!-- Mensagens de feedback -->
-        <?php if (isset($_SESSION['mensagem'])): ?>
-            <div class="mb-6 p-4 rounded-lg <?= $_SESSION['tipo_mensagem'] === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                <div class="flex items-center">
-                    <i class="fas <?= $_SESSION['tipo_mensagem'] === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle' ?> mr-3"></i>
-                    <span><?= htmlspecialchars($_SESSION['mensagem']) ?></span>
+    <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
+        <!-- Cabeçalho da Página -->
+        <div class="mb-8 animate-fade-in">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fa-solid fa-file-medical text-sky-500"></i>
+                        Ficha de Atendimento
+                    </h1>
+                    <p class="text-slate-500 mt-1">Detalhes completos do atendimento do pet.</p>
                 </div>
-                <?php unset($_SESSION['mensagem']); unset($_SESSION['tipo_mensagem']); ?>
+                <div class="flex items-center gap-2">
+                    <form action="gerar_pdf_ficha.php" method="POST" target="_blank">
+                        <input type="hidden" name="agendamento_id" value="<?= $ficha['agendamento_id'] ?>">
+                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-2">
+                            <i class="fas fa-file-pdf"></i> Gerar PDF
+                        </button>
+                    </form>
+                    <a href="../visualizar_pet.php?id=<?= $ficha['pet_id'] ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
             </div>
-        <?php endif; ?>
-
-        <div class="flex justify-end mb-4 gap-2">
-            <button id="btnGerarPDF" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold shadow">
-                <i class="fas fa-file-pdf"></i> Gerar PDF
-            </button>
-            <a href="../visualizar_pet.php?id=<?= $ficha['pet_id'] ?>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold shadow">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </a>
         </div>
 
-        <div id="fichaContent" class="bg-white/90 p-8 rounded-2xl shadow-xl animate-fade-in">
-            <div class="mb-8 text-center">
-                <h1 class="text-2xl font-bold text-blue-700 mb-1 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-file-medical"></i> Ficha do Salão de Beleza
-                </h1>
-                <div class="text-gray-500 text-sm">Hospital Veterinário Lourival Rodrigues</div>
-            </div>
-
+        <div id="fichaContent" class="bg-white p-6 md:p-8 rounded-lg shadow-sm animate-fade-in">
             <!-- DADOS DO TUTOR E PET -->
-            <div class="mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Tutor -->
-                    <div class="bg-blue-50/70 rounded-xl p-4 flex flex-col gap-2 border border-blue-100">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa fa-user text-blue-400"></i>
-                            <span class="font-semibold text-blue-700">Tutor</span>
-                            <span class="ml-2 text-xs text-gray-500">ID: <?= htmlspecialchars($ficha['tutor_id']) ?></span>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Informações do Pet -->
+                <div class="bg-slate-50 p-5 rounded-lg border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-3">
+                        <i class="fa-solid fa-dog text-violet-500"></i> Pet: <?= htmlspecialchars($ficha['pet_nome']); ?>
+                    </h2>
+                    <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                        <div>
+                            <dt class="font-medium text-slate-500">Espécie</dt>
+                            <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($ficha['especie']); ?></dd>
                         </div>
-                        <div class="flex flex-col gap-1">
-                            <div>
-                                <span class="text-gray-500 text-xs">Nome</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['tutor_nome']) ?></div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 text-xs">Telefone</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars(formatarTelefone($ficha['telefone'])) ?></div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 text-xs">E-mail</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['email']) ?></div>
-                            </div>
+                        <div>
+                            <dt class="font-medium text-slate-500">Raça</dt>
+                            <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($ficha['raca']); ?></dd>
                         </div>
-                    </div>
-                    <!-- Pet -->
-                    <div class="bg-blue-50/70 rounded-xl p-4 flex flex-col gap-2 border border-blue-100">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-dog text-blue-400"></i>
-                            <span class="font-semibold text-blue-700">Pet</span>
+                        <div>
+                            <dt class="font-medium text-slate-500">Sexo</dt>
+                            <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($ficha['sexo']); ?></dd>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <span class="text-gray-500 text-xs">Nome</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['pet_nome']) ?></div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 text-xs">Sexo</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['sexo']) ?></div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 text-xs">Espécie</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['especie']) ?></div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 text-xs">Raça</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['raca']) ?></div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 text-xs">Idade</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['idade']) ?></div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 text-xs">Peso</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['peso']) ?> kg</div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 text-xs">Pelagem</span>
-                                <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['pelagem']) ?></div>
-                            </div>
+                        <div>
+                            <dt class="font-medium text-slate-500">Idade</dt>
+                            <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($ficha['idade']); ?> ano(s)</dd>
                         </div>
-                    </div>
+                        <div>
+                            <dt class="font-medium text-slate-500">Peso</dt>
+                            <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($ficha['peso']); ?> kg</dd>
+                        </div>
+                        <div>
+                            <dt class="font-medium text-slate-500">Pelagem</dt>
+                            <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($ficha['pelagem'] ?: 'N/A'); ?></dd>
+                        </div>
+                    </dl>
                 </div>
-            </div>
-
-            <!-- SEPARADOR -->
-            <div class="flex items-center gap-3 my-6">
-                <div class="flex-1 h-px bg-blue-200"></div>
-                <span class="text-blue-400 font-bold text-sm uppercase tracking-widest">Atendimento</span>
-                <div class="flex-1 h-px bg-blue-200"></div>
+                <!-- Informações do Tutor -->
+                <div class="bg-slate-50 p-5 rounded-lg border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-3">
+                        <i class="fa-solid fa-user text-amber-500"></i> Tutor: <?= htmlspecialchars($ficha['tutor_nome']); ?>
+                    </h2>
+                    <dl class="space-y-3 text-sm">
+                        <div>
+                            <dt class="font-medium text-slate-500">Telefone</dt>
+                            <dd class="text-slate-800 font-semibold"><?= htmlspecialchars(formatarTelefone($ficha['telefone'])); ?></dd>
+                        </div>
+                        <div>
+                            <dt class="font-medium text-slate-500">E-mail</dt>
+                            <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($ficha['email']); ?></dd>
+                        </div>
+                        <div>
+                            <dt class="font-medium text-slate-500">Endereço</dt>
+                            <dd class="text-slate-800 font-semibold"><?= montarEndereco($ficha); ?></dd>
+                        </div>
+                    </dl>
+                </div>
             </div>
 
             <!-- INFORMAÇÕES DO ATENDIMENTO -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <span class="text-gray-500 text-xs">Data/Hora</span>
-                    <div class="font-semibold text-gray-700"><?= formatarData($ficha['data_hora']) ?></div>
-                </div>
-                <div>
-                    <span class="text-gray-500 text-xs">Status</span>
+            <div class="bg-slate-50 p-5 rounded-lg border border-slate-200 mb-8">
+                <h2 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-3">
+                    <i class="fa-solid fa-calendar-check text-sky-500"></i> Detalhes do Agendamento
+                </h2>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
                     <div>
-                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white
-                            <?= $ficha['status'] == 'Pendente' ? 'bg-yellow-500' : 
-                               ($ficha['status'] == 'Em Atendimento' ? 'bg-blue-500' : 
-                               ($ficha['status'] == 'Finalizado' ? 'bg-green-500' : 
-                               ($ficha['status'] == 'Cancelado' ? 'bg-red-500' : 'bg-gray-500'))); ?>">
-                            <?= htmlspecialchars($ficha['status']) ?>
-                        </span>
+                        <dt class="font-medium text-slate-500">Data/Hora</dt>
+                        <dd class="text-slate-800 font-semibold"><?= formatarData($ficha['data_hora']) ?></dd>
                     </div>
-                </div>
-                <div>
-                    <span class="text-gray-500 text-xs">Serviços</span>
-                    <div class="font-semibold text-gray-700">
+                    <div>
+                        <dt class="font-medium text-slate-500">Status</dt>
+                        <dd>
+                            <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold
+                                <?= $ficha['status'] == 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 
+                                   ($ficha['status'] == 'Em Atendimento' ? 'bg-blue-100 text-blue-800' : 
+                                   ($ficha['status'] == 'Finalizado' ? 'bg-green-100 text-green-800' : 
+                                   ($ficha['status'] == 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800'))); ?>">
+                                <?= htmlspecialchars($ficha['status']) ?>
+                            </span>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Serviços Solicitados</dt>
+                        <dd class="text-slate-800 font-semibold">
                         <?php
                         // Buscar todos os serviços do agendamento (usando o grupo do banco)
                         $stmtServicosAgendamento = $pdo->prepare("
@@ -275,29 +252,30 @@ function formatarData($data, $formato = 'd/m/Y H:i') {
                             echo 'Nenhum serviço';
                         }
                         ?>
+                        </dd>
                     </div>
-                </div>
-                <div>
-                    <span class="text-gray-500 text-xs">Atendido por</span>
-                    <div class="font-semibold text-gray-700"><?= htmlspecialchars($ficha['funcionario_nome'] ?? 'N/A') ?></div>
-                </div>
-                <div>
-                    <span class="text-gray-500 text-xs">Data do atendimento</span>
-                    <div class="font-semibold text-gray-700"><?= formatarData($ficha['data_preenchimento'] ?? '') ?></div>
-                </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Atendido por</dt>
+                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($ficha['funcionario_nome'] ?? 'N/A') ?></dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Data do atendimento</dt>
+                        <dd class="text-slate-800 font-semibold"><?= formatarData($ficha['data_preenchimento'] ?? '') ?></dd>
+                    </div>
+                    <div class="col-span-full">
+                        <dt class="font-medium text-slate-500">Observações do Agendamento</dt>
+                        <dd class="text-slate-800 font-semibold whitespace-pre-wrap"><?= htmlspecialchars($ficha['obs_agendamento'] ?: 'Nenhuma observação.') ?></dd>
+                    </div>
+                </dl>
             </div>
 
-            <!-- SEPARADOR -->
-            <div class="flex items-center gap-3 my-6">
-                <div class="flex-1 h-px bg-blue-200"></div>
-                <span class="text-blue-400 font-bold text-sm uppercase tracking-widest">Observações Visuais</span>
-                <div class="flex-1 h-px bg-blue-200"></div>
-            </div>
-
-            <!-- OBSERVAÇÕES VISUAIS -->
-            <div class="mb-6">
+            <!-- Observações Visuais -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in mb-8">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-eye text-sky-500"></i> Avaliação Visual
+                </h2>
                 <?php if (!empty($observacoes)): ?>
-                    <ul class="list-disc pl-6">
+                    <ul class="list-disc list-inside pl-2 text-slate-700">
                         <?php foreach ($observacoes as $obs): ?>
                             <li>
                                 <?= htmlspecialchars($obs['descricao']) ?>
@@ -308,21 +286,17 @@ function formatarData($data, $formato = 'd/m/Y H:i') {
                         <?php endforeach; ?>
                     </ul>
                 <?php else: ?>
-                    <p class="text-gray-500">Nenhuma observação visual registrada.</p>
+                    <div class="text-slate-500 text-center py-4 border-2 border-dashed rounded-lg">Nenhuma observação visual registrada.</div>
                 <?php endif; ?>
             </div>
 
-            <!-- SEPARADOR -->
-            <div class="flex items-center gap-3 my-6">
-                <div class="flex-1 h-px bg-blue-200"></div>
-                <span class="text-blue-400 font-bold text-sm uppercase tracking-widest">Serviços Realizados</span>
-                <div class="flex-1 h-px bg-blue-200"></div>
-            </div>
-
             <!-- SERVIÇOS REALIZADOS agrupados -->
-            <div class="mb-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in mb-8">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-scissors text-green-500"></i> Serviços Realizados
+                </h2>
                 <?php if (!empty($servicos)): ?>
-                    <ul class="list-disc pl-6">
+                    <ul class="list-disc list-inside pl-2 text-slate-700">
                         <?php
                         // Agrupar serviços iguais e juntar detalhes extras
                         $servicosAgrupados = [];
@@ -346,52 +320,42 @@ function formatarData($data, $formato = 'd/m/Y H:i') {
                         }
                         ?>
                     </ul>
+                    <?php if (!empty($ficha['altura_pelos'])): ?>
+                        <p class="mt-4 text-slate-700 font-semibold">Cumprimento/altura dos pelos: <span class="font-normal"><?= htmlspecialchars($ficha['altura_pelos']) ?></span></p>
+                    <?php endif; ?>
                 <?php else: ?>
-                    <p class="text-gray-500">Nenhum serviço registrado.</p>
-                <?php endif; ?>
-                <?php if (!empty($ficha['altura_pelos'])): ?>
-                    <p class="mt-2"><strong>Cumprimento/altura dos pelos:</strong> <?= htmlspecialchars($ficha['altura_pelos']) ?></p>
+                    <div class="text-slate-500 text-center py-4 border-2 border-dashed rounded-lg">Nenhum serviço registrado.</div>
                 <?php endif; ?>
             </div>
 
-            <!-- SEPARADOR -->
-            <div class="flex items-center gap-3 my-6">
-                <div class="flex-1 h-px bg-blue-200"></div>
-                <span class="text-blue-400 font-bold text-sm uppercase tracking-widest">Saúde e Observações</span>
-                <div class="flex-1 h-px bg-blue-200"></div>
-            </div>
-
-            <!-- INFORMAÇÕES DE SAÚDE -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <span class="text-gray-500 text-xs">Doença Pré-Existente</span>
-                    <div class="font-semibold text-gray-700"><?= !empty($ficha['doenca_pre_existente']) ? htmlspecialchars($ficha['doenca_pre_existente']) : 'Nenhuma' ?></div>
-                </div>
-                <div>
-                    <span class="text-gray-500 text-xs">Doença Canal Auditivo/Otite</span>
-                    <div class="font-semibold text-gray-700"><?= !empty($ficha['doenca_ouvido']) ? htmlspecialchars($ficha['doenca_ouvido']) : 'Nenhuma' ?></div>
-                </div>
-                <div>
-                    <span class="text-gray-500 text-xs">Doença de Pele</span>
-                    <div class="font-semibold text-gray-700"><?= !empty($ficha['doenca_pele']) ? htmlspecialchars($ficha['doenca_pele']) : 'Nenhuma' ?></div>
-                </div>
-            </div>
-            <div class="mt-4">
-                <span class="text-gray-500 text-xs">Observações Adicionais</span>
-                <div class="font-semibold text-gray-700"><?= !empty($ficha['observacoes']) ? nl2br(htmlspecialchars($ficha['observacoes'])) : 'Nenhuma' ?></div>
-            </div>
-
-            <div class="mt-8 text-center text-xs text-gray-400">
-                Av. Dr. Edilberto Frota, 1103 - Fatima II – Crateús/CE – CEP: 63702-030<br>
-                Celular/WhatsApp: (88) 9.9673-1101
+            <!-- Saúde e Observações -->
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in mb-8">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-heart-pulse text-red-500"></i> Saúde e Observações
+                </h2>
+                <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+                    <div>
+                        <dt class="font-medium text-slate-500">Doença Pré-Existente</dt>
+                        <dd class="text-slate-800 font-semibold"><?= !empty($ficha['doenca_pre_existente']) ? htmlspecialchars($ficha['doenca_pre_existente']) : 'Nenhuma' ?></dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Doença Canal Auditivo/Otite</dt>
+                        <dd class="text-slate-800 font-semibold"><?= !empty($ficha['doenca_ouvido']) ? htmlspecialchars($ficha['doenca_ouvido']) : 'Nenhuma' ?></dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-500">Doença de Pele</dt>
+                        <dd class="text-slate-800 font-semibold"><?= !empty($ficha['doenca_pele']) ? htmlspecialchars($ficha['doenca_pele']) : 'Nenhuma' ?></dd>
+                    </div>
+                    <div class="col-span-full">
+                        <dt class="font-medium text-slate-500">Observações Adicionais</dt>
+                        <dd class="text-slate-800 font-semibold whitespace-pre-wrap"><?= !empty($ficha['observacoes']) ? nl2br(htmlspecialchars($ficha['observacoes'])) : 'Nenhuma' ?></dd>
+                    </div>
+                </dl>
             </div>
         </div>
     </main>
 
-    <footer class="w-full py-3 bg-white/80 text-center text-gray-400 text-xs mt-8">
-        &copy; 2025 HVTPETSHOP. Todos os direitos reservados.
-    </footer>
-
+    <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(30px);}
@@ -403,39 +367,6 @@ function formatarData($data, $formato = 'd/m/Y H:i') {
     </style>
 
     <script>
-    document.getElementById('btnGerarPDF').addEventListener('click', function() {
-        const { jsPDF } = window.jspdf;
-        const element = document.getElementById('fichaContent');
-        const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Gerando PDF...';
-        this.disabled = true;
-
-        html2canvas(element, {
-            scale: 2,
-            logging: false,
-            useCORS: true
-        }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const imgProps = pdf.getImageProperties(imgData);
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-            let position = 10;
-            pdf.setFontSize(16);
-            pdf.text('Ficha do Petshop - HVTPETSHOP', pdfWidth / 2, position, { align: 'center' });
-            position += 6;
-
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-            pdf.save('ficha_petshop_<?= $ficha['pet_nome'] ?>_<?= date('Ymd') ?>.pdf');
-            this.innerHTML = originalText;
-            this.disabled = false;
-        }).catch(err => {
-            alert('Erro ao gerar PDF: ' + err.message);
-            this.innerHTML = originalText;
-            this.disabled = false;
-        });
-    });
     </script>
 </body>
 </html>
