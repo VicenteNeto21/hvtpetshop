@@ -285,7 +285,9 @@ function formatarTelefone($telefone) {
                         </div>
                         <div>
                             <label for="horario" class="block text-sm font-medium text-slate-600 mb-1">Horário</label>
-                            <input type="time" name="horario" id="horario" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= date('H:i', strtotime($agendamento['data_hora'])) ?>" required>
+                            <select name="horario" id="horario" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="<?= date('H:i', strtotime($agendamento['data_hora'])) ?>"><?= date('H:i', strtotime($agendamento['data_hora'])) ?></option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -423,6 +425,46 @@ function formatarTelefone($telefone) {
             animation: fade-in 0.8s ease;
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dataInput = document.getElementById('data');
+            const horarioSelect = document.getElementById('horario');
+            const agendamentoId = <?= $agendamentoId ?>;
+            const horarioOriginal = '<?= date('H:i', strtotime($agendamento['data_hora'])) ?>';
+
+            function buscarHorariosDisponiveis() {
+                const data = dataInput.value;
+                if (!data) {
+                    horarioSelect.innerHTML = '<option value="">Selecione uma data</option>';
+                    return;
+                }
+
+                horarioSelect.innerHTML = '<option value="">Carregando...</option>';
+                horarioSelect.disabled = true;
+
+                fetch(`buscar_horarios_disponiveis.php?data=${data}&agendamento_id=${agendamentoId}`)
+                    .then(response => response.json())
+                    .then(horarios => {
+                        horarioSelect.innerHTML = '';
+                        
+                        // Adiciona o horário original como opção, caso não esteja na lista de disponíveis
+                        if (!horarios.includes(horarioOriginal)) {
+                             horarios.push(horarioOriginal);
+                             horarios.sort();
+                        }
+
+                        horarios.forEach(horario => {
+                            const selected = (horario === horarioOriginal) ? 'selected' : '';
+                            horarioSelect.innerHTML += `<option value="${horario}" ${selected}>${horario}</option>`;
+                        });
+                        horarioSelect.disabled = false;
+                    });
+            }
+
+            dataInput.addEventListener('change', buscarHorariosDisponiveis);
+            buscarHorariosDisponiveis(); // Busca os horários ao carregar a página
+        });
+    </script>
 </body>
 </html>
 
