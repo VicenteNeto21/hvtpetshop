@@ -283,13 +283,16 @@ $totalPaginas = ceil($totalAgendamentos / $agendamentosPorPagina);
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-center gap-2">
-                                            <a href="agendamentos/visualizar_ficha.php?id=<?= $agendamento['id'] ?>"
-                                               class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Visualizar Ficha">
+                                            <a href="agendamentos/visualizar_ficha.php?id=<?= $agendamento['id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Visualizar Ficha">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="agendamentos/editar_agendamento.php?id=<?= $agendamento['id'] ?>"
-                                               class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Editar">
-                                                <i class="fas fa-edit"></i>
+                                            <?php if ($agendamento['status'] == 'Pendente' || $agendamento['status'] == 'Em Atendimento') : ?>
+                                                <a href="agendamentos/reiditar_agendamento.php?id=<?= $agendamento['id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-sky-600 hover:bg-sky-100 hover:text-sky-800 transition" title="Editar Agendamento">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                            <a href="agendamentos/ficha_atendimento.php?id=<?= $agendamento['id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha">
+                                                <i class="fas fa-file-alt"></i>
                                             </a>
                                             <?php if ($agendamento['status'] == 'Pendente') : ?>
                                                 <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'agendamentos/cancelar_agendamento_action.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar">

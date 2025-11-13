@@ -9,7 +9,7 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 
 // Controle do aviso de funcionalidades por versão
-$versao_atual_aviso = '1.1.0';
+$versao_atual_aviso = '1.1.4';
 
 // Garante que a versão vista esteja na sessão, buscando do DB se necessário
 if (isset($_SESSION['usuario_id']) && !isset($_SESSION['aviso_visto_versao'])) {
@@ -130,17 +130,16 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
             <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fa-solid fa-star text-amber-500 text-3xl"></i>
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Bem-vindo à Versão 1.1.0!</h2>
-                        <p class="text-slate-500">O sistema CereniaPet está mais completo e estável.</p>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-bold text-slate-800">Novidades da Versão 1.1.4!</h2>
+                        <p class="text-slate-500">O sistema está mais rápido e inteligente.</p>
                     </div>
                 </div>
                 <ul class="space-y-2 text-slate-600 list-disc list-inside pl-2">
-                    <li><strong>Dashboard Inteligente:</strong> Navegue pela agenda, veja aniversariantes e tenha acesso rápido a tudo.</li>
-                    <li><strong>Gestão Completa:</strong> Cadastre e gerencie tutores e pets com históricos detalhados.</li>
-                    <li><strong>Fichas de Atendimento Profissionais:</strong> Registre todos os detalhes do serviço, da saúde ao comportamento do pet.</li>
-                    <li><strong>Geração de PDF:</strong> Exporte fichas de atendimento completas com um clique.</li>
-                    <li><strong>Nova Identidade:</strong> O sistema agora se chama oficialmente <strong>CereniaPet</strong>.</li>
+                    <li><strong>Paginação e Busca Dinâmica:</strong> As listas de tutores e pets agora são paginadas e contam com busca em tempo real, tornando a navegação mais rápida.</li>
+                    <li><strong>Edição Rápida de Agendamentos:</strong> Adicionado um novo botão para reeditar serviços de um agendamento em andamento sem precisar finalizá-lo.</li>
+                    <li><strong>Horários Inteligentes:</strong> O formulário de agendamento agora mostra apenas os horários disponíveis para a data selecionada, evitando conflitos.</li>
+                    <li><strong>Melhorias de Usabilidade:</strong> Aumentamos o tamanho dos botões de ação nas tabelas para facilitar o uso em dispositivos móveis.</li>
                 </ul>
                 <div class="flex flex-col items-center mt-6">
                     <button onclick="fecharAvisoNovidades()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition">Ok, entendi!</button>
@@ -248,10 +247,11 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                                         <td class="px-4 py-4 text-center">
                                             <div class="flex items-center justify-center gap-3">
                                                 <?php if ($ag['status'] == 'Pendente'): ?>
-                                                    <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Iniciar Atendimento"><i class="fas fa-play-circle fa-lg"></i></button>
+                                                    <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Iniciar Atendimento"><i class="fas fa-play-circle fa-lg"></i></button>
+                                                    <a href="./pets/agendamentos/reiditar_agendamento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Editar Agendamento"><i class="fas fa-pencil-alt"></i></a>
                                                     <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&pet_id=<?= $ag['pet_id'] ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar"><i class="fas fa-times-circle fa-lg"></i></a>
                                                 <?php elseif ($ag['status'] == 'Em Atendimento'): ?>
-                                                    <a href="./pets/agendamentos/editar_agendamento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha"><i class="fas fa-file-alt fa-lg"></i></a>
+                                                    <a href="./pets/agendamentos/ficha_atendimento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha"><i class="fas fa-file-alt fa-lg"></i></a>
                                                 <?php elseif ($ag['status'] == 'Finalizado'): ?>
                                                     <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Visualizar Ficha"><i class="fas fa-eye fa-lg"></i></a>
                                                 <?php else: ?>
@@ -318,6 +318,11 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Paginação para Pets -->
+                <div id="pets-pagination-container" class="flex justify-center mt-6 pt-4 border-t border-slate-200">
+                    <!-- Links da paginação carregados via AJAX -->
+                </div>
             </div>
         </div>
     </main>
@@ -341,27 +346,37 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
             const petsTbody = document.getElementById('pets-tbody');
+            const petsPaginationContainer = document.getElementById('pets-pagination-container');
+            let currentPetPage = 1;
 
-            function buscarPets(termo = '') {
+            function buscarPets(termo, pagina = 1) {
+                currentPetPage = pagina;
+                if (termo === undefined) {
+                    termo = searchInput.value;
+                }
+
                 // Adiciona um efeito de loading
                 petsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando...</td></tr>';
+                petsPaginationContainer.innerHTML = '';
 
-                fetch(`pets/buscar_pets.php?search=${encodeURIComponent(termo)}`)
-                    .then(response => response.text())
+                fetch(`pets/buscar_pets.php?search=${encodeURIComponent(termo)}&pagina=${pagina}`)
+                    .then(response => response.json())
                     .then(data => {
-                        petsTbody.innerHTML = data;
+                        petsTbody.innerHTML = data.tableContent;
+                        petsPaginationContainer.innerHTML = data.paginationContent;
                     })
                     .catch(error => {
                         console.error('Erro ao buscar pets:', error);
                         petsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Erro ao carregar os dados.</td></tr>';
                     });
             }
+            window.buscarPets = buscarPets; // Torna a função global
 
             // Busca inicial ao carregar a página
             buscarPets(searchInput.value);
 
             // Busca ao digitar
-            searchInput.addEventListener('keyup', () => buscarPets(searchInput.value));
+            searchInput.addEventListener('keyup', () => buscarPets(searchInput.value, 1));
 
             // Função para atualizar status do agendamento via AJAX
             window.updateAgendamentoStatus = function(agendamentoId, newStatus) {

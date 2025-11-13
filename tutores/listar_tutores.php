@@ -7,41 +7,6 @@ if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../login.html");
     exit();
 }
-
-// Busca todos os tutores e a quantidade de pets de cada um
-$busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
-$params = [];
-$sql = "
-    SELECT t.id, t.nome, t.email, t.telefone, COUNT(p.id) as total_pets
-    FROM tutores t
-    LEFT JOIN pets p ON p.tutor_id = t.id
-";
-if ($busca !== '') {
-    $sql .= " WHERE t.nome LIKE :busca OR t.email LIKE :busca OR t.telefone LIKE :busca ";
-    $params[':busca'] = "%$busca%";
-}
-$sql .= " GROUP BY t.id, t.nome, t.email, t.telefone ORDER BY t.nome";
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$tutores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Função para formatar telefone
-function formatarTelefone($telefone) {
-    $telefone = preg_replace('/[^0-9]/', '', $telefone);
-    if (strlen($telefone) === 11) {
-        return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $telefone);
-    } elseif (strlen($telefone) === 10) {
-        return preg_replace('/(\d{2})(\d{4})(\d{4})/', '($1) $2-$3', $telefone);
-    }
-    return $telefone;
-}
-
-// Função para buscar pets do tutor
-function buscarPets($pdo, $tutor_id) {
-    $stmt = $pdo->prepare("SELECT id, nome, especie, raca FROM pets WHERE tutor_id = ?");
-    $stmt->execute([$tutor_id]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
 ?>
 
 <!DOCTYPE html>
@@ -79,56 +44,36 @@ function buscarPets($pdo, $tutor_id) {
                 </h2>
                 <div class="flex items-center gap-4 w-full md:w-auto">
                     <!-- Busca -->
-                    <form method="get" class="relative w-full md:w-auto md:max-w-xs flex-grow">
-                        <input type="text" name="busca" value="<?= htmlspecialchars($busca) ?>" placeholder="Pesquisar tutor..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm" />
+                    <div class="relative w-full md:w-auto md:max-w-xs flex-grow">
+                        <input type="text" id="buscaInput" placeholder="Pesquisar tutor..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm" />
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    </form>
+                    </div>
                     <a href="cadastrar_tutor.php" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition flex items-center gap-2 text-sm whitespace-nowrap">
                         <i class="fa fa-plus"></i> Novo Tutor
                     </a>
                 </div>
             </div>
 
-            <?php if (empty($tutores)): ?>
-                <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum tutor encontrado com os filtros atuais.</div>
-            <?php else: ?>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead class="border-b-2 border-slate-200">
-                            <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Contato</th>
-                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Pets</th>
-                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <?php foreach ($tutores as $tutor): ?>
-                                <tr class="hover:bg-slate-50 group cursor-pointer" onclick="window.location='visualizar_tutor.php?id=<?= $tutor['id']; ?>'">
-                                    <td class="px-4 py-4 font-semibold text-slate-800 whitespace-nowrap">
-                                        <?= htmlspecialchars($tutor['nome']) ?>
-                                    </td>
-                                    <td class="px-4 py-4" onclick="event.stopPropagation();">
-                                        <div class="flex flex-col">
-                                            <span class="text-slate-600"><?= htmlspecialchars($tutor['email']) ?></span>
-                                            <span class="text-slate-500 text-xs"><?= htmlspecialchars(formatarTelefone($tutor['telefone'])) ?></span>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4 text-center text-slate-500">
-                                        <?= $tutor['total_pets'] ?>
-                                    </td>
-                                    <td class="px-4 py-4" onclick="event.stopPropagation();">
-                                        <div class="flex items-center justify-center gap-4">
-                                            <a href="editar_tutor.php?id=<?= $tutor['id']; ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Editar Tutor"><i class="fas fa-edit"></i></a>
-                                            <a href="javascript:void(0);" onclick="openConfirmationModal('Excluir Tutor', 'Tem certeza que deseja excluir o tutor \'<?= htmlspecialchars($tutor['nome'], ENT_QUOTES) ?>\'? Todos os pets e agendamentos associados também serão removidos. Esta ação não pode ser desfeita.', 'excluir_tutor.php?id=<?= $tutor['id']; ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Excluir Tutor"><i class="fas fa-trash"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="border-b-2 border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Contato</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Pets</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tutors-tbody" class="divide-y divide-slate-100">
+                        <!-- Conteúdo carregado via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            <div id="pagination-container" class="flex justify-center mt-6 pt-4 border-t border-slate-200">
+                <!-- Links da paginação carregados via AJAX -->
+            </div>
         </div>
     </main>
 
@@ -142,5 +87,42 @@ function buscarPets($pdo, $tutor_id) {
             animation: fade-in 0.8s ease;
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buscaInput = document.getElementById('buscaInput');
+            const tutorsTbody = document.getElementById('tutors-tbody');
+            const paginationContainer = document.getElementById('pagination-container');
+            let currentPage = 1;
+
+            function buscarTutores(termo = '', pagina = 1) {
+                currentPage = pagina;
+                // Efeito de loading
+                tutorsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando...</td></tr>';
+                paginationContainer.innerHTML = '';
+
+                fetch(`buscar_tutores.php?busca=${encodeURIComponent(termo)}&pagina=${pagina}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        tutorsTbody.innerHTML = data.tableContent;
+                        paginationContainer.innerHTML = data.paginationContent;
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar tutores:', error);
+                        tutorsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Erro ao carregar os dados.</td></tr>';
+                    });
+            }
+
+            // Busca inicial
+            buscarTutores();
+
+            // Busca ao digitar
+            buscaInput.addEventListener('keyup', () => {
+                buscarTutores(buscaInput.value, 1); // Sempre volta para a página 1 ao pesquisar
+            });
+
+            // Torna a função acessível globalmente para os botões de paginação
+            window.buscarTutores = buscarTutores;
+        });
+    </script>
 </body>
 </html>
