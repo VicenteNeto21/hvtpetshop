@@ -177,8 +177,8 @@ function montarEndereco($tutor) {
                                         <td class="px-4 py-4 text-slate-600 whitespace-nowrap"><?= htmlspecialchars($pet['raca']) ?></td>
                                         <td class="px-4 py-4 text-center" onclick="event.stopPropagation();">
                                             <div class="flex items-center justify-center gap-4">
-                                                <a href="../pets/editar_pet.php?id=<?= $pet['id'] ?>" class="text-amber-600 hover:text-amber-800" title="Editar Pet"><i class="fas fa-edit"></i></a>
-                                                <a href="../pets/agendamentos/agendar_servico.php?pet_id=<?= $pet['id'] ?>" class="text-blue-600 hover:text-blue-800" title="Agendar Serviço"><i class="fas fa-calendar-plus"></i></a>
+                                                <a href="../pets/editar_pet.php?id=<?= $pet['id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Editar Pet"><i class="fas fa-edit"></i></a>
+                                                <a href="../pets/agendamentos/agendar_servico.php?pet_id=<?= $pet['id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Agendar Serviço"><i class="fas fa-calendar-plus"></i></a>
                                             </div>
                                         </td>
                                     </tr>

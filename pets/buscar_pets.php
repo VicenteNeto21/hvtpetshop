@@ -36,13 +36,13 @@ if (empty($pets)) {
         echo '    <td class="px-4 py-4 text-slate-500 whitespace-nowrap cursor-pointer" onclick="window.location=\'pets/visualizar_pet.php?id=' . $pet['id'] . '\'">' . htmlspecialchars($pet['tutor']) . '</td>';
         echo '    <td class="px-4 py-4">';
         echo '        <div class="flex items-center justify-center gap-3">';
-        echo '            <a href="pets/editar_pet.php?id=' . $pet['id'] . '" class="text-amber-600 hover:text-amber-800" title="Editar">';
+        echo '            <a href="pets/editar_pet.php?id=' . $pet['id'] . '" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Editar">';
         echo '                <i class="fas fa-edit"></i>';
         echo '            </a>';
-        echo '            <a href="pets/agendamentos/agendar_servico.php?pet_id=' . $pet['id'] . '" class="text-blue-600 hover:text-blue-800" title="Agendar Serviço">';
+        echo '            <a href="pets/agendamentos/agendar_servico.php?pet_id=' . $pet['id'] . '" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Agendar Serviço">';
         echo '                <i class="fas fa-calendar-plus"></i>';
         echo '            </a>';
-        echo '            <a href="javascript:void(0);" onclick="openConfirmationModal(\'Excluir Pet\', \'Tem certeza que deseja excluir o pet \\\'' . htmlspecialchars($pet['nome'], ENT_QUOTES) . '\\\'? Todos os registros associados serão removidos.\', \'pets/excluir_pet.php?id=' . $pet['id'] . '\', \'Excluir\', \'bg-red-500\', \'hover:bg-red-600\')" class="text-red-600 hover:text-red-800" title="Excluir">';
+        echo '            <a href="javascript:void(0);" onclick="openConfirmationModal(\'Excluir Pet\', \'Tem certeza que deseja excluir o pet \\\'' . htmlspecialchars($pet['nome'], ENT_QUOTES) . '\\\'? Todos os registros associados serão removidos.\', \'pets/excluir_pet.php?id=' . $pet['id'] . '\', \'Excluir\', \'bg-red-500\', \'hover:bg-red-600\')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Excluir">';
         echo '                <i class="fas fa-trash"></i>';
         echo '            </a>';
         echo '        </div>';

@@ -119,8 +119,8 @@ function buscarPets($pdo, $tutor_id) {
                                     </td>
                                     <td class="px-4 py-4" onclick="event.stopPropagation();">
                                         <div class="flex items-center justify-center gap-4">
-                                            <a href="editar_tutor.php?id=<?= $tutor['id']; ?>" class="text-amber-600 hover:text-amber-800" title="Editar Tutor"><i class="fas fa-edit"></i></a>
-                                            <a href="javascript:void(0);" onclick="openConfirmationModal('Excluir Tutor', 'Tem certeza que deseja excluir o tutor \'<?= htmlspecialchars($tutor['nome'], ENT_QUOTES) ?>\'? Todos os pets e agendamentos associados também serão removidos. Esta ação não pode ser desfeita.', 'excluir_tutor.php?id=<?= $tutor['id']; ?>')" class="text-red-600 hover:text-red-800" title="Excluir Tutor"><i class="fas fa-trash"></i></a>
+                                            <a href="editar_tutor.php?id=<?= $tutor['id']; ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Editar Tutor"><i class="fas fa-edit"></i></a>
+                                            <a href="javascript:void(0);" onclick="openConfirmationModal('Excluir Tutor', 'Tem certeza que deseja excluir o tutor \'<?= htmlspecialchars($tutor['nome'], ENT_QUOTES) ?>\'? Todos os pets e agendamentos associados também serão removidos. Esta ação não pode ser desfeita.', 'excluir_tutor.php?id=<?= $tutor['id']; ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Excluir Tutor"><i class="fas fa-trash"></i></a>
                                         </div>
                                     </td>
                                 </tr>

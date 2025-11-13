@@ -55,22 +55,25 @@ $totalAgendamentosHoje = $pdo->query("SELECT COUNT(DISTINCT pet_id, data_hora) F
 $dataSelecionada = isset($_GET['data']) ? $_GET['data'] : date('Y-m-d');
 
 $stmtAgendamentos = $pdo->prepare("
-    SELECT 
-        MIN(agendamento_id) as agendamento_id,
-        pet_id,
-        tutor_id,
-        pet_nome,
-        tutor_nome,
-        DATE_FORMAT(data_hora, '%H:%i') AS horario,
-        GROUP_CONCAT(DISTINCT servico_nome ORDER BY servico_nome SEPARATOR ', ') AS servicos,
+    SELECT
+        MIN(a.id) as agendamento_id,
+        p.id as pet_id,
+        t.id as tutor_id,
+        p.nome as pet_nome,
+        t.nome as tutor_nome,
+        DATE_FORMAT(a.data_hora, '%H:%i') AS horario,
+        GROUP_CONCAT(DISTINCT s.nome ORDER BY s.nome SEPARATOR ', ') AS servicos,
         CASE
-            WHEN SUM(CASE WHEN status_agendamento = 'Em Atendimento' THEN 1 ELSE 0 END) > 0 THEN 'Em Atendimento'
-            WHEN SUM(CASE WHEN status_agendamento = 'Pendente' THEN 1 ELSE 0 END) > 0 THEN 'Pendente'
-            ELSE MIN(status_agendamento)
+            WHEN SUM(CASE WHEN a.status = 'Em Atendimento' THEN 1 ELSE 0 END) > 0 THEN 'Em Atendimento'
+            WHEN SUM(CASE WHEN a.status = 'Pendente' THEN 1 ELSE 0 END) > 0 THEN 'Pendente'
+            ELSE MIN(a.status)
         END AS status
-    FROM view_agendamentos_completos
-    WHERE DATE(data_hora) = :data_selecionada
-    GROUP BY pet_id, tutor_id, pet_nome, tutor_nome, horario
+    FROM agendamentos a
+    JOIN pets p ON a.pet_id = p.id
+    JOIN tutores t ON p.tutor_id = t.id
+    JOIN servicos s ON a.servico_id = s.id
+    WHERE DATE(a.data_hora) = :data_selecionada
+    GROUP BY p.id, t.id, p.nome, t.nome, horario
     ORDER BY horario ASC
 ");
 $stmtAgendamentos->execute([':data_selecionada' => $dataSelecionada]);
@@ -245,14 +248,14 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                                         <td class="px-4 py-4 text-center">
                                             <div class="flex items-center justify-center gap-3">
                                                 <?php if ($ag['status'] == 'Pendente'): ?>
-                                                    <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="text-blue-600 hover:text-blue-800" title="Iniciar Atendimento"><i class="fas fa-play-circle fa-lg"></i></button>
-                                                    <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&pet_id=<?= $ag['pet_id'] ?>')" class="text-red-600 hover:text-red-800" title="Cancelar"><i class="fas fa-times-circle fa-lg"></i></a>
+                                                    <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Iniciar Atendimento"><i class="fas fa-play-circle fa-lg"></i></button>
+                                                    <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&pet_id=<?= $ag['pet_id'] ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar"><i class="fas fa-times-circle fa-lg"></i></a>
                                                 <?php elseif ($ag['status'] == 'Em Atendimento'): ?>
-                                                    <a href="./pets/agendamentos/editar_agendamento.php?id=<?= $ag['agendamento_id'] ?>" class="text-amber-600 hover:text-amber-800" title="Preencher Ficha"><i class="fas fa-file-alt fa-lg"></i></a>
+                                                    <a href="./pets/agendamentos/editar_agendamento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha"><i class="fas fa-file-alt fa-lg"></i></a>
                                                 <?php elseif ($ag['status'] == 'Finalizado'): ?>
-                                                    <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="text-green-600 hover:text-green-800" title="Visualizar Ficha"><i class="fas fa-eye fa-lg"></i></a>
+                                                    <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Visualizar Ficha"><i class="fas fa-eye fa-lg"></i></a>
                                                 <?php else: ?>
-                                                    <span class="text-slate-400" title="Agendamento Cancelado"><i class="fas fa-ban fa-lg"></i></span>
+                                                    <span class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400" title="Agendamento Cancelado"><i class="fas fa-ban fa-lg"></i></span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>

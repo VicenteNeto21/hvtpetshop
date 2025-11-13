@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - HVTPETSHOP</title>
+    <title>Login - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="./icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,7 +25,7 @@
     <main class="w-full max-w-sm bg-white/90 rounded-2xl shadow-xl p-8 animate-fade-in">
         <div class="flex flex-col items-center mb-6">
             <img src="./icons/pet.jpg" alt="Logo Petshop" class="w-14 h-14 rounded-full shadow mb-2">
-            <h2 class="text-2xl font-bold text-blue-700">Entrar no sistema</h2>
+            <h2 class="text-2xl font-bold text-slate-800">Entrar no CereniaPet</h2>
         </div>
 
         <div id="msg" class="hidden text-center text-sm font-semibold p-3 rounded-lg"></div>
@@ -36,7 +36,7 @@
                 <div class="relative">
                     <i class="fa fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="email" name="email" id="email" placeholder="E-mail" required
-                        class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition text-gray-700 bg-white">
+                        class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-gray-700 bg-white">
                 </div>
                 <span id="erroEmail" class="text-red-500 text-xs hidden mt-1"></span>
             </div>
@@ -45,7 +45,7 @@
                 <div class="relative">
                     <i class="fa fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="password" name="senha" id="senha" placeholder="Senha" required
-                        class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition text-gray-700 bg-white">
+                        class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-gray-700 bg-white">
                     <i class="fa fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" id="toggleSenha"></i>
                 </div>
                 <span id="erroSenha" class="text-red-500 text-xs hidden mt-1"></span>
@@ -53,7 +53,7 @@
             <button type="submit" id="submitButton"
                 class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg shadow transition-transform hover:scale-105">
                 <span id="buttonText">Entrar</span>
-                <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg id="loadingSpinner" class="animate-spin mx-auto h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -66,7 +66,7 @@
         </p>
 
         <div class="mt-6 text-center">
-            <a href="index.html" class="text-blue-400 hover:text-blue-700 font-semibold text-sm underline transition">← Voltar para Home</a>
+            <a href="index.html" class="text-slate-500 hover:text-blue-600 font-semibold text-sm underline transition">← Voltar para Home</a>
         </div>
     </main>
 

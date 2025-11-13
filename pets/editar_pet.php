@@ -41,14 +41,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nome_pet = $_POST['nome'];
     $especie = $_POST['especie'];
     $raca = $_POST['raca'];
-    $idade = $_POST['idade'];
+    $nascimento = !empty($_POST['nascimento']) ? $_POST['nascimento'] : null;
     $sexo = $_POST['sexo'];
-    $peso = $_POST['peso'];
+    $peso = !empty($_POST['peso']) ? $_POST['peso'] : null;
     $pelagem = $_POST['pelagem'];
     $observacoes = isset($_POST['observacoes']) ? $_POST['observacoes'] : null;
 
     try {
         $pdo->beginTransaction();
+
+        // Calcula a idade a partir da data de nascimento para salvar no banco
+        $idade = $nascimento ? (new DateTime($nascimento))->diff(new DateTime())->y : ($pet['idade'] ?? 0);
 
         // Atualiza tutor
         $sql_tutor = "UPDATE tutores SET nome = ?, telefone = ? WHERE id = ?";
@@ -56,9 +59,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_tutor->execute([$nome_tutor, $telefone_tutor, $pet['tutor_id']]);
 
         // Atualiza pet
-        $sql_pet = "UPDATE pets SET nome = ?, especie = ?, raca = ?, idade = ?, sexo = ?, peso = ?, pelagem = ?, observacoes = ? WHERE id = ?";
+        $sql_pet = "UPDATE pets SET nome = ?, especie = ?, raca = ?, nascimento = ?, idade = ?, sexo = ?, peso = ?, pelagem = ?, observacoes = ? WHERE id = ?";
         $stmt_pet = $pdo->prepare($sql_pet);
-        $stmt_pet->execute([$nome_pet, $especie, $raca, $idade, $sexo, $peso, $pelagem, $observacoes, $petId]);
+        $stmt_pet->execute([$nome_pet, $especie, $raca, $nascimento, $idade, $sexo, $peso, $pelagem, $observacoes, $petId]);
 
         $pdo->commit();
 
@@ -140,7 +143,7 @@ function formatarTelefone($telefone) {
                         <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 flex items-center gap-3">
                             <i class="fa-solid fa-dog text-violet-500"></i> Informações do Pet
                         </h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                                 <label for="nome" class="block text-sm font-medium text-slate-600 mb-1">Nome do Pet *</label>
                                 <input type="text" name="nome" id="nome" required 
@@ -161,20 +164,20 @@ function formatarTelefone($telefone) {
                                        value="<?= htmlspecialchars($pet['especie']); ?>">
                             </div>
                             <div>
-                                <label for="raca" class="block text-sm font-medium text-slate-600 mb-1">Raça *</label>
-                                <input type="text" name="raca" id="raca" required
+                                <label for="raca" class="block text-sm font-medium text-slate-600 mb-1">Raça</label>
+                                <input type="text" name="raca" id="raca"
                                        class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
                                        value="<?= htmlspecialchars($pet['raca']); ?>">
                             </div>
                             <div>
-                                <label for="idade" class="block text-sm font-medium text-slate-600 mb-1">Idade *</label>
-                                <input type="number" name="idade" id="idade" min="0" required
+                                <label for="nascimento" class="block text-sm font-medium text-slate-600 mb-1">Data de Nascimento</label>
+                                <input type="date" name="nascimento" id="nascimento"
                                        class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
-                                       value="<?= htmlspecialchars($pet['idade']); ?>">
+                                       value="<?= htmlspecialchars($pet['nascimento'] ?? ''); ?>">
                             </div>
                             <div>
-                                <label for="peso" class="block text-sm font-medium text-slate-600 mb-1">Peso (kg) *</label>
-                                <input type="number" name="peso" id="peso" min="0" step="0.01" required
+                                <label for="peso" class="block text-sm font-medium text-slate-600 mb-1">Peso (kg)</label>
+                                <input type="number" name="peso" id="peso" min="0" step="0.01"
                                        class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
                                        value="<?= htmlspecialchars($pet['peso']); ?>">
                             </div>
@@ -206,11 +209,7 @@ function formatarTelefone($telefone) {
         </div>
     </main>
 
-    <footer class="w-full py-4 text-center text-slate-400 text-xs mt-8">
-        &copy; 2025 HVTPETSHOP. Todos os direitos reservados.<br>
-        <span class="text-[11px]">Versão do sistema: <strong>AMPN 1.0.6</strong></span>
-    </footer>
-
+    <?php include '../components/footer.php'; ?>
     <style>
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(30px);}

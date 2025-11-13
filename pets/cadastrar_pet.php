@@ -12,13 +12,22 @@ if (!isset($_SESSION['usuario_id'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Cadastra o tutor primeiro
     $nome_tutor = $_POST['nome_tutor'];
-    $email_tutor = $_POST['email_tutor'];
+    $email_tutor = !empty($_POST['email_tutor']) ? $_POST['email_tutor'] : null;
     $telefone_tutor = $_POST['telefone_tutor'];    
     $telefone_is_whatsapp = isset($_POST['telefone_is_whatsapp']) ? 'Sim' : 'Não';
 
     try {
         // Inicia transação
         $pdo->beginTransaction();
+
+        // Se um e-mail foi fornecido, verifica se ele já existe
+        if ($email_tutor) {
+            $stmtCheck = $pdo->prepare("SELECT id FROM tutores WHERE email = ?");
+            $stmtCheck->execute([$email_tutor]);
+            if ($stmtCheck->fetch()) {
+                throw new PDOException("Este e-mail já está cadastrado. Tente outro ou deixe o campo em branco.");
+            }
+        }
 
         // Insere o tutor no banco de dados
         $sql_tutor = "INSERT INTO tutores (nome, email, telefone, telefone_is_whatsapp) VALUES (?, ?, ?, ?)";
@@ -105,8 +114,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                        placeholder="Nome completo do Tutor">
                             </div>
                             <div>
-                                <label for="email_tutor" class="block text-sm font-medium text-slate-600 mb-1">E-mail do Tutor *</label>
-                                <input type="email" name="email_tutor" id="email_tutor" required
+                                <label for="email_tutor" class="block text-sm font-medium text-slate-600 mb-1">E-mail do Tutor (Opcional)</label>
+                                <input type="email" name="email_tutor" id="email_tutor"
                                        class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" 
                                        placeholder="email@exemplo.com">
                             </div>
