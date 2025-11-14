@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = $_POST['nome'];
     $telefone = $_POST['telefone'];
     $telefone_is_whatsapp = isset($_POST['telefone_is_whatsapp']) ? 'Sim' : 'Não';
-    $email = $_POST['email'];
+    $email = !empty($_POST['email']) ? $_POST['email'] : null;
     $cep = $_POST['cep'];
     $rua = $_POST['rua'];
     $numero = $_POST['numero'];
@@ -43,13 +43,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cidade = $_POST['cidade'];
     $uf = $_POST['uf'];
 
-    $stmt = $pdo->prepare("UPDATE tutores SET nome = ?, telefone = ?, telefone_is_whatsapp = ?, email = ?, cep = ?, rua = ?, numero = ?, bairro = ?, cidade = ?, uf = ? WHERE id = ?");
-    $stmt->execute([$nome, $telefone, $telefone_is_whatsapp, $email, $cep, $rua, $numero, $bairro, $cidade, $uf, $tutorId]);
+    try {
+        // Se um e-mail foi fornecido, verifica se ele já pertence a outro tutor
+        if ($email) {
+            $stmtCheck = $pdo->prepare("SELECT id FROM tutores WHERE email = ? AND id != ?");
+            $stmtCheck->execute([$email, $tutorId]);
+            if ($stmtCheck->fetch()) {
+                throw new Exception("Este e-mail já está em uso por outro tutor.");
+            }
+        }
 
-    $_SESSION['mensagem'] = "Tutor atualizado com sucesso!";
-    $_SESSION['tipo_mensagem'] = "success";
-    header("Location: listar_tutores.php");
-    exit();
+        $stmt = $pdo->prepare("UPDATE tutores SET nome = ?, telefone = ?, telefone_is_whatsapp = ?, email = ?, cep = ?, rua = ?, numero = ?, bairro = ?, cidade = ?, uf = ? WHERE id = ?");
+        $stmt->execute([$nome, $telefone, $telefone_is_whatsapp, $email, $cep, $rua, $numero, $bairro, $cidade, $uf, $tutorId]);
+
+        $_SESSION['mensagem'] = "Tutor atualizado com sucesso!";
+        $_SESSION['tipo_mensagem'] = "success";
+        header("Location: visualizar_tutor.php?id=" . $tutorId);
+        exit();
+    } catch (Exception $e) {
+        $_SESSION['mensagem'] = "Erro ao atualizar tutor: " . $e->getMessage();
+        $_SESSION['tipo_mensagem'] = "error";
+        header("Location: editar_tutor.php?id=" . $tutorId);
+        exit();
+    }
 }
 ?>
 
@@ -101,8 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1">E-mail *</label>
-                                <input type="email" name="email" value="<?= htmlspecialchars($tutor['email']) ?>" required 
+                                <label class="block text-sm font-medium text-slate-600 mb-1">E-mail (Opcional)</label>
+                                <input type="email" name="email" value="<?= htmlspecialchars($tutor['email'] ?? '') ?>"
                                        class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" placeholder="email@exemplo.com">
                             </div>
                         </div>

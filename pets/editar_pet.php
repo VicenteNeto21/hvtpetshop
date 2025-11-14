@@ -41,14 +41,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nome_pet = $_POST['nome'];
     $especie = $_POST['especie'];
     $raca = $_POST['raca'];
-    $idade = $_POST['idade'];
+    $nascimento = !empty($_POST['nascimento']) ? $_POST['nascimento'] : null;
     $sexo = $_POST['sexo'];
-    $peso = $_POST['peso'];
+    $peso = !empty($_POST['peso']) ? $_POST['peso'] : null;
     $pelagem = $_POST['pelagem'];
     $observacoes = isset($_POST['observacoes']) ? $_POST['observacoes'] : null;
 
     try {
         $pdo->beginTransaction();
+
+        // Calcula a idade a partir da data de nascimento para salvar no banco
+        $idade = $nascimento ? (new DateTime($nascimento))->diff(new DateTime())->y : ($pet['idade'] ?? 0);
 
         // Atualiza tutor
         $sql_tutor = "UPDATE tutores SET nome = ?, telefone = ? WHERE id = ?";
@@ -56,9 +59,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_tutor->execute([$nome_tutor, $telefone_tutor, $pet['tutor_id']]);
 
         // Atualiza pet
-        $sql_pet = "UPDATE pets SET nome = ?, especie = ?, raca = ?, idade = ?, sexo = ?, peso = ?, pelagem = ?, observacoes = ? WHERE id = ?";
+        $sql_pet = "UPDATE pets SET nome = ?, especie = ?, raca = ?, nascimento = ?, idade = ?, sexo = ?, peso = ?, pelagem = ?, observacoes = ? WHERE id = ?";
         $stmt_pet = $pdo->prepare($sql_pet);
-        $stmt_pet->execute([$nome_pet, $especie, $raca, $idade, $sexo, $peso, $pelagem, $observacoes, $petId]);
+        $stmt_pet->execute([$nome_pet, $especie, $raca, $nascimento, $idade, $sexo, $peso, $pelagem, $observacoes, $petId]);
 
         $pdo->commit();
 
@@ -95,6 +98,8 @@ function formatarTelefone($telefone) {
     <title>Editar Pet - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="../icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
@@ -140,7 +145,7 @@ function formatarTelefone($telefone) {
                         <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 flex items-center gap-3">
                             <i class="fa-solid fa-dog text-violet-500"></i> Informações do Pet
                         </h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                                 <label for="nome" class="block text-sm font-medium text-slate-600 mb-1">Nome do Pet *</label>
                                 <input type="text" name="nome" id="nome" required 
@@ -156,25 +161,26 @@ function formatarTelefone($telefone) {
                             </div>
                             <div>
                                 <label for="especie" class="block text-sm font-medium text-slate-600 mb-1">Espécie *</label>
-                                <input type="text" name="especie" id="especie" required
-                                       class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
-                                       value="<?= htmlspecialchars($pet['especie']); ?>">
+                                <select name="especie" id="especie" required class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                                    <option value="Canino" <?= ($pet['especie'] ?? '') == 'Canino' ? 'selected' : '' ?>>Canino</option>
+                                    <option value="Felina" <?= ($pet['especie'] ?? '') == 'Felina' ? 'selected' : '' ?>>Felina</option>
+                                </select>
                             </div>
                             <div>
-                                <label for="raca" class="block text-sm font-medium text-slate-600 mb-1">Raça *</label>
-                                <input type="text" name="raca" id="raca" required
-                                       class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
-                                       value="<?= htmlspecialchars($pet['raca']); ?>">
+                                <label for="raca" class="block text-sm font-medium text-slate-600 mb-1">Raça</label>
+                                <select name="raca" id="raca" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                                    <option value="">Selecione a raça</option>
+                                </select>
                             </div>
                             <div>
-                                <label for="idade" class="block text-sm font-medium text-slate-600 mb-1">Idade *</label>
-                                <input type="number" name="idade" id="idade" min="0" required
+                                <label for="nascimento" class="block text-sm font-medium text-slate-600 mb-1">Data de Nascimento</label>
+                                <input type="date" name="nascimento" id="nascimento"
                                        class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
-                                       value="<?= htmlspecialchars($pet['idade']); ?>">
+                                       value="<?= htmlspecialchars($pet['nascimento'] ?? ''); ?>">
                             </div>
                             <div>
-                                <label for="peso" class="block text-sm font-medium text-slate-600 mb-1">Peso (kg) *</label>
-                                <input type="number" name="peso" id="peso" min="0" step="0.01" required
+                                <label for="peso" class="block text-sm font-medium text-slate-600 mb-1">Peso (kg)</label>
+                                <input type="number" name="peso" id="peso" min="0" step="0.01"
                                        class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
                                        value="<?= htmlspecialchars($pet['peso']); ?>">
                             </div>
@@ -206,11 +212,7 @@ function formatarTelefone($telefone) {
         </div>
     </main>
 
-    <footer class="w-full py-4 text-center text-slate-400 text-xs mt-8">
-        &copy; 2025 HVTPETSHOP. Todos os direitos reservados.<br>
-        <span class="text-[11px]">Versão do sistema: <strong>AMPN 1.0.6</strong></span>
-    </footer>
-
+    <?php include '../components/footer.php'; ?>
     <style>
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(30px);}
@@ -219,7 +221,35 @@ function formatarTelefone($telefone) {
         .animate-fade-in {
             animation: fade-in 0.8s ease;
         }
+        /* Custom styles for Select2 to match Tailwind theme */
+        .select2-container--default .select2-selection--single {
+            background-color: #fff;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            height: 2.75rem; /* Ajustado para p-2 e font-size */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #334155; /* slate-700 */
+            line-height: 1.5rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 2.6rem;
+        }
+        .select_2-container--default.select2-container--open .select2-selection--single {
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); /* ring-2 ring-blue-500 */
+        }
+        .select2-dropdown {
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.375rem; /* rounded-md */
+        }
     </style>
+    <!-- jQuery (necessário para Select2) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
     function mascaraTelefone(input) {
         let v = input.value.replace(/\D/g, '');
@@ -229,6 +259,44 @@ function formatarTelefone($telefone) {
         if (v.length > 10) v = v.slice(0, 10) + '-' + v.slice(10);
         input.value = v;
     }
+
+    $(document).ready(function() {
+        const especieSelect = $('#especie');
+        const racaSelect = $('#raca');
+        const racaAtual = "<?= htmlspecialchars($pet['raca'], ENT_QUOTES) ?>";
+
+        racaSelect.select2({
+            placeholder: "Selecione a raça"
+        });
+
+        let racasData = {};
+
+        function carregarRacas(especieSelecionada) {
+            racaSelect.empty().append('<option value="">Selecione a raça</option>');
+
+            if (especieSelecionada && racasData[especieSelecionada]) {
+                racasData[especieSelecionada].forEach(raca => {
+                    const newOption = new Option(raca, raca, false, raca === racaAtual);
+                    racaSelect.append(newOption);
+                });
+                racaSelect.prop('disabled', false);
+            } else {
+                racaSelect.prop('disabled', true);
+            }
+            racaSelect.trigger('change');
+        }
+
+        // Carrega o JSON e inicializa os campos
+        $.getJSON('../data/racas.json', function(data) {
+            racasData = data;
+            carregarRacas(especieSelect.val());
+        });
+
+        // Adiciona o listener para quando o usuário mudar a espécie
+        especieSelect.on('change', function() {
+            carregarRacas($(this).val());
+        });
+    });
     </script>
 </body>
 </html>

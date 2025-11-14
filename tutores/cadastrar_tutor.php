@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = $_POST['nome'];
     $telefone = $_POST['telefone'];
     $telefone_is_whatsapp = isset($_POST['telefone_is_whatsapp']) ? 'Sim' : 'Não';
-    $email = $_POST['email'];
+    $email = !empty($_POST['email']) ? $_POST['email'] : null;
     $cep = $_POST['cep'] ?? null;
     $rua = $_POST['rua'] ?? null;
     $numero = $_POST['numero'] ?? null;
@@ -22,13 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $uf = $_POST['uf'] ?? null;
 
     // Verifica se o e-mail já existe
-    $stmtCheck = $pdo->prepare("SELECT id FROM tutores WHERE email = ?");
-    $stmtCheck->execute([$email]);
-    if ($stmtCheck->fetch()) {
-        $_SESSION['mensagem'] = "Este e-mail já está cadastrado. Tente outro.";
-        $_SESSION['tipo_mensagem'] = "error";
-        header("Location: cadastrar_tutor.php");
-        exit();
+    if ($email) {
+        $stmtCheck = $pdo->prepare("SELECT id FROM tutores WHERE email = ?");
+        $stmtCheck->execute([$email]);
+        if ($stmtCheck->fetch()) {
+            $_SESSION['mensagem'] = "Este e-mail já está cadastrado. Tente outro ou deixe o campo em branco.";
+            $_SESSION['tipo_mensagem'] = "error";
+            header("Location: cadastrar_tutor.php");
+            exit();
+        }
     }
 
     try {
@@ -103,8 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">E-mail *</label>
-                            <input type="email" name="email" required class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" placeholder="email@exemplo.com">
+                            <label class="block text-sm font-medium text-slate-600 mb-1">E-mail (Opcional)</label>
+                            <input type="email" name="email" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" placeholder="email@exemplo.com">
                         </div>
                     </div>
                 </div>

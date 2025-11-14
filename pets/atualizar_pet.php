@@ -98,6 +98,8 @@ function formatarTelefone($telefone) {
     <title>Editar Pet - HVTPETSHOP</title>
     <link rel="icon" type="image/x-icon" href="../icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
@@ -176,15 +178,17 @@ function formatarTelefone($telefone) {
                     </div>
                     <div>
                         <label for="especie" class="block text-gray-700 mb-1">Espécie *</label>
-                        <input type="text" name="especie" id="especie" required
-                               class="w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                               value="<?= htmlspecialchars($pet['especie']); ?>">
+                        <select name="especie" id="especie" required class="w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="">Selecione</option>
+                            <option value="Canino" <?= ($pet['especie'] ?? '') == 'Canino' ? 'selected' : '' ?>>Canino</option>
+                            <option value="Felina" <?= ($pet['especie'] ?? '') == 'Felina' ? 'selected' : '' ?>>Felina</option>
+                        </select>
                     </div>
                     <div>
                         <label for="raca" class="block text-gray-700 mb-1">Raça *</label>
-                        <input type="text" name="raca" id="raca" required
-                               class="w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                               value="<?= htmlspecialchars($pet['raca']); ?>">
+                        <select name="raca" id="raca" required class="w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="">Selecione a raça</option>
+                        </select>
                     </div>
                     <div>
                         <label for="idade" class="block text-gray-700 mb-1">Idade *</label>
@@ -236,7 +240,34 @@ function formatarTelefone($telefone) {
         .animate-fade-in {
             animation: fade-in 0.8s ease;
         }
+        /* Custom styles for Select2 to match Tailwind theme */
+        .select2-container--default .select2-selection--single {
+            background-color: #fff;
+            border: 1px solid #d1d5db; /* gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            height: 3rem; /* p-3 */
+            padding-top: 0.60rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #374151; /* gray-700 */
+            line-height: 1.5rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 2.9rem;
+        }
+        .select2-container--default.select2-container--open .select2-selection--single {
+            border-color: #60a5fa; /* blue-400 */
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* ring-2 ring-blue-400 */
+        }
+        .select2-dropdown {
+            border: 1px solid #d1d5db; /* gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+        }
     </style>
+    <!-- jQuery (necessário para Select2) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
     function mascaraTelefone(input) {
         let v = input.value.replace(/\D/g, '');
@@ -246,6 +277,44 @@ function formatarTelefone($telefone) {
         if (v.length > 10) v = v.slice(0, 10) + '-' + v.slice(10);
         input.value = v;
     }
+
+    $(document).ready(function() {
+        const especieSelect = $('#especie');
+        const racaSelect = $('#raca');
+        const racaAtual = "<?= htmlspecialchars($pet['raca'], ENT_QUOTES) ?>";
+
+        racaSelect.select2({
+            placeholder: "Selecione a raça"
+        });
+
+        let racasData = {};
+
+        function carregarRacas(especieSelecionada) {
+            racaSelect.empty().append('<option value="">Selecione a raça</option>');
+
+            if (especieSelecionada && racasData[especieSelecionada]) {
+                racasData[especieSelecionada].forEach(raca => {
+                    const newOption = new Option(raca, raca, false, raca === racaAtual);
+                    racaSelect.append(newOption);
+                });
+                racaSelect.prop('disabled', false);
+            } else {
+                racaSelect.prop('disabled', true);
+            }
+            racaSelect.trigger('change');
+        }
+
+        // Carrega o JSON e inicializa os campos
+        $.getJSON('../data/racas.json', function(data) {
+            racasData = data;
+            carregarRacas(especieSelect.val());
+        });
+
+        // Adiciona o listener para quando o usuário mudar a espécie
+        especieSelect.on('change', function() {
+            carregarRacas($(this).val());
+        });
+    });
     </script>
 </body>
 </html>

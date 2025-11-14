@@ -45,9 +45,12 @@ if (!$pet && empty($all_pets)) { // Se não há pet específico e nem pets para 
 }
 
 // Buscar serviços disponíveis
-$query_servicos = "SELECT id, nome FROM servicos ORDER BY nome";
+$query_servicos = "SELECT id, nome FROM servicos WHERE id != 99 ORDER BY nome"; // Exclui 'Outros' da lista principal
 $stmt_servicos = $pdo->query($query_servicos);
 $servicos = $stmt_servicos->fetchAll(PDO::FETCH_ASSOC);
+
+// Garante que o serviço "Outros" com ID 99 exista
+$pdo->query("INSERT IGNORE INTO servicos (id, nome) VALUES (99, 'Outros')");
 
 // Processar o formulário de agendamento
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -56,17 +59,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pet_id_post = $_POST['pet_id'];
         $servicos_selecionados = isset($_POST['servico_id']) ? (array)$_POST['servico_id'] : [];
+        $servico_outros_selecionado = isset($_POST['servico_outros']);
+        $servico_outros_detalhes = trim($_POST['servico_outros_detalhes'] ?? '');
         $data = $_POST['data'];
         $horario = $_POST['horario'];
         $transporte = $_POST['transporte'] ?? 'Não';
         $observacoes = $_POST['observacoes'] ?? null;
         $usuario_id = $_SESSION['usuario_id'];
 
-        if (empty($servicos_selecionados)) {
+        if (empty($servicos_selecionados) && !$servico_outros_selecionado) {
             throw new Exception("Selecione pelo menos um serviço.");
         }
-        if (empty($pet_id_post)) { // Adicionado verificação explícita
-            throw new Exception("Selecione pelo menos um serviço.");
+        if (empty($pet_id_post)) {
+            throw new Exception("Selecione um pet para o agendamento.");
         }
 
         $data_agendamento = new DateTime($data);
@@ -75,8 +80,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Não é possível agendar para datas passadas.");
         }
 
+        // Adiciona o serviço "Outros" à lista se ele foi selecionado
+        if ($servico_outros_selecionado) {
+            $servicos_selecionados[] = 99; // ID do serviço "Outros"
+        }
+
         // Cria um agendamento para cada serviço selecionado
         foreach ($servicos_selecionados as $servico_id) {
+            // Para o serviço "Outros", a observação vai no campo principal do agendamento
+            $obs_final = $observacoes;
+            if ($servico_id == 99 && !empty($servico_outros_detalhes)) {
+                $obs_final = "Serviço Extra: " . $servico_outros_detalhes . "\n" . $observacoes;
+            }
+
             $query_agendamento = "INSERT INTO agendamentos 
                                  (pet_id, usuario_id, data_hora, servico_id, transporte, status, observacoes) 
                                  VALUES 
@@ -87,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_agendamento->bindValue(':data_hora', $data . ' ' . $horario);
             $stmt_agendamento->bindValue(':servico_id', $servico_id, PDO::PARAM_INT);
             $stmt_agendamento->bindValue(':transporte', $transporte);
-            $stmt_agendamento->bindValue(':observacoes', $observacoes);
+            $stmt_agendamento->bindValue(':observacoes', $obs_final);
             $stmt_agendamento->execute();
         }
 
@@ -176,6 +192,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
                 <?php endif; ?>
+
+                <!-- Data e Hora -->
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-calendar-alt text-sky-500"></i> Data e Hora <span class="text-red-500">*</span>
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="data" class="block text-sm font-medium text-slate-600 mb-1">Data</label>
+                            <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" min="<?= date('Y-m-d') ?>" required>
+                        </div>
+                        <div>
+                            <label for="horario" class="block text-sm font-medium text-slate-600 mb-1">Horário</label>
+                            <select name="horario" id="horario" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required disabled>
+                                <option value="">Selecione uma data primeiro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Seleção de Serviços -->
                 <div>
                     <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
@@ -188,35 +224,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <span class="text-slate-700"><?= htmlspecialchars($servico['nome']) ?></span>
                             </label>
                         <?php endforeach; ?>
-                        <!-- Removido a opção de adicionar novo serviço diretamente aqui para simplificar -->
+                        <!-- Campo "Outros" com input de texto -->
+                        <div class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 col-span-2 sm:col-span-1">
+                            <input type="checkbox" id="servico_outros_check" name="servico_outros" value="99" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label for="servico_outros_check" class="text-slate-700 cursor-pointer">Outros:</label>
+                            <input type="text" name="servico_outros_detalhes" id="servico_outros_detalhes" class="flex-1 p-1 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-100 disabled:cursor-not-allowed" placeholder="Especifique o serviço" disabled>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Data, Hora e Outras Informações -->
+                <!-- Outras Informações -->
                 <div>
                     <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
-                        <i class="fa-solid fa-calendar-alt text-sky-500"></i> Detalhes do Agendamento
+                        <i class="fa-solid fa-circle-info text-amber-500"></i> Outras Informações
                     </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                        <label for="data" class="block text-sm font-medium text-slate-600 mb-1">Data <span class="text-red-500">*</span></label>
-                        <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" min="<?= date('Y-m-d') ?>" required>
-                    </div>
-                    <div>
-                        <label for="horario" class="block text-sm font-medium text-slate-600 mb-1">Horário <span class="text-red-500">*</span></label>
-                        <input type="time" name="horario" id="horario" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" min="08:00" max="18:00" step="1800" required>
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label for="transporte" class="block text-sm font-medium text-slate-600 mb-1">Transporte</label>
-                        <select name="transporte" id="transporte" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="Não" selected>Não necessito de transporte</option>
-                            <option value="Sim">Sim, necessito de transporte</option>
-                        </select>
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label for="observacoes" class="block text-sm font-medium text-slate-600 mb-1">Observações</label>
-                        <textarea name="observacoes" id="observacoes" rows="3" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Informações adicionais sobre o serviço ou o pet"></textarea>
-                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="transporte" class="block text-sm font-medium text-slate-600 mb-1">Transporte</label>
+                            <select name="transporte" id="transporte" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Não" selected>Não necessito de transporte</option>
+                                <option value="Sim">Sim, necessito de transporte</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="observacoes" class="block text-sm font-medium text-slate-600 mb-1">Observações Gerais</label>
+                            <textarea name="observacoes" id="observacoes" rows="3" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Informações adicionais sobre o serviço ou o pet (ex: alergias, comportamento)"></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -286,6 +319,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 placeholder: "Selecione um Pet",
                 allowClear: true // Permite desmarcar a seleção
             });
+
+            const outrosCheck = document.getElementById('servico_outros_check');
+            const outrosDetalhesInput = document.getElementById('servico_outros_detalhes');
+
+            outrosCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    outrosDetalhesInput.disabled = false;
+                } else {
+                    outrosDetalhesInput.disabled = true;
+                    outrosDetalhesInput.value = '';
+                }
+            });
+
+            const dataInput = document.getElementById('data');
+            const horarioSelect = document.getElementById('horario');
+
+            function buscarHorariosDisponiveis() {
+                const data = dataInput.value;
+                if (!data) {
+                    horarioSelect.innerHTML = '<option value="">Selecione uma data primeiro</option>';
+                    horarioSelect.disabled = true;
+                    return;
+                }
+
+                horarioSelect.innerHTML = '<option value="">Carregando...</option>';
+                horarioSelect.disabled = true;
+
+                fetch(`buscar_horarios_disponiveis.php?data=${data}`)
+                    .then(response => response.json())
+                    .then(horarios => {
+                        horarioSelect.innerHTML = '';
+                        if (horarios.length > 0) {
+                            horarios.forEach(horario => {
+                                horarioSelect.innerHTML += `<option value="${horario}">${horario}</option>`;
+                            });
+                        } else {
+                            horarioSelect.innerHTML = '<option value="">Nenhum horário disponível</option>';
+                        }
+                        horarioSelect.disabled = false;
+                    });
+            }
+
+            dataInput.addEventListener('change', buscarHorariosDisponiveis);
         });
     </script>
 </body>

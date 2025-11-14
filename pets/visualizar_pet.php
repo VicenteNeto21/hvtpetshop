@@ -43,6 +43,22 @@ function formatarTelefone($telefone) {
     return $telefone;
 }
 
+// Função para calcular e formatar a idade
+function calcularIdadeFormatada($nascimento, $idadeSalva) {
+    if (!empty($nascimento) && $nascimento !== '0000-00-00') {
+        $dataNascimento = new DateTime($nascimento);
+        $hoje = new DateTime();
+        $diferenca = $hoje->diff($dataNascimento);
+        
+        $anos = $diferenca->y;
+        $meses = $diferenca->m;
+
+        if ($anos > 0) return "{$anos} ano(s)" . ($meses > 0 ? " e {$meses} mes(es)" : "");
+        return "{$meses} mes(es)";
+    }
+    return "{$idadeSalva} ano(s)"; // Fallback para a idade salva
+}
+
 // Filtros de status e data
 $statusFilter = isset($_GET['status']) ? $_GET['status'] : '';
 $dataFilter = isset($_GET['data']) ? $_GET['data'] : '';
@@ -162,8 +178,8 @@ $totalPaginas = ceil($totalAgendamentos / $agendamentosPorPagina);
                         <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['sexo']); ?></dd>
                     </div>
                     <div>
-                        <dt class="font-medium text-slate-500">Idade</dt>
-                        <dd class="text-slate-800 font-semibold"><?= htmlspecialchars($pet['idade']); ?> ano(s)</dd>
+                        <dt class="font-medium text-slate-500">Idade / Nascimento</dt>
+                        <dd class="text-slate-800 font-semibold"><?= calcularIdadeFormatada($pet['nascimento'], $pet['idade']); ?> (<?= !empty($pet['nascimento']) ? date('d/m/Y', strtotime($pet['nascimento'])) : 'N/A' ?>)</dd>
                     </div>
                     <div>
                         <dt class="font-medium text-slate-500">Peso</dt>
@@ -267,20 +283,23 @@ $totalPaginas = ceil($totalAgendamentos / $agendamentosPorPagina);
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-center gap-2">
-                                            <a href="agendamentos/visualizar_ficha.php?id=<?= $agendamento['id'] ?>" 
-                                               class="text-blue-600 hover:text-blue-800" title="Visualizar Ficha">
+                                            <a href="agendamentos/visualizar_ficha.php?id=<?= $agendamento['id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Visualizar Ficha">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="agendamentos/editar_agendamento.php?id=<?= $agendamento['id'] ?>" 
-                                               class="text-amber-600 hover:text-amber-800" title="Editar">
-                                                <i class="fas fa-edit"></i>
+                                            <?php if ($agendamento['status'] == 'Pendente' || $agendamento['status'] == 'Em Atendimento') : ?>
+                                                <a href="agendamentos/reiditar_agendamento.php?id=<?= $agendamento['id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-sky-600 hover:bg-sky-100 hover:text-sky-800 transition" title="Editar Agendamento">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                            <a href="agendamentos/ficha_atendimento.php?id=<?= $agendamento['id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha">
+                                                <i class="fas fa-file-alt"></i>
                                             </a>
                                             <?php if ($agendamento['status'] == 'Pendente') : ?>
-                                                <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'agendamentos/cancelar_agendamento_action.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>')" class="text-red-600 hover:text-red-800" title="Cancelar">
+                                                <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'agendamentos/cancelar_agendamento_action.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar">
                                                     <i class="fas fa-times"></i>
                                                 </a>
                                             <?php endif; ?>
-                                            <a href="javascript:void(0);" onclick="openConfirmationModal('Excluir Agendamento', 'Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.', 'agendamentos/excluir_agendamento.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>')" class="text-slate-500 hover:text-red-600" title="Excluir">
+                                            <a href="javascript:void(0);" onclick="openConfirmationModal('Excluir Agendamento', 'Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.', 'agendamentos/excluir_agendamento.php?id=<?= $agendamento['id'] ?>&pet_id=<?= $petId ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-500 hover:bg-red-100 hover:text-red-600 transition" title="Excluir">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </div>
@@ -317,6 +336,6 @@ $totalPaginas = ceil($totalAgendamentos / $agendamentosPorPagina);
         .animate-fade-in {
             animation: fade-in 0.8s ease;
         }
-    </script>
+    </style>
 </body>
 </html>
