@@ -116,4 +116,4 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ## 🏆 Créditos
 
-Desenvolvido com ❤️ por **AMPN**.
+Desenvolvido com ❤️ por **Vicente Neto**.
