@@ -1,3 +1,11 @@
-/vendor
-/.env
-.DS_Store
+# Environment variables
+# This file contains sensitive information like database credentials.
+.env
+
+# Composer dependencies
+# This directory is managed by Composer and should be installed via `composer install`.
+/vendor/
+
+# Obsolete/Unused files
+rodape.php
+HVTPETSHOP.md
