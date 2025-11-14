@@ -6,7 +6,7 @@
     <img src="https://img.shields.io/badge/versão-AMPN%201.1.4-blue" alt="Versão do Sistema">
     <img src="https://img.shields.io/badge/PHP-8.x-blueviolet" alt="PHP">
     <img src="https://img.shields.io/badge/Frontend-TailwindCSS-38B2AC" alt="TailwindCSS">
-    <img src="https://img-shields.io/badge/Licença-MIT-green" alt="Licença MIT">
+    <img src="https://img.shields.io/badge/licence-MIT-green" alt="Licença MIT">
   </p>
 </div>
 
