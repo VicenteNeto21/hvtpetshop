@@ -1,13 +1,12 @@
 <?php
 include "../config/config.php";
-session_start();
+session_start(); // Inicia a sessão
 
 // Protege a página
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../login.html");
     exit();
 }
-
 // --- CONSULTAS AOS DADOS ---
 
 // Filtro de período (padrão: 15 dias)

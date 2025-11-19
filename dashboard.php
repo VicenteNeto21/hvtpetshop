@@ -1,13 +1,12 @@
 <?php
 include "./config/config.php";
-session_start();
+session_start(); // Inicia a sessão
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.html");
     exit();
 }
-
 // Controle do aviso de funcionalidades por versão
 $versao_atual_aviso = '1.1.4';
 

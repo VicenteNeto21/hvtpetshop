@@ -1,13 +1,12 @@
 <?php
 include "../../config/config.php";
-session_start();
+session_start(); // Inicia a sessão
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../../login.html");
     exit();
 }
-
 // Verifica se há um agendamento específico
 if (!isset($_GET['id'])) {
     header("Location: ../../dashboard.php");
