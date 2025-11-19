@@ -2,8 +2,8 @@
   <img src="./icons/pet.jpg" alt="Logo HVTPETSHOP" width="120" style="border-radius: 50%;">
   <h1>CereniaPet</h1>
   <p><strong>Sistema de gestão para petshop e clínica veterinária.</strong></p>
-  <p>
-    <img src="https://img.shields.io/badge/versão-AMPN%201.1.4-blue" alt="Versão do Sistema">
+  <p> 
+    <img src="https://img.shields.io/badge/versão-AMPN%201.1.0-blue" alt="Versão do Sistema">
     <img src="https://img.shields.io/badge/PHP-8.x-blueviolet" alt="PHP">
     <img src="https://img.shields.io/badge/Frontend-TailwindCSS-38B2AC" alt="TailwindCSS">
     <img src="https://img.shields.io/badge/licence-MIT-green" alt="Licença MIT">
