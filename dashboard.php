@@ -8,14 +8,21 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 // Controle do aviso de funcionalidades por versão
-$versao_atual_aviso = '1.1.4';
+$versao_atual_aviso = '1.1.5';
 
 // Garante que a versão vista esteja na sessão, buscando do DB se necessário
 if (isset($_SESSION['usuario_id']) && !isset($_SESSION['aviso_visto_versao'])) {
-    $stmt = $pdo->prepare("SELECT versao_aviso_visto FROM usuarios WHERE id = ?");
-    $stmt->execute([$_SESSION['usuario_id']]);
-    $versao_vista_db = $stmt->fetchColumn();
-    $_SESSION['aviso_visto_versao'] = $versao_vista_db;
+    // Protege contra $pdo nulo ou não inicializado (evita erro "Expected type 'object'. Found 'null'.")
+    if (!isset($pdo) || !($pdo instanceof PDO)) {
+        error_log('Database connection ($pdo) is not initialized or not an instance of PDO.');
+        // Define um valor padrão para evitar warnings posteriores; pode ser null ou string vazia
+        $_SESSION['aviso_visto_versao'] = null;
+    } else {
+        $stmt = $pdo->prepare("SELECT versao_aviso_visto FROM usuarios WHERE id = ?"); // @phpstan-ignore-line
+        $stmt->execute([$_SESSION['usuario_id']]);
+        $versao_vista_db = $stmt->fetchColumn();
+        $_SESSION['aviso_visto_versao'] = $versao_vista_db;
+    }
 }
 
 $mostrarAviso = (!isset($_SESSION['aviso_visto_versao']) || $_SESSION['aviso_visto_versao'] !== $versao_atual_aviso);
@@ -33,6 +40,14 @@ if ($search) {
 }
 // Altere a ordenação para mostrar os últimos pets cadastrados primeiro
 $query .= " ORDER BY pets.id DESC";
+
+/** @var PDO $pdo */
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    error_log('Database connection ($pdo) is not initialized or not an instance of PDO.');
+    http_response_code(500);
+    echo 'Erro: conexão com o banco de dados não estabelecida.';
+    exit;
+}
 
 $stmt = $pdo->prepare($query);
 if ($search) {
@@ -130,15 +145,14 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fa-solid fa-star text-amber-500 text-3xl"></i>
                     <div class="flex-1">
-                        <h2 class="text-2xl font-bold text-slate-800">Novidades da Versão 1.1.4!</h2>
-                        <p class="text-slate-500">O sistema está mais rápido e inteligente.</p>
+                        <h2 class="text-2xl font-bold text-slate-800">Novidades da Versão 1.1.5!</h2>
+                        <p class="text-slate-500">Mais segurança e estabilidade para você.</p>
                     </div>
                 </div>
                 <ul class="space-y-2 text-slate-600 list-disc list-inside pl-2">
-                    <li><strong>Paginação e Busca Dinâmica:</strong> As listas de tutores e pets agora são paginadas e contam com busca em tempo real, tornando a navegação mais rápida.</li>
-                    <li><strong>Edição Rápida de Agendamentos:</strong> Adicionado um novo botão para reeditar serviços de um agendamento em andamento sem precisar finalizá-lo.</li>
-                    <li><strong>Horários Inteligentes:</strong> O formulário de agendamento agora mostra apenas os horários disponíveis para a data selecionada, evitando conflitos.</li>
-                    <li><strong>Melhorias de Usabilidade:</strong> Aumentamos o tamanho dos botões de ação nas tabelas para facilitar o uso em dispositivos móveis.</li>
+                    <li><strong>Segurança Reforçada:</strong> Implementamos um limite de tentativas de login para proteger sua conta contra ataques de força bruta.</li>
+                    <li><strong>Estabilidade no Servidor:</strong> Corrigimos problemas de compatibilidade que causavam erros no servidor de hospedagem, garantindo que o sistema funcione de forma mais estável.</li>
+                    <li><strong>URLs Amigáveis:</strong> As URLs do sistema foram melhoradas para serem mais limpas e fáceis de lembrar (ex: `/login` em vez de `/login.html`).</li>
                 </ul>
                 <div class="flex flex-col items-center mt-6">
                     <button onclick="fecharAvisoNovidades()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition">Ok, entendi!</button>
