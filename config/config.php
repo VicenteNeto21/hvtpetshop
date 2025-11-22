@@ -12,10 +12,10 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
  * IMPORTANTE: Substitua os valores abaixo pelas suas credenciais reais do banco de dados
  * fornecidas no painel de controle da sua hospedagem.
  */
-$host     = "sql308.infinityfree.com"; // Ex: sql101.epizy.com
-$dbname   = "if0_39359166_hvt_petshop_oficial"; // Ex: epiz_12345678_hvtpetshop
-$username = "if0_39359166"; // Ex: epiz_12345678
-$password = "K3JCBE3vB4XX"; // A senha que você definiu
+$host     = "localhost"; // Ex: sql101.epizy.com
+$dbname   = "testehvt"; // Ex: epiz_12345678_hvtpetshop
+$username = "root"; // Ex: epiz_12345678
+$password = ""; // A senha que você definiu
 
 $pdo = null; // Inicializa a variável para verificação posterior
 try {

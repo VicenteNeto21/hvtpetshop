@@ -42,13 +42,13 @@ if (!isset($_SESSION['usuario_id'])) {
                     <i class="fa-solid fa-users text-amber-500"></i>
                     Lista de Tutores
                 </h2>
-                <div class="flex items-center gap-4 w-full md:w-auto">
+                <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
                     <!-- Busca -->
-                    <div class="relative w-full md:w-auto md:max-w-xs flex-grow">
+                    <div class="relative w-full sm:w-auto md:max-w-xs flex-grow">
                         <input type="text" id="buscaInput" placeholder="Pesquisar tutor..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm" />
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
-                    <a href="cadastrar_tutor.php" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition flex items-center gap-2 text-sm whitespace-nowrap">
+                    <a href="cadastrar_tutor.php" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition flex items-center justify-center gap-2 text-sm whitespace-nowrap w-full sm:w-auto">
                         <i class="fa fa-plus"></i> Novo Tutor
                     </a>
                 </div>
@@ -59,7 +59,7 @@ if (!isset($_SESSION['usuario_id'])) {
                     <thead class="border-b-2 border-slate-200">
                         <tr>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Contato</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Telefone</th>
                             <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Pets</th>
                             <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
                         </tr>
