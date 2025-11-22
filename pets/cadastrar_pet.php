@@ -82,6 +82,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
@@ -101,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <div class="bg-white p-6 md:p-8 rounded-lg shadow-sm animate-fade-in">
-            <form action="" method="POST">
+            <form action="" method="POST" onsubmit="return validarFormulario()">
                 <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
                     <!-- Coluna da Esquerda: Informações do Tutor -->
                     <div class="space-y-5">
@@ -170,8 +173,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </div>
                             <div>
                                 <label for="nascimento" class="block text-sm font-medium text-slate-600 mb-1">Data de Nascimento</label>
-                                <input type="date" name="nascimento" id="nascimento"
-                                       class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                                <input type="text" name="nascimento" id="nascimento" autocomplete="off" 
+                                       class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700" placeholder="dd/mm/aaaa"
+                                       oninput="mascaraData(this)" maxlength="10">
+                                <div id="erro-nascimento" class="text-red-500 text-sm mt-1"></div>
                             </div>
                             <div>
                                 <label for="peso" class="block text-sm font-medium text-slate-600 mb-1">Peso (kg)</label>
@@ -252,11 +257,54 @@ function mascaraTelefone(input) {
     input.value = v;
 }
 
+function mascaraData(input) {
+    let v = input.value.replace(/\D/g, '');
+    if (v.length > 8) v = v.slice(0, 8);
+    if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+    if (v.length > 5) v = v.slice(0, 5) + '/' + v.slice(5);
+    input.value = v;
+}
+
+function validarFormulario() {
+    const dataInput = document.getElementById('nascimento');
+    const erroDiv = document.getElementById('erro-nascimento');
+    const dataValor = dataInput.value;
+
+    // Limpa erros anteriores
+    erroDiv.textContent = '';
+    dataInput.classList.remove('border-red-500');
+
+    // A validação só ocorre se o campo não estiver vazio
+    if (dataValor.trim() !== '') {
+        if (!validarData(dataValor)) {
+            erroDiv.textContent = 'Por favor, insira uma data válida (dd/mm/aaaa) e que não seja no futuro.';
+            dataInput.classList.add('border-red-500');
+            dataInput.focus();
+            return false; // Impede o envio do formulário
+        }
+    }
+
+    return true; // Permite o envio do formulário
+}
+
+function validarData(dataStr) {
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dataStr)) return false;
+
+    const [dia, mes, ano] = dataStr.split('/').map(Number);
+    const data = new Date(ano, mes - 1, dia);
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0); // Zera a hora para comparar apenas a data
+
+    return data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia && data <= hoje;
+}
 </script>
 <!-- jQuery (necessário para Select2) -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 <script>
 $(document).ready(function() {
     const especieSelect = $('#especie');
@@ -287,6 +335,14 @@ $(document).ready(function() {
             racaSelect.prop('disabled', true);
         }
         racaSelect.trigger('change'); // Notifica o Select2 da mudança
+    });
+
+    // Inicializa o Flatpickr para o campo de data de nascimento
+    flatpickr("#nascimento", {
+        "locale": "pt",
+        allowInput: true,
+        dateFormat: "d/m/Y",
+        maxDate: "today"
     });
 });
 </script>
