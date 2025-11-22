@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Espécie <span class="text-red-500">*</span></label>
-                        <select name="especie" required class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                        <select name="especie" id="especie" required class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
                             <option value="">Selecione a espécie</option>
                             <option value="Canino">Canino</option>
                             <option value="Felina">Felina</option>
