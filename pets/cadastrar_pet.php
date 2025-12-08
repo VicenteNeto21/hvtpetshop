@@ -39,7 +39,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $nome_pet = $_POST['nome'];
         $especie = $_POST['especie'];
         $raca = $_POST['raca'];
-        $nascimento = !empty($_POST['nascimento']) ? $_POST['nascimento'] : null;
+        // Converte a data de dd/mm/yyyy para yyyy-mm-dd (formato MySQL)
+        $nascimento = null;
+        if (!empty($_POST['nascimento'])) {
+            $dataParts = explode('/', $_POST['nascimento']);
+            if (count($dataParts) == 3) {
+                $nascimento = $dataParts[2] . '-' . $dataParts[1] . '-' . $dataParts[0];
+            }
+        }
         $sexo = $_POST['sexo'];
         $peso = !empty($_POST['peso']) ? $_POST['peso'] : null;
         $pelagem = $_POST['pelagem'];

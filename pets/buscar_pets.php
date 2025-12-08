@@ -75,19 +75,45 @@ $tableContent = ob_get_clean();
 
 ob_start();
 if ($totalPaginas > 1) {
-    echo '<div class="flex items-center gap-1">';
+    echo '<div class="flex flex-wrap items-center justify-center gap-1">';
+    
+    // Botão Anterior
     $prevPage = $pagina > 1 ? $pagina - 1 : 1;
-    $disabledPrev = $pagina == 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100';
-    echo "<button onclick='buscarPets(undefined, {$prevPage})' class='px-3 py-1 text-sm rounded-md bg-white text-slate-700 border border-slate-300 {$disabledPrev}'>&lt;</button>";
-
-    for ($i = 1; $i <= $totalPaginas; $i++) {
-        $activeClass = $i == $pagina ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100';
-        echo "<button onclick='buscarPets(undefined, {$i})' class='px-3 py-1 text-sm rounded-md {$activeClass}'>{$i}</button>";
+    $disabledPrev = $pagina == 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-slate-100';
+    echo "<button onclick='buscarPets(undefined, {$prevPage})' class='px-3 py-1.5 text-sm rounded-md bg-white text-slate-700 border border-slate-300 {$disabledPrev}'>&lt;</button>";
+    
+    // Lógica de paginação inteligente
+    $range = 2; // Número de páginas a mostrar de cada lado da página atual
+    $startPage = max(1, $pagina - $range);
+    $endPage = min($totalPaginas, $pagina + $range);
+    
+    // Sempre mostra a primeira página
+    if ($startPage > 1) {
+        echo "<button onclick='buscarPets(undefined, 1)' class='px-3 py-1.5 text-sm rounded-md bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'>1</button>";
+        if ($startPage > 2) {
+            echo "<span class='px-2 py-1.5 text-sm text-slate-500'>...</span>";
+        }
     }
-
+    
+    // Páginas do intervalo
+    for ($i = $startPage; $i <= $endPage; $i++) {
+        $activeClass = $i == $pagina ? 'bg-blue-600 text-white shadow-sm border-blue-600' : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100';
+        echo "<button onclick='buscarPets(undefined, {$i})' class='px-3 py-1.5 text-sm rounded-md {$activeClass}'>{$i}</button>";
+    }
+    
+    // Sempre mostra a última página
+    if ($endPage < $totalPaginas) {
+        if ($endPage < $totalPaginas - 1) {
+            echo "<span class='px-2 py-1.5 text-sm text-slate-500'>...</span>";
+        }
+        echo "<button onclick='buscarPets(undefined, {$totalPaginas})' class='px-3 py-1.5 text-sm rounded-md bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'>{$totalPaginas}</button>";
+    }
+    
+    // Botão Próximo
     $nextPage = $pagina < $totalPaginas ? $pagina + 1 : $totalPaginas;
-    $disabledNext = $pagina == $totalPaginas ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100';
-    echo "<button onclick='buscarPets(undefined, {$nextPage})' class='px-3 py-1 text-sm rounded-md bg-white text-slate-700 border border-slate-300 {$disabledNext}'>&gt;</button>";
+    $disabledNext = $pagina == $totalPaginas ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-slate-100';
+    echo "<button onclick='buscarPets(undefined, {$nextPage})' class='px-3 py-1.5 text-sm rounded-md bg-white text-slate-700 border border-slate-300 {$disabledNext}'>&gt;</button>";
+    
     echo '</div>';
 }
 $paginationContent = ob_get_clean();
