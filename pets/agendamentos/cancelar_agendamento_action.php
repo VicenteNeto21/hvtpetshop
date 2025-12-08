@@ -10,6 +10,7 @@ if (!isset($_SESSION['usuario_id'])) {
 
 $agendamento_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $data_retorno = isset($_GET['data']) ? $_GET['data'] : date('Y-m-d');
+$redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '';
 
 if ($agendamento_id > 0) {
     try {
@@ -41,6 +42,10 @@ if ($agendamento_id > 0) {
     $_SESSION['tipo_mensagem'] = "error";
 }
 
-// Redireciona de volta para o dashboard com a data correta
-header("Location: ../../dashboard.php?data=" . $data_retorno);
+// Redireciona baseado no parâmetro redirect
+if ($redirect === 'pendentes') {
+    header("Location: ../../dashboard/pendentes.php");
+} else {
+    header("Location: ../../dashboard.php?data=" . $data_retorno);
+}
 exit();

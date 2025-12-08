@@ -8,7 +8,7 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 // Controle do aviso de funcionalidades por versão
-$versao_atual_aviso = '1.1.6';
+$versao_atual_aviso = '1.1.8';
 
 // Garante que a versão vista esteja na sessão, buscando do DB se necessário
 if (isset($_SESSION['usuario_id']) && !isset($_SESSION['aviso_visto_versao'])) {
@@ -49,6 +49,9 @@ $totalTutores = $pdo->query("SELECT COUNT(*) FROM tutores")->fetchColumn();
 
 // Contagem de agendamentos para o dia de hoje
 $totalAgendamentosHoje = $pdo->query("SELECT COUNT(DISTINCT pet_id, data_hora) FROM agendamentos WHERE DATE(data_hora) = CURDATE() AND status != 'Cancelado'")->fetchColumn();
+
+// Contagem de atendimentos pendentes para encerrar (status = "Pendente")
+$totalPendentesParaEncerrar = $pdo->query("SELECT COUNT(DISTINCT pet_id, data_hora) FROM agendamentos WHERE status = 'Pendente'")->fetchColumn();
 
 // Consulta agendamentos para uma data específica (padrão: hoje)
 $dataSelecionada = isset($_GET['data']) ? $_GET['data'] : date('Y-m-d');
@@ -130,15 +133,14 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fa-solid fa-star text-amber-500 text-3xl"></i>
                     <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-slate-800">Novidades da Versão 1.1.6!</h2>
-                    <p class="text-slate-500">Focamos em correções e melhorias de usabilidade.</p>
+                    <h2 class="text-2xl font-bold text-slate-800">Novidades da Versão 1.1.8!</h2>
+                    <p class="text-slate-500">Nova central de gerenciamento de atendimentos.</p>
                     </div>
                 </div>
                 <ul class="space-y-2 text-slate-600 list-disc list-inside pl-2">
-                <li><strong>Correção no Cadastro de Pets:</strong> O campo de seleção de raça agora é habilitado corretamente após escolher a espécie.</li>
-                <li><strong>Contador de Agendamentos Corrigido:</strong> O card "Agendamentos Hoje" no painel principal agora exibe o número correto, desconsiderando os agendamentos cancelados.</li>
-                <li><strong>Melhoria no Fluxo de Cancelamento:</strong> Ao cancelar um agendamento pelo dashboard, você permanecerá na mesma tela, facilitando a gestão da agenda.</li>
-                <li><strong>Cancelamento de Múltiplos Serviços:</strong> Corrigido o problema onde apenas um serviço era cancelado em agendamentos com múltiplos serviços. Agora, todos são cancelados juntos.</li>
+                <li><strong>Central de Pendentes:</strong> Novo card no dashboard mostrando atendimentos pendentes. Clique para acessar a central completa.</li>
+                <li><strong>Gerenciamento Simplificado:</strong> Finalize, cancele ou visualize detalhes de atendimentos pendentes em um único lugar.</li>
+                <li><strong>Fluxo Melhorado:</strong> Após finalizar uma ficha de atendimento, você retorna automaticamente ao dashboard.</li>
                 </ul>
                 <div class="flex flex-col items-center mt-6">
                     <button onclick="fecharAvisoNovidades()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition">Ok, entendi!</button>
@@ -151,7 +153,7 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
 
     <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
         <!-- Estatísticas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 animate-fade-in">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 animate-fade-in">
             <!-- Card Agendamentos Hoje (Clicável) -->
             <a href="pets/agendamentos/agendar_servico.php" class="bg-white border-l-4 border-sky-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
                 <div class="flex justify-between items-center">
@@ -159,6 +161,14 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                     <i class="fa-solid fa-calendar-day text-sky-500"></i>
                 </div>
                 <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalAgendamentosHoje; ?></p>
+            </a>
+            <!-- Card Pendentes para Encerrar (Clicável) -->
+            <a href="dashboard/pendentes.php" class="bg-white border-l-4 border-orange-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-slate-500">Pendentes p/ Encerrar</p>
+                    <i class="fa-solid fa-hourglass-half text-orange-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalPendentesParaEncerrar; ?></p>
             </a>
             <!-- Card Total de Pets -->
             <div class="bg-white border-l-4 border-violet-500 rounded-r-lg p-5 shadow-sm">

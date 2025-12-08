@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $_SESSION['mensagem'] = "Ficha do petshop atualizada com sucesso!";
         $_SESSION['tipo_mensagem'] = "success";
-        header("Location: ../visualizar_pet.php?id=" . $agendamento['pet_id']);
+        header("Location: ../../dashboard.php");
         exit();
 
     } catch (Exception $e) {
