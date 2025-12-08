@@ -41,19 +41,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $raca = $_POST['raca'];
         // Converte a data de dd/mm/yyyy para yyyy-mm-dd (formato MySQL)
         $nascimento = null;
+        $idade = 0;
         if (!empty($_POST['nascimento'])) {
-            $dataParts = explode('/', $_POST['nascimento']);
-            if (count($dataParts) == 3) {
-                $nascimento = $dataParts[2] . '-' . $dataParts[1] . '-' . $dataParts[0];
+            $dataInput = $_POST['nascimento'];
+            // Tenta converter usando DateTime::createFromFormat para maior segurança
+            $dataObj = DateTime::createFromFormat('d/m/Y', $dataInput);
+            if ($dataObj !== false) {
+                $nascimento = $dataObj->format('Y-m-d');
+                $idade = $dataObj->diff(new DateTime())->y;
             }
         }
+
         $sexo = $_POST['sexo'];
         $peso = !empty($_POST['peso']) ? $_POST['peso'] : null;
         $pelagem = $_POST['pelagem'];
         $observacoes = isset($_POST['observacoes']) ? $_POST['observacoes'] : null;
-
-        // Calcula a idade a partir da data de nascimento para salvar no banco
-        $idade = $nascimento ? (new DateTime($nascimento))->diff(new DateTime())->y : 0;
 
         $sql_pet = "INSERT INTO pets (nome, tutor_id, especie, raca, nascimento, idade, sexo, peso, pelagem, observacoes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt_pet = $pdo->prepare($sql_pet);
