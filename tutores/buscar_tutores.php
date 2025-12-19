@@ -13,7 +13,7 @@ header('Content-Type: application/json');
 // Parâmetros
 $busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
 $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$tutoresPorPagina = 5;
+$tutoresPorPagina = 10;
 $offset = ($pagina - 1) * $tutoresPorPagina;
 
 $params = [];
