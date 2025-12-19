@@ -46,7 +46,7 @@ if (empty($email) || empty($senha)) {
 // --- Lógica de Autenticação ---
 
 try {
-    $stmt = $pdo->prepare("SELECT id, nome, senha, tentativas_login_falhas, bloqueado_ate FROM usuarios WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT id, nome, senha, tentativas_login_falhas, bloqueado_ate, status FROM usuarios WHERE email = ?");
     $stmt->execute([$email]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -64,7 +64,18 @@ try {
 
     // Verifica a senha
     if (password_verify($senha, $usuario['senha'])) {
-        // SUCESSO NO LOGIN
+        // Verifica o status do usuário ANTES de permitir login
+        if ($usuario['status'] === 'pendente') {
+            echo json_encode(['success' => false, 'message' => 'Seu cadastro ainda está aguardando aprovação. Por favor, aguarde a liberação por um administrador.']);
+            exit();
+        }
+        
+        if ($usuario['status'] === 'rejeitado') {
+            echo json_encode(['success' => false, 'message' => 'Seu acesso foi negado. Entre em contato com a administração.']);
+            exit();
+        }
+        
+        // SUCESSO NO LOGIN (status = aprovado)
         $pdo->prepare("UPDATE usuarios SET tentativas_login_falhas = 0, bloqueado_ate = NULL WHERE id = ?")->execute([$usuario['id']]);
         session_regenerate_id(true); // Previne session fixation
         $_SESSION['usuario_id'] = $usuario['id'];

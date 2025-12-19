@@ -124,6 +124,23 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
 
     <?php include './components/toast.php'; ?>
 
+    <!-- Modal de Detalhes do Agendamento -->
+    <div id="modal-detalhes-agendamento" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4 relative animate-fade-in">
+            <button onclick="fecharModalDetalhes()" class="absolute top-3 right-4 text-slate-400 hover:text-red-500 text-2xl font-bold" title="Fechar">&times;</button>
+            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+                <i class="fa-solid fa-calendar-check text-sky-500"></i>
+                Detalhes do Agendamento
+            </h2>
+            <div id="modal-detalhes-conteudo" class="space-y-4">
+                <!-- Conteúdo carregado via AJAX -->
+                <div class="text-center py-8 text-slate-500">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Carregando...
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php if ($mostrarAviso): ?>
     <!-- Aviso de funcionalidades em desenvolvimento -->
     <div id="aviso-funcionalidades" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
@@ -250,17 +267,17 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 text-center">
-                                        <div class="flex items-center justify-center gap-3">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <!-- Botão de Visualizar Detalhes (sempre visível) -->
+                                            <button onclick="abrirModalDetalhes(<?= $ag['agendamento_id'] ?>)" class="w-8 h-8 flex items-center justify-center rounded-full text-violet-600 hover:bg-violet-100 hover:text-violet-800 transition" title="Ver Detalhes"><i class="fas fa-eye"></i></button>
                                             <?php if ($ag['status'] == 'Pendente'): ?>
-                                                <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Iniciar Atendimento"><i class="fas fa-play-circle fa-lg"></i></button>
+                                                <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Iniciar Atendimento"><i class="fas fa-play-circle"></i></button>
                                                 <a href="./pets/agendamentos/reiditar_agendamento.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Editar Agendamento"><i class="fas fa-pencil-alt"></i></a>
-                                                <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar"><i class="fas fa-times-circle fa-lg"></i></a>
+                                                <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar"><i class="fas fa-times-circle"></i></a>
                                             <?php elseif ($ag['status'] == 'Em Atendimento'): ?>
-                                                <a href="./pets/agendamentos/ficha_atendimento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha"><i class="fas fa-file-alt fa-lg"></i></a>
+                                                <a href="./pets/agendamentos/ficha_atendimento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha"><i class="fas fa-file-alt"></i></a>
                                             <?php elseif ($ag['status'] == 'Finalizado'): ?>
-                                                <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Visualizar Ficha"><i class="fas fa-eye fa-lg"></i></a>
-                                            <?php else: ?>
-                                                <span class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400" title="Agendamento Cancelado"><i class="fas fa-ban fa-lg"></i></span>
+                                                <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Visualizar Ficha"><i class="fas fa-file-medical"></i></a>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -459,6 +476,97 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
             // O botão "Hoje" agora sempre existe, então podemos adicionar o listener diretamente
             if (btnHoje) {
                 btnHoje.addEventListener('click', () => carregarAgenda(btnHoje.dataset.date));
+            }
+        });
+
+        // --- Funções do Modal de Detalhes do Agendamento ---
+        function abrirModalDetalhes(agendamentoId) {
+            const modal = document.getElementById('modal-detalhes-agendamento');
+            const conteudo = document.getElementById('modal-detalhes-conteudo');
+            
+            // Mostra o modal com loading
+            modal.classList.remove('hidden');
+            conteudo.innerHTML = '<div class="text-center py-8 text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i> Carregando...</div>';
+            
+            fetch(`utils/buscar_detalhes_agendamento.php?id=${agendamentoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const ag = data.agendamento;
+                        const statusClass = ag.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                           ag.status === 'Em Atendimento' ? 'bg-blue-100 text-blue-800' :
+                                           ag.status === 'Finalizado' ? 'bg-green-100 text-green-800' :
+                                           'bg-red-100 text-red-800';
+                        
+                        conteudo.innerHTML = `
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="font-bold text-lg text-slate-800"><i class="fas fa-paw text-violet-500 mr-2"></i>${ag.pet_nome}</h3>
+                                        <p class="text-sm text-slate-500">${ag.pet_especie || ''} ${ag.pet_raca ? '• ' + ag.pet_raca : ''} ${ag.pet_idade ? '• ' + ag.pet_idade : ''}</p>
+                                    </div>
+                                    <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${statusClass}">${ag.status}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="font-medium text-slate-500">Tutor</p>
+                                    <p class="text-slate-800 font-semibold">${ag.tutor_nome}</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-slate-500">Telefone</p>
+                                    <p class="text-slate-800"><a href="tel:${ag.tutor_telefone}" class="text-blue-600 hover:underline">${ag.tutor_telefone}</a></p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-slate-500">Data e Hora</p>
+                                    <p class="text-slate-800 font-semibold">${ag.data_hora}</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-slate-500">Transporte</p>
+                                    <p class="text-slate-800">${ag.transporte || 'Não informado'}</p>
+                                </div>
+                            </div>
+                            
+                            ${ag.mostrar_endereco ? `
+                            <div class="text-sm bg-sky-50 p-3 rounded-lg border border-sky-200">
+                                <p class="font-medium text-sky-700"><i class="fas fa-map-marker-alt mr-1"></i> Endereço para Transporte</p>
+                                <p class="text-slate-700 mt-1">${ag.tutor_endereco || '<span class="text-red-500 italic">Endereço não cadastrado</span>'}</p>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="text-sm">
+                                <p class="font-medium text-slate-500">Serviços</p>
+                                <p class="text-slate-800">${ag.servicos || 'Nenhum serviço'}</p>
+                            </div>
+                            
+                            <div class="text-sm bg-amber-50 p-3 rounded-lg border border-amber-100">
+                                <p class="font-medium text-amber-700"><i class="fas fa-sticky-note mr-1"></i> Observações</p>
+                                <p class="text-slate-700 mt-1">${ag.observacoes}</p>
+                            </div>
+                            
+                            <div class="text-xs text-slate-400 pt-2 border-t border-slate-200">
+                                <p>Criado por: ${ag.criado_por} em ${ag.criado_em}</p>
+                            </div>
+                        `;
+                    } else {
+                        conteudo.innerHTML = '<div class="text-center py-8 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>' + data.error + '</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar detalhes:', error);
+                    conteudo.innerHTML = '<div class="text-center py-8 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>Erro ao carregar detalhes.</div>';
+                });
+        }
+
+        function fecharModalDetalhes() {
+            document.getElementById('modal-detalhes-agendamento').classList.add('hidden');
+        }
+
+        // Fechar modal ao clicar fora dele
+        document.getElementById('modal-detalhes-agendamento').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModalDetalhes();
             }
         });
     </script>

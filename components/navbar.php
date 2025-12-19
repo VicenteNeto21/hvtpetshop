@@ -9,6 +9,20 @@ if (!isset($path_prefix)) {
 // Lógica para determinar a página ativa
 $current_page = basename($_SERVER['PHP_SELF']);
 $active_class = 'bg-slate-100 text-blue-600';
+
+// Verifica se o usuário logado é admin e conta pendentes
+$isAdmin = false;
+$totalPendentes = 0;
+if (isset($_SESSION['usuario_id']) && isset($pdo)) {
+    $stmtTipo = $pdo->prepare("SELECT tipo FROM usuarios WHERE id = ?");
+    $stmtTipo->execute([$_SESSION['usuario_id']]);
+    $userType = $stmtTipo->fetchColumn();
+    $isAdmin = ($userType === 'admin');
+    
+    if ($isAdmin) {
+        $totalPendentes = $pdo->query("SELECT COUNT(*) FROM usuarios WHERE status = 'pendente'")->fetchColumn();
+    }
+}
 ?>
 <!-- Navbar responsiva -->
 <nav class="w-full bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-4 md:px-6 py-2 sticky top-0 z-50">
@@ -41,6 +55,14 @@ $active_class = 'bg-slate-100 text-blue-600';
         <a href="<?= $path_prefix ?>dashboard/indicadores.php" data-page="indicadores.php" class="nav-link text-slate-600 hover:bg-slate-100 hover:text-blue-600 font-semibold transition flex items-center gap-2 px-3 py-2 rounded-md">
             <i class="fa-solid fa-chart-bar w-4 text-center"></i> <span>Indicadores</span>
         </a>
+        <?php if ($isAdmin): ?>
+        <a href="<?= $path_prefix ?>dashboard/gerenciar_usuarios.php" data-page="gerenciar_usuarios.php" class="nav-link text-slate-600 hover:bg-slate-100 hover:text-blue-600 font-semibold transition flex items-center gap-2 px-3 py-2 rounded-md relative">
+            <i class="fa-solid fa-user-shield w-4 text-center"></i><span>Usuários</span>
+            <?php if ($totalPendentes > 0): ?>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"><?= $totalPendentes ?></span>
+            <?php endif; ?>
+        </a>
+        <?php endif; ?>
         <a href="#" class="text-slate-400 font-semibold flex items-center gap-2 px-3 py-2 rounded-md cursor-not-allowed" title="Em breve">
             <i class="fa-solid fa-cash-register w-4 text-center"></i> <span>PDV</span>
         </a>

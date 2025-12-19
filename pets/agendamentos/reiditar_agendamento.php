@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($servicosParaAdicionar)) {
             $stmtInsert = $pdo->prepare(
                 "INSERT INTO agendamentos (pet_id, usuario_id, data_hora, servico_id, transporte, status, observacoes) 
-                 VALUES (:pet_id, :usuario_id, :data_hora, :servico_id, 'Não', :status, :observacoes)"
+                 VALUES (:pet_id, :usuario_id, :data_hora, :servico_id, 'Petshop busca e entrega', :status, :observacoes)"
             );
             foreach ($servicosParaAdicionar as $servicoId) {
                 $obsFinal = null;
@@ -194,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label for="data" class="block text-sm font-medium text-slate-600 mb-1">Data</label>
-                            <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= date('Y-m-d', strtotime($dataHoraOriginal)) ?>" min="<?= date('Y-m-d') ?>" required>
+                            <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= date('Y-m-d', strtotime($dataHoraOriginal)) ?>" required>
                         </div>
                         <div>
                             <label for="horario" class="block text-sm font-medium text-slate-600 mb-1">Horário</label>

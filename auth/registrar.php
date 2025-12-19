@@ -26,7 +26,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 // 1. Segurança: Aumenta o requisito mínimo da senha.
 if (strlen($senha) < 4) {
-    echo json_encode(['success' => false, 'message' => 'A senha deve ter no mínimo 8 caracteres.']);
+    echo json_encode(['success' => false, 'message' => 'A senha deve ter no mínimo 4 caracteres.']);
     exit();
 }
 
@@ -40,12 +40,16 @@ try {
         exit();
     }
 
-    // Insere o novo usuário
+    // Insere o novo usuário com status PENDENTE
     $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha, status) VALUES (?, ?, ?, 'pendente')");
     $stmt->execute([$nome, $email, $senhaHash]);
 
-    echo json_encode(['success' => true]);
+    echo json_encode([
+        'success' => true, 
+        'message' => 'Cadastro realizado! Aguarde a aprovação de um administrador para acessar o sistema.',
+        'pending' => true
+    ]);
 
 } catch (PDOException $e) {
     // Em caso de erro no banco de dados, retorna uma mensagem genérica.

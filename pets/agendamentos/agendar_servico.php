@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $servico_outros_detalhes = trim($_POST['servico_outros_detalhes'] ?? '');
         $data = $_POST['data'];
         $horario = $_POST['horario'];
-        $transporte = $_POST['transporte'] ?? 'Não';
+        $transporte = $_POST['transporte'] ?? 'Petshop busca e entrega';
         $observacoes = $_POST['observacoes'] ?? null;
         $usuario_id = $_SESSION['usuario_id'];
 
@@ -73,11 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Selecione um pet para o agendamento.");
         }
 
-        $data_agendamento = new DateTime($data);
-        $hoje = new DateTime('today');
-        if ($data_agendamento < $hoje) {
-            throw new Exception("Não é possível agendar para datas passadas.");
-        }
+        // Permite agendamentos retroativos (datas passadas)
 
         // Adiciona o serviço "Outros" à lista se ele foi selecionado
         if ($servico_outros_selecionado) {
@@ -200,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label for="data" class="block text-sm font-medium text-slate-600 mb-1">Data</label>
-                            <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" min="<?= date('Y-m-d') ?>" required>
+                            <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                         </div>
                         <div>
                             <label for="horario" class="block text-sm font-medium text-slate-600 mb-1">Horário</label>
@@ -241,8 +237,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <label for="transporte" class="block text-sm font-medium text-slate-600 mb-1">Transporte</label>
                             <select name="transporte" id="transporte" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="Não" selected>Não necessito de transporte</option>
-                                <option value="Sim">Sim, necessito de transporte</option>
+                                <option value="Petshop busca e entrega" selected>Petshop busca e entrega</option>
+                                <option value="Petshop busca, tutor retira">Petshop busca, tutor retira</option>
+                                <option value="Tutor leva, Petshop entrega">Tutor leva, Petshop entrega</option>
+                                <option value="Tutor leva e retira">Tutor leva e retira</option>
                             </select>
                         </div>
                         <div>
