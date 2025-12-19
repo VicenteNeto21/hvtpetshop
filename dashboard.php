@@ -1,15 +1,14 @@
 <?php
 include "./config/config.php";
-session_start();
+session_start(); // Inicia a sessão
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.html");
     exit();
 }
-
 // Controle do aviso de funcionalidades por versão
-$versao_atual_aviso = '1.1.4';
+$versao_atual_aviso = '1.1.8';
 
 // Garante que a versão vista esteja na sessão, buscando do DB se necessário
 if (isset($_SESSION['usuario_id']) && !isset($_SESSION['aviso_visto_versao'])) {
@@ -49,7 +48,10 @@ $totalPets = $pdo->query("SELECT COUNT(*) FROM pets")->fetchColumn();
 $totalTutores = $pdo->query("SELECT COUNT(*) FROM tutores")->fetchColumn();
 
 // Contagem de agendamentos para o dia de hoje
-$totalAgendamentosHoje = $pdo->query("SELECT COUNT(DISTINCT pet_id, data_hora) FROM agendamentos WHERE DATE(data_hora) = CURDATE()")->fetchColumn();
+$totalAgendamentosHoje = $pdo->query("SELECT COUNT(DISTINCT pet_id, data_hora) FROM agendamentos WHERE DATE(data_hora) = CURDATE() AND status != 'Cancelado'")->fetchColumn();
+
+// Contagem de atendimentos pendentes para encerrar (status = "Pendente")
+$totalPendentesParaEncerrar = $pdo->query("SELECT COUNT(DISTINCT pet_id, data_hora) FROM agendamentos WHERE status = 'Pendente'")->fetchColumn();
 
 // Consulta agendamentos para uma data específica (padrão: hoje)
 $dataSelecionada = isset($_GET['data']) ? $_GET['data'] : date('Y-m-d');
@@ -131,15 +133,14 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fa-solid fa-star text-amber-500 text-3xl"></i>
                     <div class="flex-1">
-                        <h2 class="text-2xl font-bold text-slate-800">Novidades da Versão 1.1.4!</h2>
-                        <p class="text-slate-500">O sistema está mais rápido e inteligente.</p>
+                    <h2 class="text-2xl font-bold text-slate-800">Novidades da Versão 1.1.8!</h2>
+                    <p class="text-slate-500">Nova central de gerenciamento de atendimentos.</p>
                     </div>
                 </div>
                 <ul class="space-y-2 text-slate-600 list-disc list-inside pl-2">
-                    <li><strong>Paginação e Busca Dinâmica:</strong> As listas de tutores e pets agora são paginadas e contam com busca em tempo real, tornando a navegação mais rápida.</li>
-                    <li><strong>Edição Rápida de Agendamentos:</strong> Adicionado um novo botão para reeditar serviços de um agendamento em andamento sem precisar finalizá-lo.</li>
-                    <li><strong>Horários Inteligentes:</strong> O formulário de agendamento agora mostra apenas os horários disponíveis para a data selecionada, evitando conflitos.</li>
-                    <li><strong>Melhorias de Usabilidade:</strong> Aumentamos o tamanho dos botões de ação nas tabelas para facilitar o uso em dispositivos móveis.</li>
+                <li><strong>Central de Pendentes:</strong> Novo card no dashboard mostrando atendimentos pendentes. Clique para acessar a central completa.</li>
+                <li><strong>Gerenciamento Simplificado:</strong> Finalize, cancele ou visualize detalhes de atendimentos pendentes em um único lugar.</li>
+                <li><strong>Fluxo Melhorado:</strong> Após finalizar uma ficha de atendimento, você retorna automaticamente ao dashboard.</li>
                 </ul>
                 <div class="flex flex-col items-center mt-6">
                     <button onclick="fecharAvisoNovidades()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition">Ok, entendi!</button>
@@ -152,7 +153,7 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
 
     <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
         <!-- Estatísticas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 animate-fade-in">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 animate-fade-in">
             <!-- Card Agendamentos Hoje (Clicável) -->
             <a href="pets/agendamentos/agendar_servico.php" class="bg-white border-l-4 border-sky-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
                 <div class="flex justify-between items-center">
@@ -160,6 +161,14 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                     <i class="fa-solid fa-calendar-day text-sky-500"></i>
                 </div>
                 <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalAgendamentosHoje; ?></p>
+            </a>
+            <!-- Card Pendentes para Encerrar (Clicável) -->
+            <a href="dashboard/pendentes.php" class="bg-white border-l-4 border-orange-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-slate-500">Pendentes p/ Encerrar</p>
+                    <i class="fa-solid fa-hourglass-half text-orange-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalPendentesParaEncerrar; ?></p>
             </a>
             <!-- Card Total de Pets -->
             <div class="bg-white border-l-4 border-violet-500 rounded-r-lg p-5 shadow-sm">
@@ -184,87 +193,83 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
             <!-- Agendamentos do dia -->
             <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in"> 
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                    <h2 id="agenda-titulo" class="text-xl font-bold text-slate-800 flex items-center gap-3">
                         <i class="fa fa-clock text-sky-500"></i> Agenda para <?= date('d/m/Y', strtotime($dataSelecionada)) ?>
                     </h2>
                     <div class="flex items-center gap-2 ml-auto">
                         <?php
-                            $dataAnterior = date('Y-m-d', strtotime($dataSelecionada . ' -1 day'));
-                            $dataSeguinte = date('Y-m-d', strtotime($dataSelecionada . ' +1 day'));
                             $isToday = ($dataSelecionada == date('Y-m-d'));
                         ?>
-                        <a href="?data=<?= $dataAnterior ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
+                        <button id="btn-data-anterior" data-date="<?= date('Y-m-d', strtotime($dataSelecionada . ' -1 day')) ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
                             &lt;
-                        </a>
-                        <?php if (!$isToday): ?>
-                            <a href="dashboard.php" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
-                                Hoje
-                            </a>
-                        <?php endif; ?>
-                        <a href="?data=<?= $dataSeguinte ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
+                        </button>
+                        <button id="btn-data-hoje" data-date="<?= date('Y-m-d') ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm <?= $isToday ? 'hidden' : '' ?>">
+                            Hoje
+                        </button>
+                        <button id="btn-data-seguinte" data-date="<?= date('Y-m-d', strtotime($dataSelecionada . ' +1 day')) ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
                             &gt;
-                        </a>
+                        </button>
                         <a href="pets/agendamentos/agendar_servico.php" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition flex items-center gap-2 text-sm whitespace-nowrap ml-2">
                             <i class="fa fa-calendar-plus"></i> Novo Agendamento
                         </a>
                     </div>
                 </div>
-                <?php if (empty($agendamentosHoje)): ?>
-                    <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum agendamento pendente para hoje.</div>
-                <?php else: ?>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead class="border-b-2 border-slate-200">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Horário</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Pet</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Serviços</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
+                <div id="agenda-container" class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="border-b-2 border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Horário</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Pet</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Serviços</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agenda-tbody" class="divide-y divide-slate-100">
+                            <?php if (empty($agendamentosHoje)): ?>
+                                <tr><td colspan="6" class="text-slate-500 text-center py-8 border-t-2 border-dashed">Nenhum agendamento para esta data.</td></tr>
+                            <?php else: ?>
                                 <?php foreach ($agendamentosHoje as $ag): ?>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-4 font-medium text-slate-800 whitespace-nowrap"><?= htmlspecialchars($ag['horario']) ?></td>
-                                        <td class="px-4 py-4 text-slate-800 font-semibold">
-                                            <a href="./pets/visualizar_pet.php?id=<?= $ag['pet_id'] ?>" class="hover:underline"><?= htmlspecialchars($ag['pet_nome']) ?></a>
-                                        </td>
-                                        <td class="px-4 py-4 text-slate-500 whitespace-nowrap">
-                                            <a href="./tutores/visualizar_tutor.php?id=<?= $ag['tutor_id'] ?>" class="hover:underline"><?= htmlspecialchars($ag['tutor_nome']) ?></a>
-                                        </td>
-                                        <td class="px-4 py-4 text-slate-500"><?= htmlspecialchars($ag['servicos'] ?: 'N/A') ?></td>
-                                        <td class="px-4 py-4">
-                                            <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold
-                                                <?= $ag['status'] == 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 
-                                                   ($ag['status'] == 'Em Atendimento' ? 'bg-blue-100 text-blue-800' : 
-                                                   ($ag['status'] == 'Finalizado' ? 'bg-green-100 text-green-800' : 
-                                                   ($ag['status'] == 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800'))); ?>">
-                                                <?= htmlspecialchars($ag['status']) ?>
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-4 text-center">
-                                            <div class="flex items-center justify-center gap-3">
-                                                <?php if ($ag['status'] == 'Pendente'): ?>
-                                                    <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Iniciar Atendimento"><i class="fas fa-play-circle fa-lg"></i></button>
-                                                    <a href="./pets/agendamentos/reiditar_agendamento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Editar Agendamento"><i class="fas fa-pencil-alt"></i></a>
-                                                    <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&pet_id=<?= $ag['pet_id'] ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar"><i class="fas fa-times-circle fa-lg"></i></a>
-                                                <?php elseif ($ag['status'] == 'Em Atendimento'): ?>
-                                                    <a href="./pets/agendamentos/ficha_atendimento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha"><i class="fas fa-file-alt fa-lg"></i></a>
-                                                <?php elseif ($ag['status'] == 'Finalizado'): ?>
-                                                    <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Visualizar Ficha"><i class="fas fa-eye fa-lg"></i></a>
-                                                <?php else: ?>
-                                                    <span class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400" title="Agendamento Cancelado"><i class="fas fa-ban fa-lg"></i></span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-4 font-medium text-slate-800 whitespace-nowrap"><?= htmlspecialchars($ag['horario']) ?></td>
+                                    <td class="px-4 py-4 text-slate-800 font-semibold">
+                                        <a href="./pets/visualizar_pet.php?id=<?= $ag['pet_id'] ?>" class="hover:underline"><?= htmlspecialchars($ag['pet_nome']) ?></a>
+                                    </td>
+                                    <td class="px-4 py-4 text-slate-500 whitespace-nowrap">
+                                        <a href="./tutores/visualizar_tutor.php?id=<?= $ag['tutor_id'] ?>" class="hover:underline"><?= htmlspecialchars($ag['tutor_nome']) ?></a>
+                                    </td>
+                                    <td class="px-4 py-4 text-slate-500"><?= htmlspecialchars($ag['servicos'] ?: 'N/A') ?></td>
+                                    <td class="px-4 py-4">
+                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold
+                                            <?= $ag['status'] == 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 
+                                               ($ag['status'] == 'Em Atendimento' ? 'bg-blue-100 text-blue-800' : 
+                                                   ($ag['status'] == 'Finalizado' ? 'bg-green-100 text-green-800' :
+                                                   'bg-red-100 text-red-800')); ?>">
+                                            <?= htmlspecialchars($ag['status']) ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-4 text-center">
+                                        <div class="flex items-center justify-center gap-3">
+                                            <?php if ($ag['status'] == 'Pendente'): ?>
+                                                <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Iniciar Atendimento"><i class="fas fa-play-circle fa-lg"></i></button>
+                                                <a href="./pets/agendamentos/reiditar_agendamento.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Editar Agendamento"><i class="fas fa-pencil-alt"></i></a>
+                                                <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar"><i class="fas fa-times-circle fa-lg"></i></a>
+                                            <?php elseif ($ag['status'] == 'Em Atendimento'): ?>
+                                                <a href="./pets/agendamentos/ficha_atendimento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha"><i class="fas fa-file-alt fa-lg"></i></a>
+                                            <?php elseif ($ag['status'] == 'Finalizado'): ?>
+                                                <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Visualizar Ficha"><i class="fas fa-eye fa-lg"></i></a>
+                                            <?php else: ?>
+                                                <span class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400" title="Agendamento Cancelado"><i class="fas fa-ban fa-lg"></i></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
                                 <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php endif; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Aniversariantes do Dia -->
@@ -402,6 +407,59 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                     alert('Erro de comunicação com o servidor.');
                 });
             };
+        });
+
+        // --- Lógica para carregar agenda dinamicamente ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const agendaTbody = document.getElementById('agenda-tbody');
+            const agendaTitulo = document.getElementById('agenda-titulo');
+            const btnAnterior = document.getElementById('btn-data-anterior');
+            const btnSeguinte = document.getElementById('btn-data-seguinte');
+            const btnHoje = document.getElementById('btn-data-hoje');
+
+            function carregarAgenda(data) {
+                // Mostra um estado de carregamento
+                agendaTbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i>Carregando agenda...</td></tr>';
+
+                fetch(`utils/buscar_agenda.php?data=${data}`)
+                    .then(response => response.json())
+                    .then(dados => {
+                        // Atualiza o conteúdo da tabela e o título
+                        const tbody = document.getElementById('agenda-tbody');
+                        tbody.innerHTML = dados.tableContent;
+                        agendaTitulo.innerHTML = `<i class="fa fa-clock text-sky-500"></i> ${dados.novoTitulo}`;
+
+                        // Atualiza a URL no navegador sem recarregar
+                        history.pushState({data: data}, dados.novoTitulo, `?data=${data}`);
+
+                        // Atualiza os botões de navegação
+                        const dataObj = new Date(data + 'T12:00:00'); // Adiciona hora para evitar problemas de fuso
+                        const anterior = new Date(dataObj.setDate(dataObj.getDate() - 1)).toISOString().split('T')[0];
+                        const seguinte = new Date(dataObj.setDate(dataObj.getDate() + 2)).toISOString().split('T')[0]; // +2 porque já subtraímos 1
+
+                        btnAnterior.dataset.date = anterior;
+                        btnSeguinte.dataset.date = seguinte;
+
+                        // Controla a visibilidade do botão "Hoje"
+                        const hoje = new Date().toISOString().split('T')[0];
+                        if (data === hoje) {
+                            btnHoje.classList.add('hidden');
+                        } else {
+                            btnHoje.classList.remove('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar agenda:', error);
+                        document.getElementById('agenda-tbody').innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-500">Erro ao carregar a agenda.</td></tr>';
+                    });
+            }
+
+            btnAnterior.addEventListener('click', () => carregarAgenda(btnAnterior.dataset.date));
+            btnSeguinte.addEventListener('click', () => carregarAgenda(btnSeguinte.dataset.date));
+            // O botão "Hoje" agora sempre existe, então podemos adicionar o listener diretamente
+            if (btnHoje) {
+                btnHoje.addEventListener('click', () => carregarAgenda(btnHoje.dataset.date));
+            }
         });
     </script>
 </body>

@@ -74,20 +74,45 @@ if (empty($pets)) {
 $tableContent = ob_get_clean();
 
 ob_start();
+// Conteúdo da Paginação
 if ($totalPaginas > 1) {
+    $range = 2; // Quantidade de links de página antes e depois da página atual
     echo '<div class="flex items-center gap-1">';
-    $prevPage = $pagina > 1 ? $pagina - 1 : 1;
-    $disabledPrev = $pagina == 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100';
-    echo "<button onclick='buscarPets(undefined, {$prevPage})' class='px-3 py-1 text-sm rounded-md bg-white text-slate-700 border border-slate-300 {$disabledPrev}'>&lt;</button>";
 
-    for ($i = 1; $i <= $totalPaginas; $i++) {
-        $activeClass = $i == $pagina ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100';
+    // Botão 'Anterior'
+    if ($pagina > 1) {
+        $prevPage = $pagina - 1;
+        echo "<button onclick='buscarPets(undefined, {$prevPage})' class='px-3 py-1 text-sm rounded-md bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'>&lt;</button>";
+    }
+
+    // Primeira página e reticências
+    if ($pagina > $range + 1) {
+        echo "<button onclick='buscarPets(undefined, 1)' class='px-3 py-1 text-sm rounded-md bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'>1</button>";
+        if ($pagina > $range + 2) {
+            echo "<span class='px-3 py-1 text-sm text-slate-500'>...</span>";
+        }
+    }
+
+    // Números das páginas
+    for ($i = max(1, $pagina - $range); $i <= min($totalPaginas, $pagina + $range); $i++) {
+        $activeClass = ($i == $pagina) ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100';
         echo "<button onclick='buscarPets(undefined, {$i})' class='px-3 py-1 text-sm rounded-md {$activeClass}'>{$i}</button>";
     }
 
-    $nextPage = $pagina < $totalPaginas ? $pagina + 1 : $totalPaginas;
-    $disabledNext = $pagina == $totalPaginas ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100';
-    echo "<button onclick='buscarPets(undefined, {$nextPage})' class='px-3 py-1 text-sm rounded-md bg-white text-slate-700 border border-slate-300 {$disabledNext}'>&gt;</button>";
+    // Última página e reticências
+    if ($pagina < $totalPaginas - $range) {
+        if ($pagina < $totalPaginas - $range - 1) {
+            echo "<span class='px-3 py-1 text-sm text-slate-500'>...</span>";
+        }
+        echo "<button onclick='buscarPets(undefined, {$totalPaginas})' class='px-3 py-1 text-sm rounded-md bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'>{$totalPaginas}</button>";
+    }
+
+    // Botão 'Próxima'
+    if ($pagina < $totalPaginas) {
+        $nextPage = $pagina + 1;
+        echo "<button onclick='buscarPets(undefined, {$nextPage})' class='px-3 py-1 text-sm rounded-md bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'>&gt;</button>";
+    }
+
     echo '</div>';
 }
 $paginationContent = ob_get_clean();

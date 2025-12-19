@@ -12,7 +12,7 @@ if (!isset($_SESSION['usuario_id'])) {
 
 try {
     // A versão aqui DEVE ser a mesma definida em dashboard.php
-    $versao_atual_aviso = '1.1.4';
+    $versao_atual_aviso = '1.1.8';
     $usuario_id = $_SESSION['usuario_id'];
 
     // Atualiza a coluna no banco de dados para o usuário logado

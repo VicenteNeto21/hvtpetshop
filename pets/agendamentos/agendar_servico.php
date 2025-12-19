@@ -1,13 +1,12 @@
 <?php
 include "../../config/config.php";
-session_start();
+session_start(); // Inicia a sessão
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../../login.html");
     exit();
 }
-
 // Inicializa $pet_id e $pet
 $pet_id = isset($_GET['pet_id']) ? $_GET['pet_id'] : null;
 $pet = null;
