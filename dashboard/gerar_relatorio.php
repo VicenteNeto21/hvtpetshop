@@ -313,15 +313,47 @@ $dadosDiarios = $stmtDiario->fetchAll(PDO::FETCH_ASSOC);
             }
             .container {
                 box-shadow: none;
-                padding: 10mm 15mm;
+                padding: 0;
                 width: 100%;
+                margin: 0;
             }
             .print-buttons {
                 display: none;
             }
             @page {
                 size: A4;
-                margin: 0;
+                margin: 15mm 15mm 15mm 15mm; /* margens em todas as páginas */
+            }
+            /* Evita quebra dentro das seções */
+            .section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            /* Evita quebra dentro das tabelas */
+            table {
+                page-break-inside: auto;
+            }
+            tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            /* Evita que o header fique sozinho no fim da página */
+            .section h2 {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            /* KPIs não devem quebrar */
+            .kpis {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            /* Footer não deve quebrar */
+            .footer {
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
         }
     </style>
