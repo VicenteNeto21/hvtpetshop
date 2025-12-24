@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->beginTransaction();
 
         $pet_id_post = $_POST['pet_id'];
-        $servicos_selecionados = isset($_POST['servico_id']) ? (array)$_POST['servico_id'] : [];
+        $servicos_selecionados = isset($_POST['servico_id']) ? (array) $_POST['servico_id'] : [];
         $servico_outros_selecionado = isset($_POST['servico_outros']);
         $servico_outros_detalhes = trim($_POST['servico_outros_detalhes'] ?? '');
         $data = $_POST['data'];
@@ -102,18 +102,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_agendamento->execute();
         }
 
+        // Busca o nome do pet para a mensagem
+        $query_nome_pet = "SELECT nome FROM pets WHERE id = :pet_id";
+        $stmt_nome_pet = $pdo->prepare($query_nome_pet);
+        $stmt_nome_pet->bindValue(':pet_id', $pet_id_post, PDO::PARAM_INT);
+        $stmt_nome_pet->execute();
+        $nome_pet = $stmt_nome_pet->fetchColumn();
+
         $pdo->commit();
 
-        $_SESSION['mensagem'] = "Agendamento realizado com sucesso!";
+        $_SESSION['mensagem'] = "Agendamento realizado com sucesso para " . htmlspecialchars($nome_pet) . "!";
         $_SESSION['tipo_mensagem'] = "success";
-        header("Location: ../visualizar_pet.php?id=" . $pet_id_post);
+        header("Location: agendar_servico.php");
         exit();
 
     } catch (Exception $e) {
         $pdo->rollBack();
         $_SESSION['mensagem'] = "Erro ao agendar: " . $e->getMessage();
         $_SESSION['tipo_mensagem'] = "error";
-        header("Location: agendar_servico.php?pet_id=".$pet_id_post); // Usar pet_id_post para manter o contexto
+        header("Location: agendar_servico.php?pet_id=" . $pet_id_post); // Usar pet_id_post para manter o contexto
         exit(); // Adicionado exit() aqui
     }
 }
@@ -121,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -131,6 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
 
     <?php
@@ -170,37 +179,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php else: ?>
                     <!-- Seleção de Pet (quando pet_id NÃO é fornecido) -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
-                            <i class="fa-solid fa-paw text-violet-500"></i> Selecione o Pet <span class="text-red-500">*</span>
+                        <h3
+                            class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                            <i class="fa-solid fa-paw text-violet-500"></i> Selecione o Pet <span
+                                class="text-red-500">*</span>
                         </h3>
-                        <select name="pet_id" id="pet_id_select" required class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                        <select name="pet_id" id="pet_id_select" required
+                            class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
                             <option value="">Selecione um Pet</option>
                             <?php foreach ($all_pets as $p): ?>
-                                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['nome']) ?> (Tutor: <?= htmlspecialchars($p['tutor_nome']) ?>)</option>
+                                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['nome']) ?> (Tutor:
+                                    <?= htmlspecialchars($p['tutor_nome']) ?>)
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <?php if (empty($all_pets)): ?>
-                            <p class="text-red-500 text-sm mt-2">Nenhum pet cadastrado. Cadastre um pet antes de agendar um serviço.</p>
+                            <p class="text-red-500 text-sm mt-2">Nenhum pet cadastrado. Cadastre um pet antes de agendar um
+                                serviço.</p>
                         <?php endif; ?>
                         <div class="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg text-blue-800 text-sm">
-                            <i class="fas fa-info-circle mr-2"></i> Você pode adicionar um novo pet <a href="../cadastrar_pet.php" class="underline font-semibold hover:text-blue-900">clicando aqui</a>.
+                            <i class="fas fa-info-circle mr-2"></i> Você pode adicionar um novo pet <a
+                                href="../cadastrar_pet.php" class="underline font-semibold hover:text-blue-900">clicando
+                                aqui</a>.
                         </div>
                     </div>
                 <?php endif; ?>
 
                 <!-- Data e Hora -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
-                        <i class="fa-solid fa-calendar-alt text-sky-500"></i> Data e Hora <span class="text-red-500">*</span>
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-calendar-alt text-sky-500"></i> Data e Hora <span
+                            class="text-red-500">*</span>
                     </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label for="data" class="block text-sm font-medium text-slate-600 mb-1">Data</label>
-                            <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <input type="date" name="data" id="data"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="<?= date('Y-m-d') ?>" required>
                         </div>
                         <div>
                             <label for="horario" class="block text-sm font-medium text-slate-600 mb-1">Horário</label>
-                            <select name="horario" id="horario" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required disabled>
+                            <select name="horario" id="horario"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required disabled>
                                 <option value="">Selecione uma data primeiro</option>
                             </select>
                         </div>
@@ -209,34 +232,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <!-- Seleção de Serviços -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
-                        <i class="fa-solid fa-scissors text-green-500"></i> Seleção de Serviços <span class="text-red-500">*</span>
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                        <i class="fa-solid fa-scissors text-green-500"></i> Seleção de Serviços <span
+                            class="text-red-500">*</span>
                     </h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <?php foreach ($servicos as $servico): ?>
-                            <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
-                                <input type="checkbox" name="servico_id[]" value="<?= $servico['id'] ?>" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label
+                                class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" name="servico_id[]" value="<?= $servico['id'] ?>"
+                                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 <span class="text-slate-700"><?= htmlspecialchars($servico['nome']) ?></span>
                             </label>
                         <?php endforeach; ?>
                         <!-- Campo "Outros" com input de texto -->
-                        <div class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 col-span-2 sm:col-span-1">
-                            <input type="checkbox" id="servico_outros_check" name="servico_outros" value="99" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div
+                            class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 col-span-2 sm:col-span-1">
+                            <input type="checkbox" id="servico_outros_check" name="servico_outros" value="99"
+                                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                             <label for="servico_outros_check" class="text-slate-700 cursor-pointer">Outros:</label>
-                            <input type="text" name="servico_outros_detalhes" id="servico_outros_detalhes" class="flex-1 p-1 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-100 disabled:cursor-not-allowed" placeholder="Especifique o serviço" disabled>
+                            <input type="text" name="servico_outros_detalhes" id="servico_outros_detalhes"
+                                class="flex-1 p-1 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-100 disabled:cursor-not-allowed"
+                                placeholder="Especifique o serviço" disabled>
                         </div>
                     </div>
                 </div>
 
                 <!-- Outras Informações -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
                         <i class="fa-solid fa-circle-info text-amber-500"></i> Outras Informações
                     </h3>
                     <div class="space-y-4">
                         <div>
-                            <label for="transporte" class="block text-sm font-medium text-slate-600 mb-1">Transporte</label>
-                            <select name="transporte" id="transporte" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="transporte"
+                                class="block text-sm font-medium text-slate-600 mb-1">Transporte</label>
+                            <select name="transporte" id="transporte"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="Petshop busca e entrega" selected>Petshop busca e entrega</option>
                                 <option value="Petshop busca, tutor retira">Petshop busca, tutor retira</option>
                                 <option value="Tutor leva, Petshop entrega">Tutor leva, Petshop entrega</option>
@@ -244,17 +278,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </select>
                         </div>
                         <div>
-                            <label for="observacoes" class="block text-sm font-medium text-slate-600 mb-1">Observações Gerais</label>
-                            <textarea name="observacoes" id="observacoes" rows="3" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Informações adicionais sobre o serviço ou o pet (ex: alergias, comportamento)"></textarea>
+                            <label for="observacoes" class="block text-sm font-medium text-slate-600 mb-1">Observações
+                                Gerais</label>
+                            <textarea name="observacoes" id="observacoes" rows="3"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Informações adicionais sobre o serviço ou o pet (ex: alergias, comportamento)"></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-4 pt-8 mt-8 border-t border-slate-200">
-                    <a href="<?= $pet ? '../visualizar_pet.php?id='.$pet['id'] : '../../dashboard.php' ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
+                    <a href="<?= $pet ? '../visualizar_pet.php?id=' . $pet['id'] : '../../dashboard.php' ?>"
+                        class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
                         <i class="fa fa-arrow-left"></i> Cancelar
                     </a>
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
                         <i class="fa fa-calendar-check"></i> Confirmar Agendamento
                     </button>
                 </div>
@@ -265,53 +304,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
-            from { opacity: 0; transform: translateY(30px);}
-            to { opacity: 1; transform: translateY(0);}
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .animate-fade-in {
             animation: fade-in 0.8s ease;
         }
+
         /* Custom styles for Select2 to match Tailwind theme */
         .select2-container--default .select2-selection--single {
             background-color: #fff;
-            border: 1px solid #cbd5e1; /* slate-300 */
-            border-radius: 0.375rem; /* rounded-md */
-            height: 2.75rem; /* Ajustado para p-2 e font-size */
+            border: 1px solid #cbd5e1;
+            /* slate-300 */
+            border-radius: 0.375rem;
+            /* rounded-md */
+            height: 2.75rem;
+            /* Ajustado para p-2 e font-size */
             padding-top: 0.5rem;
             padding-bottom: 0.5rem;
         }
+
         .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #334155; /* slate-700 */
+            color: #334155;
+            /* slate-700 */
             line-height: 1.5rem;
         }
+
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 2.6rem;
         }
+
         .select2-container--default.select2-container--open .select2-selection--single {
-            border-color: #3b82f6; /* blue-500 */
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); /* ring-2 ring-blue-500 */
+            border-color: #3b82f6;
+            /* blue-500 */
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            /* ring-2 ring-blue-500 */
         }
+
         .select2-dropdown {
             background-color: white;
-            border: 1px solid #cbd5e1; /* slate-300 */
-            border-radius: 0.375rem; /* rounded-md */
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
+            border: 1px solid #cbd5e1;
+            /* slate-300 */
+            border-radius: 0.375rem;
+            /* rounded-md */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            /* shadow-md */
         }
+
         .select2-container--default .select2-search--dropdown .select2-search__field {
-            border: 1px solid #cbd5e1; /* slate-300 */
-            border-radius: 0.375rem; /* rounded-md */
+            border: 1px solid #cbd5e1;
+            /* slate-300 */
+            border-radius: 0.375rem;
+            /* rounded-md */
         }
+
         .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
-            background-color: #3b82f6; /* blue-500 */
+            background-color: #3b82f6;
+            /* blue-500 */
             color: white;
         }
     </style>
     <!-- jQuery (necessário para Select2) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
+            // Scroll automático para o topo quando há mensagem de toast
+            const toastElement = document.getElementById('toast-message');
+            if (toastElement) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
             $('#pet_id_select').select2({
                 placeholder: "Selecione um Pet",
                 allowClear: true // Permite desmarcar a seleção
@@ -320,7 +393,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const outrosCheck = document.getElementById('servico_outros_check');
             const outrosDetalhesInput = document.getElementById('servico_outros_detalhes');
 
-            outrosCheck.addEventListener('change', function() {
+            outrosCheck.addEventListener('change', function () {
                 if (this.checked) {
                     outrosDetalhesInput.disabled = false;
                 } else {
@@ -359,7 +432,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             dataInput.addEventListener('change', buscarHorariosDisponiveis);
+
+            // Carrega horários automaticamente ao abrir a página (já que a data vem pré-preenchida)
+            buscarHorariosDisponiveis();
         });
     </script>
 </body>
+
 </html>
