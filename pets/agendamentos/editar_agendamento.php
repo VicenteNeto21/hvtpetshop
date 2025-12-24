@@ -35,7 +35,7 @@ $agendamento = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$agendamento) {
     $_SESSION['mensagem'] = "Agendamento não encontrado";
     $_SESSION['tipo_mensagem'] = "error";
-    header("Location: ../../visualizar_pet.php?id=".$agendamento['pet_id']);
+    header("Location: ../../visualizar_pet.php?id=" . $agendamento['pet_id']);
     exit();
 }
 
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             comportamento_pet = :comportamento_pet,
                             recomendacoes_tutor = :recomendacoes_tutor
                             WHERE id = :id";
-            
+
             $stmtUpdate = $pdo->prepare($queryUpdate);
             $stmtUpdate->bindValue(':altura_pelos', $altura_pelos);
             $stmtUpdate->bindValue(':doenca_pre_existente', $doenca_pre_existente);
@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtUpdate->bindValue(':recomendacoes_tutor', $recomendacoes_tutor);
             $stmtUpdate->bindValue(':id', $fichaId);
             $stmtUpdate->execute();
-            
+
             // Remove observações e serviços antigos
             $pdo->prepare("DELETE FROM ficha_observacoes WHERE ficha_id = ?")->execute([$fichaId]);
             $pdo->prepare("DELETE FROM ficha_servicos_realizados WHERE ficha_id = ?")->execute([$fichaId]);
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $queryInsert = "INSERT INTO fichas_petshop 
                            (agendamento_id, funcionario_id, altura_pelos, doenca_pre_existente, doenca_ouvido, doenca_pele, observacoes, comportamento_pet, recomendacoes_tutor)
                            VALUES (:agendamento_id, :funcionario_id, :altura_pelos, :doenca_pre_existente, :doenca_ouvido, :doenca_pele, :observacoes, :comportamento_pet, :recomendacoes_tutor)";
-            
+
             $stmtInsert = $pdo->prepare($queryInsert);
             $stmtInsert->bindValue(':agendamento_id', $agendamentoId);
             $stmtInsert->bindValue(':funcionario_id', $usuarioId);
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtInsert->bindValue(':comportamento_pet', $comportamento_pet);
             $stmtInsert->bindValue(':recomendacoes_tutor', $recomendacoes_tutor);
             $stmtInsert->execute();
-            
+
             $fichaId = $pdo->lastInsertId();
         }
 
@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->commit();
 
-        $_SESSION['mensagem'] = "Ficha do petshop atualizada com sucesso!";
+        $_SESSION['mensagem'] = "Ficha do petshop atualizada com sucesso para " . htmlspecialchars($agendamento['pet_nome']) . "!";
         $_SESSION['tipo_mensagem'] = "success";
         header("Location: ../visualizar_pet.php?id=" . $agendamento['pet_id']);
         exit();
@@ -201,7 +201,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Função para formatar telefone
-function formatarTelefone($telefone) {
+function formatarTelefone($telefone)
+{
     $telefone = preg_replace('/[^0-9]/', '', $telefone);
     if (strlen($telefone) === 11) {
         return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $telefone);
@@ -214,6 +215,7 @@ function formatarTelefone($telefone) {
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -222,6 +224,7 @@ function formatarTelefone($telefone) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
 
     <?php
@@ -245,22 +248,27 @@ function formatarTelefone($telefone) {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Tutor -->
                         <div class="flex items-start gap-4">
-                            <div class="bg-amber-100 text-amber-500 w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+                            <div
+                                class="bg-amber-100 text-amber-500 w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0">
                                 <i class="fa-solid fa-user"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-slate-800"><?= htmlspecialchars($agendamento['tutor_nome']) ?></h3>
+                                <h3 class="text-lg font-bold text-slate-800">
+                                    <?= htmlspecialchars($agendamento['tutor_nome']) ?></h3>
                                 <p class="text-sm text-slate-500">Tutor</p>
-                                <p class="text-sm text-slate-600 mt-1"><?= htmlspecialchars(formatarTelefone($agendamento['tutor_telefone'])) ?></p>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    <?= htmlspecialchars(formatarTelefone($agendamento['tutor_telefone'])) ?></p>
                             </div>
                         </div>
                         <!-- Pet -->
                         <div class="flex items-start gap-4">
-                            <div class="bg-violet-100 text-violet-500 w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+                            <div
+                                class="bg-violet-100 text-violet-500 w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0">
                                 <i class="fa-solid fa-dog"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-slate-800"><?= htmlspecialchars($agendamento['pet_nome']) ?></h3>
+                                <h3 class="text-lg font-bold text-slate-800">
+                                    <?= htmlspecialchars($agendamento['pet_nome']) ?></h3>
                                 <p class="text-sm text-slate-500">Pet</p>
                                 <div class="text-sm text-slate-600 mt-1">
                                     <span><?= htmlspecialchars($agendamento['especie']) ?></span>,
@@ -274,29 +282,36 @@ function formatarTelefone($telefone) {
 
                 <!-- Data e Hora do Agendamento -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
                         <i class="fa-solid fa-calendar-alt text-sky-500"></i> Data e Hora do Agendamento
                     </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label for="data" class="block text-sm font-medium text-slate-600 mb-1">Data</label>
-                            <input type="date" name="data" id="data" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= date('Y-m-d', strtotime($agendamento['data_hora'])) ?>" required>
+                            <input type="date" name="data" id="data"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="<?= date('Y-m-d', strtotime($agendamento['data_hora'])) ?>" required>
                         </div>
                         <div>
                             <label for="horario" class="block text-sm font-medium text-slate-600 mb-1">Horário</label>
-                            <input type="time" name="horario" id="horario" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= date('H:i', strtotime($agendamento['data_hora'])) ?>" required>
+                            <input type="time" name="horario" id="horario"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="<?= date('H:i', strtotime($agendamento['data_hora'])) ?>" required>
                         </div>
                     </div>
                 </div>
 
                 <!-- Observação Visual -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
                         <i class="fa-solid fa-eye text-sky-500"></i> Avaliação Visual
                     </h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <?php foreach ($observacoesVisuais as $obs): ?>
-                            <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                            <label
+                                class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
                                 <input type="checkbox" name="observacao_visual[<?= $obs['id'] ?>]" value="1"
                                     <?= isset($observacoesMarcadas[$obs['id']]) ? 'checked' : '' ?>
                                     class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
@@ -314,70 +329,89 @@ function formatarTelefone($telefone) {
 
                 <!-- Serviços Realizados -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
                         <i class="fa-solid fa-scissors text-green-500"></i> Serviços Realizados
                     </h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                         <?php foreach ($todosServicos as $servico): ?>
-                            <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
-                                <input type="checkbox" name="servicos_realizados[]" value="<?= $servico['id'] ?>"
-                                       <?php
-                                            // Verifica se o serviço foi solicitado OU se já foi marcado na ficha
-                                            $isSolicitado = in_array($servico['id'], array_column($servicosSolicitados, 'id'));
-                                            $isRealizado = isset($servicosRealizados[$servico['id']]);
-                                            if ($isSolicitado || $isRealizado) echo 'checked';
-                                       ?>
-                                       class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label
+                                class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" name="servicos_realizados[]" value="<?= $servico['id'] ?>" <?php
+                                  // Verifica se o serviço foi solicitado OU se já foi marcado na ficha
+                                  $isSolicitado = in_array($servico['id'], array_column($servicosSolicitados, 'id'));
+                                  $isRealizado = isset($servicosRealizados[$servico['id']]);
+                                  if ($isSolicitado || $isRealizado)
+                                      echo 'checked';
+                                  ?>
+                                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 <span class="text-slate-700"><?= htmlspecialchars($servico['nome']) ?></span>
                             </label>
                         <?php endforeach; ?>
-                        
+
                         <!-- Campo para "Outros" -->
                         <div class="flex items-center gap-2 p-3 border border-slate-200 rounded-lg">
                             <span class="text-slate-700 font-medium">Outros:</span>
                             <input type="text" name="servicos_realizados_outros"
-                                   value="<?= htmlspecialchars($servicosRealizados[99] ?? '') ?>"
-                                   class="w-full p-1 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                   placeholder="Serviço extra (opcional)">
+                                value="<?= htmlspecialchars($servicosRealizados[99] ?? '') ?>"
+                                class="w-full p-1 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                placeholder="Serviço extra (opcional)">
                         </div>
                     </div>
                 </div>
 
                 <!-- Doenças e Observações -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
                         <i class="fa-solid fa-heart-pulse text-red-500"></i> Saúde e Observações
                     </h3>
                     <div class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1">Doença Pré-Existente</label>
-                                <input type="text" name="doenca_pre_existente" value="<?= htmlspecialchars($agendamento['doenca_pre_existente'] ?? '') ?>" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Cardiopata, diabético">
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Doença
+                                    Pré-Existente</label>
+                                <input type="text" name="doenca_pre_existente"
+                                    value="<?= htmlspecialchars($agendamento['doenca_pre_existente'] ?? '') ?>"
+                                    class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Ex: Cardiopata, diabético">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1">Doença Canal Auditivo/Otite</label>
-                                <input type="text" name="doenca_ouvido" value="<?= htmlspecialchars($agendamento['doenca_ouvido'] ?? '') ?>" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Otite crônica">
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Doença Canal
+                                    Auditivo/Otite</label>
+                                <input type="text" name="doenca_ouvido"
+                                    value="<?= htmlspecialchars($agendamento['doenca_ouvido'] ?? '') ?>"
+                                    class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Ex: Otite crônica">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-600 mb-1">Doença de Pele</label>
-                                <input type="text" name="doenca_pele" value="<?= htmlspecialchars($agendamento['doenca_pele'] ?? '') ?>" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Dermatite atópica">
+                                <input type="text" name="doenca_pele"
+                                    value="<?= htmlspecialchars($agendamento['doenca_pele'] ?? '') ?>"
+                                    class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Ex: Dermatite atópica">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-600 mb-1">Observações Adicionais</label>
-                            <textarea name="observacoes" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Qualquer outra informação relevante sobre a saúde do pet."><?= htmlspecialchars($agendamento['observacoes'] ?? '') ?></textarea>
+                            <textarea name="observacoes"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                rows="3"
+                                placeholder="Qualquer outra informação relevante sobre a saúde do pet."><?= htmlspecialchars($agendamento['observacoes'] ?? '') ?></textarea>
                         </div>
                     </div>
                 </div>
 
                 <!-- Cumprimento/altura dos pelos -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
                         <i class="fa-solid fa-ruler-vertical text-amber-500"></i> Detalhes da Tosa
                     </h3>
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Altura dos Pelos</label>
-                        <input type="text" name="altura_pelos" value="<?= htmlspecialchars($agendamento['altura_pelos'] ?? '') ?>"
+                        <input type="text" name="altura_pelos"
+                            value="<?= htmlspecialchars($agendamento['altura_pelos'] ?? '') ?>"
                             class="w-full md:w-1/2 p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Ex: Curto, Médio, Longo ou valor em cm">
                     </div>
@@ -385,26 +419,36 @@ function formatarTelefone($telefone) {
 
                 <!-- Comportamento e Recomendações -->
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
+                    <h3
+                        class="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-2 mb-4 flex items-center gap-3">
                         <i class="fa-solid fa-comment-dots text-teal-500"></i> Comentários Finais
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-slate-600 mb-1">Comportamento do Pet</label>
-                            <textarea name="comportamento_pet" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Como o pet se comportou durante o atendimento? (Ex: Calmo, agitado, agressivo com secador)"><?= htmlspecialchars($agendamento['comportamento_pet'] ?? '') ?></textarea>
+                            <textarea name="comportamento_pet"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                rows="3"
+                                placeholder="Como o pet se comportou durante o atendimento? (Ex: Calmo, agitado, agressivo com secador)"><?= htmlspecialchars($agendamento['comportamento_pet'] ?? '') ?></textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">Recomendações para o Tutor</label>
-                            <textarea name="recomendacoes_tutor" class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Alguma recomendação para o tutor? (Ex: Escovar o pelo diariamente, retornar em 30 dias)"><?= htmlspecialchars($agendamento['recomendacoes_tutor'] ?? '') ?></textarea>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Recomendações para o
+                                Tutor</label>
+                            <textarea name="recomendacoes_tutor"
+                                class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                rows="3"
+                                placeholder="Alguma recomendação para o tutor? (Ex: Escovar o pelo diariamente, retornar em 30 dias)"><?= htmlspecialchars($agendamento['recomendacoes_tutor'] ?? '') ?></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-4 pt-8 mt-8 border-t border-slate-200">
-                    <a href="../visualizar_pet.php?id=<?= $agendamento['pet_id'] ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
+                    <a href="../visualizar_pet.php?id=<?= $agendamento['pet_id'] ?>"
+                        class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
                         <i class="fa fa-arrow-left"></i> Voltar
                     </a>
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 rounded-lg font-semibold shadow-sm transition flex items-center gap-2">
                         <i class="fas fa-save"></i> Salvar Ficha e Finalizar
                     </button>
                 </div>
@@ -415,14 +459,32 @@ function formatarTelefone($telefone) {
     <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
-            from { opacity: 0; transform: translateY(30px);}
-            to { opacity: 1; transform: translateY(0);}
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .animate-fade-in {
             animation: fade-in 0.8s ease;
         }
     </style>
+    <script>
+        // Scroll automático para o topo quando há mensagem de toast
+        window.addEventListener('DOMContentLoaded', function() {
+            const toastElement = document.getElementById('toast-message');
+            if (toastElement) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
 </body>
+
 </html>
 
 <?php
