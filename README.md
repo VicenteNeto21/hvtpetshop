@@ -27,18 +27,34 @@ O CereniaPet é um sistema web desenvolvido para simplificar a gestão de petsho
   - [🎨 Personalização](#-personalização)
   - [🤝 Contribuição](#-contribuição)
   - [📄 Licença](#-licença)
+  - [📝 Histórico de Versões](#-histórico-de-versões)
   - [🏆 Créditos](#-créditos)
 
 ## ✨ Recursos
 
-- **Gestão de Clientes:** Cadastro, edição e busca de pets e seus respectivos tutores.
-- **Controle de Agendamentos:** Sistema para agendar, acompanhar e gerenciar o status dos atendimentos (banho, tosa, consultas), com ficha de atendimento detalhada.
-- **Dashboard Intuitivo:** Painel principal com indicadores chave, estatísticas e uma "Agenda do Dia" interativa com ações rápidas.
+### Gestão de Clientes
+- **Cadastro Completo:** Cadastro, edição e busca de pets e seus respectivos tutores.
+- **Telefone Opcional:** Checkbox "Telefone não informado" permite cadastrar tutores sem número de contato.
 - **Busca Rápida:** Ferramenta de busca dinâmica (AJAX) para encontrar pets ou tutores rapidamente.
-- **Modais de Confirmação:** Confirmações visuais para ações críticas como exclusão de pets/tutores e cancelamento de agendamentos.
-- **Geração de PDF:** Fichas de atendimento podem ser geradas em PDF com um layout profissional.
+
+### Sistema de Agendamentos (v1.2.0) ✨
+- **Fluxo Otimizado:** Após criar um agendamento, você permanece na tela para agendar outros pets rapidamente, sem quebrar o fluxo.
+- **Mensagens Personalizadas:** Feedback com o nome do pet (ex: "Agendamento realizado com sucesso para Rex!").
+- **Scroll Automático:** A tela rola automaticamente para o topo após salvar, garantindo visibilidade da mensagem de confirmação.
+- **Data Pré-preenchida:** Campo de data vem com a data atual e os horários são carregados automaticamente, agilizando o processo.
+- **Controle Completo:** Sistema para agendar, acompanhar e gerenciar o status dos atendimentos (banho, tosa, consultas).
+- **Ficha de Atendimento:** Fichas de atendimento detalhadas com opção de gerar PDF profissional.
+
+### Dashboard e Interface
+- **Dashboard Intuitivo:** Painel principal com indicadores chave, estatísticas e uma "Agenda do Dia" interativa com ações rápidas.
 - **Design Responsivo:** Interface adaptável para uma ótima experiência em desktops, tablets e celulares.
-- **Notificações:** Aviso modal sobre novas funcionalidades e atualizações do sistema.
+- **Modal Responsivo:** Sistema de notificações sobre novas funcionalidades, totalmente adaptado para mobile.
+- **Modais de Confirmação:** Confirmações visuais para ações críticas como exclusão de pets/tutores e cancelamento de agendamentos.
+
+### Outras Funcionalidades
+- **Geração de PDF:** Fichas de atendimento podem ser geradas em PDF com um layout profissional.
+- **Módulo PDV:** Sistema de ponto de venda integrado.
+- **Controle de Versões:** Sistema de avisos automáticos sobre novas funcionalidades por versão.
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -113,6 +129,27 @@ Contribuições são bem-vindas! Se você tem sugestões para melhorar o projeto
 ## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 📝 Histórico de Versões
+
+### v1.2.0 (Dezembro 2024)
+**Melhorias no Sistema de Agendamentos**
+- ✨ Fluxo otimizado: permanece na tela de agendamento após salvar para facilitar múltiplos cadastros
+- 💬 Mensagens personalizadas com nome do pet nos feedbacks de sucesso
+- ⬆️ Scroll automático para o topo após salvar agendamentos
+- 📅 Data atual pré-preenchida com carregamento automático de horários
+- 📱 Modal de novidades totalmente responsivo para dispositivos móveis
+- ☎️ Checkbox "Telefone não informado" no cadastro de tutores
+
+**Melhorias Técnicas**
+- Melhor experiência de usuário em cadastros sequenciais
+- Validação aprimorada de campos opcionais
+- Interface mais intuitiva e profissional
+
+### v1.1.8 (Anterior)
+- Central de atendimentos pendentes
+- Gerenciamento simplificado de agendamentos
+- Melhorias no dashboard
 
 ## 🏆 Créditos
 
