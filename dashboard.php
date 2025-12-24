@@ -8,7 +8,7 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 // Controle do aviso de funcionalidades por versão
-$versao_atual_aviso = '1.1.8';
+$versao_atual_aviso = '1.2.0';
 
 // Garante que a versão vista esteja na sessão, buscando do DB se necessário
 if (isset($_SESSION['usuario_id']) && !isset($_SESSION['aviso_visto_versao'])) {
@@ -94,9 +94,10 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="./icons/pet.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -114,6 +115,7 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
         }
     </script>
 </head>
+
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
 
     <?php
@@ -127,7 +129,9 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
     <!-- Modal de Detalhes do Agendamento -->
     <div id="modal-detalhes-agendamento" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4 relative animate-fade-in">
-            <button onclick="fecharModalDetalhes()" class="absolute top-3 right-4 text-slate-400 hover:text-red-500 text-2xl font-bold" title="Fechar">&times;</button>
+            <button onclick="fecharModalDetalhes()"
+                class="absolute top-3 right-4 text-slate-400 hover:text-red-500 text-2xl font-bold"
+                title="Fechar">&times;</button>
             <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3">
                 <i class="fa-solid fa-calendar-check text-sky-500"></i>
                 Detalhes do Agendamento
@@ -142,37 +146,51 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <?php if ($mostrarAviso): ?>
-    <!-- Aviso de funcionalidades em desenvolvimento -->
-    <div id="aviso-funcionalidades" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-left relative animate-fade-in">
-            <button onclick="fecharAvisoNovidades()" class="absolute top-3 right-4 text-slate-400 hover:text-red-500 text-2xl font-bold" title="Fechar">&times;</button>
-            <div class="flex flex-col gap-2">
-                <div class="flex items-center gap-3 mb-2">
-                    <i class="fa-solid fa-star text-amber-500 text-3xl"></i>
-                    <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-slate-800">Novidades da Versão 1.1.8!</h2>
-                    <p class="text-slate-500">Nova central de gerenciamento de atendimentos.</p>
+        <!-- Aviso de funcionalidades em desenvolvimento -->
+        <div id="aviso-funcionalidades"
+            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 max-w-lg w-full text-left relative animate-fade-in my-8">
+                <button onclick="fecharAvisoNovidades()"
+                    class="absolute top-3 right-4 text-slate-400 hover:text-red-500 text-2xl font-bold"
+                    title="Fechar">&times;</button>
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fa-solid fa-star text-amber-500 text-2xl md:text-3xl"></i>
+                        <div class="flex-1">
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-800">Novidades da Versão 1.2.0!</h2>
+                            <p class="text-sm md:text-base text-slate-500">Fluxo de agendamento mais rápido e eficiente.</p>
+                        </div>
                     </div>
-                </div>
-                <ul class="space-y-2 text-slate-600 list-disc list-inside pl-2">
-                <li><strong>Central de Pendentes:</strong> Novo card no dashboard mostrando atendimentos pendentes. Clique para acessar a central completa.</li>
-                <li><strong>Gerenciamento Simplificado:</strong> Finalize, cancele ou visualize detalhes de atendimentos pendentes em um único lugar.</li>
-                <li><strong>Fluxo Melhorado:</strong> Após finalizar uma ficha de atendimento, você retorna automaticamente ao dashboard.</li>
-                </ul>
-                <div class="flex flex-col items-center mt-6">
-                    <button onclick="fecharAvisoNovidades()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition">Ok, entendi!</button>
-                    <p class="text-xs text-slate-400 mt-3">Esta mensagem aparecerá apenas uma vez por atualização.</p>
+                    <ul class="space-y-2 text-slate-600 list-disc list-inside pl-2 text-sm md:text-base">
+                        <li><strong>Fluxo de Agendamento Otimizado:</strong> Após criar um agendamento, você permanece na
+                            tela para agendar outros pets rapidamente, sem quebrar o fluxo.</li>
+                        <li><strong>Mensagens Personalizadas:</strong> Feedback com o nome do pet (ex: "Agendamento
+                            realizado com sucesso para Rex!") tanto ao criar quanto ao editar agendamentos.</li>
+                        <li><strong>Scroll Automático:</strong> A tela rola automaticamente para o topo após salvar,
+                            garantindo que você veja a mensagem de confirmação.</li>
+                        <li><strong>Data Pré-preenchida:</strong> Campo de data vem com a data atual e os horários são
+                            carregados automaticamente, agilizando o processo.</li>
+                        <li><strong>Experiência Aprimorada:</strong> Ideal para fazer múltiplos agendamentos em sequência de
+                            forma eficiente e profissional.</li>
+                    </ul>
+                    <div class="flex flex-col items-center mt-6">
+                        <button onclick="fecharAvisoNovidades()"
+                            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition w-full md:w-auto">Ok,
+                            entendi!</button>
+                        <p class="text-xs text-slate-400 mt-3 text-center">Esta mensagem aparecerá apenas uma vez por
+                            atualização.</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     <?php endif; ?>
 
     <main class="flex-1 w-full p-4 md:p-6 lg:p-8">
         <!-- Estatísticas -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 animate-fade-in">
             <!-- Card Agendamentos Hoje (Clicável) -->
-            <a href="pets/agendamentos/agendar_servico.php" class="bg-white border-l-4 border-sky-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
+            <a href="pets/agendamentos/agendar_servico.php"
+                class="bg-white border-l-4 border-sky-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
                 <div class="flex justify-between items-center">
                     <p class="text-sm font-medium text-slate-500">Agendamentos Hoje</p>
                     <i class="fa-solid fa-calendar-day text-sky-500"></i>
@@ -180,7 +198,8 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                 <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalAgendamentosHoje; ?></p>
             </a>
             <!-- Card Pendentes para Encerrar (Clicável) -->
-            <a href="dashboard/pendentes.php" class="bg-white border-l-4 border-orange-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
+            <a href="dashboard/pendentes.php"
+                class="bg-white border-l-4 border-orange-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
                 <div class="flex justify-between items-center">
                     <p class="text-sm font-medium text-slate-500">Pendentes p/ Encerrar</p>
                     <i class="fa-solid fa-hourglass-half text-orange-500"></i>
@@ -196,7 +215,8 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                 <p class="text-3xl font-bold text-slate-800 mt-2"><?= $totalPets; ?></p>
             </div>
             <!-- Card Total de Tutores -->
-            <a href="tutores/listar_tutores.php" class="bg-white border-l-4 border-amber-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
+            <a href="tutores/listar_tutores.php"
+                class="bg-white border-l-4 border-amber-500 rounded-r-lg p-5 shadow-sm hover:bg-slate-50 transition">
                 <div class="flex justify-between items-center">
                     <p class="text-sm font-medium text-slate-500">Total de Tutores</p>
                     <i class="fa-solid fa-users text-amber-500"></i>
@@ -208,25 +228,32 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
         <!-- Conteúdo Principal (Tabelas) -->
         <div class="space-y-10">
             <!-- Agendamentos do dia -->
-            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in"> 
+            <div class="bg-white p-6 rounded-lg shadow-sm animate-fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                     <h2 id="agenda-titulo" class="text-xl font-bold text-slate-800 flex items-center gap-3">
-                        <i class="fa fa-clock text-sky-500"></i> Agenda para <?= date('d/m/Y', strtotime($dataSelecionada)) ?>
+                        <i class="fa fa-clock text-sky-500"></i> Agenda para
+                        <?= date('d/m/Y', strtotime($dataSelecionada)) ?>
                     </h2>
                     <div class="flex items-center gap-2 ml-auto">
                         <?php
-                            $isToday = ($dataSelecionada == date('Y-m-d'));
+                        $isToday = ($dataSelecionada == date('Y-m-d'));
                         ?>
-                        <button id="btn-data-anterior" data-date="<?= date('Y-m-d', strtotime($dataSelecionada . ' -1 day')) ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
+                        <button id="btn-data-anterior"
+                            data-date="<?= date('Y-m-d', strtotime($dataSelecionada . ' -1 day')) ?>"
+                            class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
                             &lt;
                         </button>
-                        <button id="btn-data-hoje" data-date="<?= date('Y-m-d') ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm <?= $isToday ? 'hidden' : '' ?>">
+                        <button id="btn-data-hoje" data-date="<?= date('Y-m-d') ?>"
+                            class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm <?= $isToday ? 'hidden' : '' ?>">
                             Hoje
                         </button>
-                        <button id="btn-data-seguinte" data-date="<?= date('Y-m-d', strtotime($dataSelecionada . ' +1 day')) ?>" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
+                        <button id="btn-data-seguinte"
+                            data-date="<?= date('Y-m-d', strtotime($dataSelecionada . ' +1 day')) ?>"
+                            class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition text-sm">
                             &gt;
                         </button>
-                        <a href="pets/agendamentos/agendar_servico.php" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition flex items-center gap-2 text-sm whitespace-nowrap ml-2">
+                        <a href="pets/agendamentos/agendar_servico.php"
+                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition flex items-center gap-2 text-sm whitespace-nowrap ml-2">
                             <i class="fa fa-calendar-plus"></i> Novo Agendamento
                         </a>
                     </div>
@@ -235,53 +262,81 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                     <table class="min-w-full text-sm">
                         <thead class="border-b-2 border-slate-200">
                             <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Horário</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Pet</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Serviços</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">
+                                    Horário</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">
+                                    Pet</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">
+                                    Tutor</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">
+                                    Serviços</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">
+                                    Status</th>
+                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">
+                                    Ações</th>
                             </tr>
                         </thead>
                         <tbody id="agenda-tbody" class="divide-y divide-slate-100">
                             <?php if (empty($agendamentosHoje)): ?>
-                                <tr><td colspan="6" class="text-slate-500 text-center py-8 border-t-2 border-dashed">Nenhum agendamento para esta data.</td></tr>
+                                <tr>
+                                    <td colspan="6" class="text-slate-500 text-center py-8 border-t-2 border-dashed">Nenhum
+                                        agendamento para esta data.</td>
+                                </tr>
                             <?php else: ?>
                                 <?php foreach ($agendamentosHoje as $ag): ?>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-4 font-medium text-slate-800 whitespace-nowrap"><?= htmlspecialchars($ag['horario']) ?></td>
-                                    <td class="px-4 py-4 text-slate-800 font-semibold">
-                                        <a href="./pets/visualizar_pet.php?id=<?= $ag['pet_id'] ?>" class="hover:underline"><?= htmlspecialchars($ag['pet_nome']) ?></a>
-                                    </td>
-                                    <td class="px-4 py-4 text-slate-500 whitespace-nowrap">
-                                        <a href="./tutores/visualizar_tutor.php?id=<?= $ag['tutor_id'] ?>" class="hover:underline"><?= htmlspecialchars($ag['tutor_nome']) ?></a>
-                                    </td>
-                                    <td class="px-4 py-4 text-slate-500"><?= htmlspecialchars($ag['servicos'] ?: 'N/A') ?></td>
-                                    <td class="px-4 py-4">
-                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold
-                                            <?= $ag['status'] == 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 
-                                               ($ag['status'] == 'Em Atendimento' ? 'bg-blue-100 text-blue-800' : 
-                                                   ($ag['status'] == 'Finalizado' ? 'bg-green-100 text-green-800' :
-                                                   'bg-red-100 text-red-800')); ?>">
-                                            <?= htmlspecialchars($ag['status']) ?>
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-4 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <!-- Botão de Visualizar Detalhes (sempre visível) -->
-                                            <button onclick="abrirModalDetalhes(<?= $ag['agendamento_id'] ?>)" class="w-8 h-8 flex items-center justify-center rounded-full text-violet-600 hover:bg-violet-100 hover:text-violet-800 transition" title="Ver Detalhes"><i class="fas fa-eye"></i></button>
-                                            <?php if ($ag['status'] == 'Pendente'): ?>
-                                                <button onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Iniciar Atendimento"><i class="fas fa-play-circle"></i></button>
-                                                <a href="./pets/agendamentos/reiditar_agendamento.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition" title="Editar Agendamento"><i class="fas fa-pencil-alt"></i></a>
-                                                <a href="javascript:void(0);" onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>')" class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition" title="Cancelar"><i class="fas fa-times-circle"></i></a>
-                                            <?php elseif ($ag['status'] == 'Em Atendimento'): ?>
-                                                <a href="./pets/agendamentos/ficha_atendimento.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition" title="Preencher Ficha"><i class="fas fa-file-alt"></i></a>
-                                            <?php elseif ($ag['status'] == 'Finalizado'): ?>
-                                                <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>" class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition" title="Visualizar Ficha"><i class="fas fa-file-medical"></i></a>
-                                            <?php endif; ?>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-4 py-4 font-medium text-slate-800 whitespace-nowrap">
+                                            <?= htmlspecialchars($ag['horario']) ?>
+                                        </td>
+                                        <td class="px-4 py-4 text-slate-800 font-semibold">
+                                            <a href="./pets/visualizar_pet.php?id=<?= $ag['pet_id'] ?>"
+                                                class="hover:underline"><?= htmlspecialchars($ag['pet_nome']) ?></a>
+                                        </td>
+                                        <td class="px-4 py-4 text-slate-500 whitespace-nowrap">
+                                            <a href="./tutores/visualizar_tutor.php?id=<?= $ag['tutor_id'] ?>"
+                                                class="hover:underline"><?= htmlspecialchars($ag['tutor_nome']) ?></a>
+                                        </td>
+                                        <td class="px-4 py-4 text-slate-500"><?= htmlspecialchars($ag['servicos'] ?: 'N/A') ?>
+                                        </td>
+                                        <td class="px-4 py-4">
+                                            <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold
+                                            <?= $ag['status'] == 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                                ($ag['status'] == 'Em Atendimento' ? 'bg-blue-100 text-blue-800' :
+                                                    ($ag['status'] == 'Finalizado' ? 'bg-green-100 text-green-800' :
+                                                        'bg-red-100 text-red-800')); ?>">
+                                                <?= htmlspecialchars($ag['status']) ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <!-- Botão de Visualizar Detalhes (sempre visível) -->
+                                                <button onclick="abrirModalDetalhes(<?= $ag['agendamento_id'] ?>)"
+                                                    class="w-8 h-8 flex items-center justify-center rounded-full text-violet-600 hover:bg-violet-100 hover:text-violet-800 transition"
+                                                    title="Ver Detalhes"><i class="fas fa-eye"></i></button>
+                                                <?php if ($ag['status'] == 'Pendente'): ?>
+                                                    <button
+                                                        onclick="updateAgendamentoStatus(<?= $ag['agendamento_id'] ?>, 'Em Atendimento')"
+                                                        class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition"
+                                                        title="Iniciar Atendimento"><i class="fas fa-play-circle"></i></button>
+                                                    <a href="./pets/agendamentos/reiditar_agendamento.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>"
+                                                        class="w-8 h-8 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition"
+                                                        title="Editar Agendamento"><i class="fas fa-pencil-alt"></i></a>
+                                                    <a href="javascript:void(0);"
+                                                        onclick="openConfirmationModal('Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'pets/agendamentos/cancelar_agendamento_action.php?id=<?= $ag['agendamento_id'] ?>&data=<?= $dataSelecionada ?>')"
+                                                        class="w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-800 transition"
+                                                        title="Cancelar"><i class="fas fa-times-circle"></i></a>
+                                                <?php elseif ($ag['status'] == 'Em Atendimento'): ?>
+                                                    <a href="./pets/agendamentos/ficha_atendimento.php?id=<?= $ag['agendamento_id'] ?>"
+                                                        class="w-8 h-8 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition"
+                                                        title="Preencher Ficha"><i class="fas fa-file-alt"></i></a>
+                                                <?php elseif ($ag['status'] == 'Finalizado'): ?>
+                                                    <a href="./pets/agendamentos/visualizar_ficha.php?id=<?= $ag['agendamento_id'] ?>"
+                                                        class="w-8 h-8 flex items-center justify-center rounded-full text-green-600 hover:bg-green-100 hover:text-green-800 transition"
+                                                        title="Visualizar Ficha"><i class="fas fa-file-medical"></i></a>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </tbody>
@@ -296,15 +351,19 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                     Aniversariantes do Dia
                 </h2>
                 <?php if (empty($aniversariantes)): ?>
-                    <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum aniversariante hoje.</div>
+                    <div class="text-slate-500 text-center py-8 border-2 border-dashed rounded-lg">Nenhum aniversariante
+                        hoje.</div>
                 <?php else: ?>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <?php foreach ($aniversariantes as $aniversariante): ?>
                             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-center gap-3">
                                 <i class="fa-solid fa-paw text-violet-500 text-xl"></i>
                                 <div>
-                                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($aniversariante['pet_nome']) ?></p>
-                                    <p class="text-xs text-slate-500">Tutor: <?= htmlspecialchars($aniversariante['tutor_nome']) ?></p>
+                                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($aniversariante['pet_nome']) ?>
+                                    </p>
+                                    <p class="text-xs text-slate-500">Tutor:
+                                        <?= htmlspecialchars($aniversariante['tutor_nome']) ?>
+                                    </p>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -320,8 +379,9 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                         Pets Cadastrados
                     </h2>
                     <form action="dashboard.php" method="GET" class="relative w-full md:w-auto md:max-w-xs">
-                        <input type="text" id="searchInput" value="<?= htmlspecialchars($search); ?>" placeholder="Pesquisar por ID, pet ou tutor..." 
-                               class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
+                        <input type="text" id="searchInput" value="<?= htmlspecialchars($search); ?>"
+                            placeholder="Pesquisar por ID, pet ou tutor..."
+                            class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </form>
                 </div>
@@ -329,10 +389,15 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                     <table class="min-w-full text-sm">
                         <thead class="border-b-2 border-slate-200">
                             <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider w-16">ID</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Pet</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">Tutor</th>
-                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">Ações</th>
+                                <th
+                                    class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider w-16">
+                                    ID</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">
+                                    Pet</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 uppercase tracking-wider">
+                                    Tutor</th>
+                                <th class="px-4 py-3 text-center font-semibold text-slate-600 uppercase tracking-wider">
+                                    Ações</th>
                             </tr>
                         </thead>
                         <tbody id="pets-tbody" class="divide-y divide-slate-100">
@@ -352,20 +417,39 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
     <?php include $path_prefix . 'components/footer.php'; ?>
     <style>
         @keyframes fade-in {
-            from { opacity: 0; transform: translateY(30px);}
-            to { opacity: 1; transform: translateY(0);}
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .animate-fade-in {
             animation: fade-in 0.8s ease;
         }
+
         @keyframes slide-in-right {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
-        .animate-slide-in-right { animation: slide-in-right 0.5s ease-out forwards; }
+
+        .animate-slide-in-right {
+            animation: slide-in-right 0.5s ease-out forwards;
+        }
     </style>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const petsTbody = document.getElementById('pets-tbody');
             const petsPaginationContainer = document.getElementById('pets-pagination-container');
@@ -401,7 +485,7 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
             searchInput.addEventListener('keyup', () => buscarPets(searchInput.value, 1));
 
             // Função para atualizar status do agendamento via AJAX
-            window.updateAgendamentoStatus = function(agendamentoId, newStatus) {
+            window.updateAgendamentoStatus = function (agendamentoId, newStatus) {
                 const formData = new FormData();
                 formData.append('agendamento_id', agendamentoId);
                 formData.append('new_status', newStatus);
@@ -410,24 +494,24 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Recarrega a página para refletir a mudança
-                        location.reload(); 
-                    } else {
-                        alert('Erro ao atualizar status: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro na requisição AJAX:', error);
-                    alert('Erro de comunicação com o servidor.');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Recarrega a página para refletir a mudança
+                            location.reload();
+                        } else {
+                            alert('Erro ao atualizar status: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro na requisição AJAX:', error);
+                        alert('Erro de comunicação com o servidor.');
+                    });
             };
         });
 
         // --- Lógica para carregar agenda dinamicamente ---
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const agendaTbody = document.getElementById('agenda-tbody');
             const agendaTitulo = document.getElementById('agenda-titulo');
             const btnAnterior = document.getElementById('btn-data-anterior');
@@ -447,7 +531,7 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
                         agendaTitulo.innerHTML = `<i class="fa fa-clock text-sky-500"></i> ${dados.novoTitulo}`;
 
                         // Atualiza a URL no navegador sem recarregar
-                        history.pushState({data: data}, dados.novoTitulo, `?data=${data}`);
+                        history.pushState({ data: data }, dados.novoTitulo, `?data=${data}`);
 
                         // Atualiza os botões de navegação
                         const dataObj = new Date(data + 'T12:00:00'); // Adiciona hora para evitar problemas de fuso
@@ -483,21 +567,21 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
         function abrirModalDetalhes(agendamentoId) {
             const modal = document.getElementById('modal-detalhes-agendamento');
             const conteudo = document.getElementById('modal-detalhes-conteudo');
-            
+
             // Mostra o modal com loading
             modal.classList.remove('hidden');
             conteudo.innerHTML = '<div class="text-center py-8 text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i> Carregando...</div>';
-            
+
             fetch(`utils/buscar_detalhes_agendamento.php?id=${agendamentoId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         const ag = data.agendamento;
                         const statusClass = ag.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
-                                           ag.status === 'Em Atendimento' ? 'bg-blue-100 text-blue-800' :
-                                           ag.status === 'Finalizado' ? 'bg-green-100 text-green-800' :
-                                           'bg-red-100 text-red-800';
-                        
+                            ag.status === 'Em Atendimento' ? 'bg-blue-100 text-blue-800' :
+                                ag.status === 'Finalizado' ? 'bg-green-100 text-green-800' :
+                                    'bg-red-100 text-red-800';
+
                         conteudo.innerHTML = `
                             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                                 <div class="flex justify-between items-start">
@@ -564,11 +648,12 @@ $aniversariantes = $stmtAniversariantes->fetchAll(PDO::FETCH_ASSOC);
         }
 
         // Fechar modal ao clicar fora dele
-        document.getElementById('modal-detalhes-agendamento').addEventListener('click', function(e) {
+        document.getElementById('modal-detalhes-agendamento').addEventListener('click', function (e) {
             if (e.target === this) {
                 fecharModalDetalhes();
             }
         });
     </script>
 </body>
+
 </html>
