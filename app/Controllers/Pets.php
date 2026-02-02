@@ -40,4 +40,28 @@ class Pets extends BaseController
 
         return $this->response->setJSON($pets);
     }
+
+    public function ver($id)
+    {
+        $petModel = new PetModel();
+        $agendamentoModel = new \App\Models\AgendamentoModel();
+
+        // Busca Pet com dados do Tutor
+        $pet = $petModel->select('pets.*, tutores.nome as tutor_nome, tutores.telefone as tutor_telefone')
+                        ->join('tutores', 'tutores.id = pets.tutor_id')
+                        ->where('pets.id', $id)
+                        ->first();
+
+        if (!$pet) {
+            return redirect()->to('pets')->with('error', 'Pet não encontrado.');
+        }
+
+        // Histórico de Agendamentos
+        $historico = $agendamentoModel->getHistoricoPorPet($id);
+
+        return view('pets/ver', [
+            'pet' => $pet, 
+            'historico' => $historico
+        ]);
+    }
 }

@@ -26,4 +26,14 @@ class AgendamentoModel extends Model
                     ->orderBy('agendamentos.data_hora', 'ASC')
                     ->findAll();
     }
+
+    public function getHistoricoPorPet($petId)
+    {
+        return $this->select('agendamentos.*, servicos.nome as servico_nome')
+                    ->join('servicos', 'servicos.id = agendamentos.servico_id')
+                    ->where('agendamentos.pet_id', $petId)
+                    ->orderBy('agendamentos.data_hora', 'DESC')
+                    ->limit(50) // Limite inicial de histórico
+                    ->find();
+    }
 }

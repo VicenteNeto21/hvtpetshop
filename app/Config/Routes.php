@@ -14,3 +14,4 @@ $routes->get('/dashboard', 'Dashboard::index');
 // Pets
 $routes->get('/pets', 'Pets::index');
 $routes->get('/pets/search', 'Pets::search');
+$routes->get('/pets/ver/(:num)', 'Pets::ver/$1');

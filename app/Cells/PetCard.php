@@ -16,7 +16,7 @@ class PetCard
         
         return "
             <div class=\"bg-white rounded-xl shadow-sm border border-slate-100 p-4 hover:shadow-md transition-all group flex flex-col md:flex-row md:items-center justify-between gap-4\">
-                <div class=\"flex items-center gap-4 flex-1\">
+                <a href=\"" . base_url("pets/ver/{$id}") . "\" class=\"flex items-center gap-4 flex-1 hover:opacity-80 transition-opacity cursor-pointer group/link\">
                     <div class=\"w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-lg font-bold shrink-0\">
                         {$initial}
                     </div>
@@ -32,7 +32,7 @@ class PetCard
                             <span>{$tutor}</span>
                         </div>
                     </div>
-                </div>
+                </a>
                 
                 <div class=\"flex items-center gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-50 md:border-l md:pl-4 border-slate-100\">
                      <a href=\"" . base_url("pets/editar/{$id}") . "\" class=\"px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-slate-200 transition-colors\">
