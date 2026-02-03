@@ -153,7 +153,7 @@
             statusMsg.textContent = msg;
             statusMsg.classList.remove('hidden');
             if(type === 'success') {
-                statusMsg.className = 'p-4 rounded-xl mb-6 text-sm font-medium border bg-green-50 text-green-700 border-green-200';
+                statusMsg.className = 'p-4 rounded-xl mb-6 text-sm font-medium border bg-brand-50 text-brand-700 border-brand-200';
             } else {
                 statusMsg.className = 'p-4 rounded-xl mb-6 text-sm font-medium border bg-red-50 text-red-700 border-red-200';
             }

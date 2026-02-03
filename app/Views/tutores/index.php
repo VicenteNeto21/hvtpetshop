@@ -3,10 +3,7 @@
 <?= $this->section('title') ?>Tutores<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="flex min-h-screen bg-slate-50">
-    <?= view('components/sidebar') ?>
-
-    <main class="flex-1 md:ml-64 p-4 md:p-8">
+<div class="animate-enter">
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 animate-enter">
             <div>
@@ -120,7 +117,7 @@
                 </div>
             <?php endif; ?>
         </div>
-    </main>
 </div>
+<?php /* Tags de fechamento main/div removidas pelo padrão main.php */ ?>
 <?= view('components/modal_confirm') ?>
 <?= $this->endSection() ?>

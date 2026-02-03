@@ -3,14 +3,8 @@
 <?= $this->section('title') ?>Dashboard<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="flex min-h-screen bg-slate-50">
-    <!-- Sidebar -->
-    <?= view('components/sidebar') ?>
-
-    <!-- Main Content -->
-    <main class="flex-1 md:ml-64 p-4 md:p-8 overflow-x-hidden">
-        <!-- Topbar -->
-        <header class="flex justify-between items-center mb-8 animate-enter">
+<!-- Topbar -->
+<header class="flex justify-between items-center mb-8 animate-enter">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900">Visão Geral</h1>
                 <p class="text-slate-500">Bem-vindo, <?= session()->get('usuario_nome') ?>!</p>
@@ -156,8 +150,8 @@
                                             <?php
                                                 $statusColors = [
                                                     'Pendente' => 'bg-amber-100 text-amber-700 border-amber-200',
-                                                    'Em Atendimento' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                                    'Finalizado' => 'bg-green-100 text-green-700 border-green-200',
+                                                    'Em Atendimento' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                                                    'Finalizado' => 'bg-brand-500 text-white border-brand-600',
                                                     'Cancelado' => 'bg-red-100 text-red-700 border-red-200'
                                                 ];
                                                 $colorClass = $statusColors[$ag['status']] ?? 'bg-slate-100 text-slate-700';
@@ -170,16 +164,20 @@
                                             <div class="flex justify-center gap-1">
                                                 <?php if($ag['status'] == 'Pendente'): ?>
                                                     <a href="<?= base_url('agenda/concluir/' . $ag['id']) ?>" 
-                                                       class="p-1.5 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors" 
+                                                       class="p-1.5 rounded-lg bg-brand-100 text-brand-600 hover:bg-brand-200 transition-colors" 
                                                        title="Iniciar Atendimento">
                                                         <i data-lucide="play" class="w-4 h-4"></i>
                                                     </a>
-                                                    <a href="<?= base_url('agenda/cancelar/' . $ag['id']) ?>" 
-                                                       class="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" 
-                                                       title="Cancelar"
-                                                       onclick="return confirm('Cancelar este agendamento?')">
+                                                    <button onclick="openConfirmModal('<?= base_url('agenda/cancelar/' . $ag['id']) ?>', 'Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'danger', 'x-circle')"
+                                                            class="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" 
+                                                            title="Cancelar">
                                                         <i data-lucide="x" class="w-4 h-4"></i>
-                                                    </a>
+                                                    </button>
+                                                    <button onclick="openConfirmModal('<?= base_url('agenda/excluir/' . $ag['id']) ?>', 'EXCLUIR Agendamento', 'Deseja excluir permanentemente este agendamento?', 'danger', 'trash-2')"
+                                                            class="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-700 transition-colors" 
+                                                            title="Excluir Permanentemente">
+                                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                    </button>
                                                 <?php elseif($ag['status'] == 'Finalizado'): ?>
                                                     <a href="<?= base_url('agenda/concluir/' . $ag['id']) ?>" 
                                                        class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" 
@@ -228,6 +226,48 @@
                          <?php endif; ?>
                     </div>
                  </div>
+                 
+                 <?php if($isAdmin): ?>
+                 <!-- Admin Quick Access -->
+                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-indigo-500"></i>
+                            Administração
+                        </h2>
+                        <?php if($stats['usuarios_pendentes'] > 0): ?>
+                            <span class="flex h-2 w-2 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <a href="<?= base_url('usuarios?status=pendente') ?>" class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors group">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                                <i data-lucide="users" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-700">Usuários Pendentes</p>
+                                <p class="text-xs text-slate-500"><?= $stats['usuarios_pendentes'] ?> aguardando aprovação</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                        </a>
+
+                        <a href="<?= base_url('admin') ?>" class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors group">
+                            <div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 transition-colors">
+                                <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-700">Relatórios Gerais</p>
+                                <p class="text-xs text-slate-500">Visão técnica do sistema</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                        </a>
+                    </div>
+                 </div>
+                 <?php endif; ?>
                  
                  <!-- Quick Actions -->
                  <div class="bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl shadow-lg shadow-brand-500/20 p-6 text-white">
@@ -408,4 +448,5 @@
         }
     }
 </script>
+<?= view('components/modal_confirm') ?>
 <?= $this->endSection() ?>

@@ -29,14 +29,14 @@
                 </div>
             </a>
             
-            <a href="?status=aprovado" class="bg-green-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition-shadow <?= $statusSelecionado == 'aprovado' ? 'ring-2 ring-green-400' : '' ?>">
+            <a href="?status=aprovado" class="bg-brand-50 border border-brand-200 rounded-xl p-4 hover:shadow-md transition-shadow <?= $statusSelecionado == 'aprovado' ? 'ring-2 ring-brand-400' : '' ?>">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                        <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+                    <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center">
+                        <i data-lucide="check-circle" class="w-5 h-5 text-brand-600"></i>
                     </div>
                     <div>
-                        <p class="text-2xl font-bold text-green-700"><?= $contadores['aprovados'] ?></p>
-                        <p class="text-xs text-green-600 font-medium">Aprovados</p>
+                        <p class="text-2xl font-bold text-brand-700"><?= $contadores['aprovados'] ?></p>
+                        <p class="text-xs text-brand-600 font-medium">Aprovados</p>
                     </div>
                 </div>
             </a>
@@ -126,7 +126,7 @@
                                         <?php
                                             $statusConfig = [
                                                 'pendente' => ['bg-amber-100 text-amber-700 border-amber-200', 'Pendente'],
-                                                'aprovado' => ['bg-green-100 text-green-700 border-green-200', 'Aprovado'],
+                                                'aprovado' => ['bg-brand-50 text-brand-700 border-brand-200', 'Aprovado'],
                                                 'rejeitado' => ['bg-red-100 text-red-700 border-red-200', 'Rejeitado']
                                             ];
                                             $config = $statusConfig[$user['status']] ?? ['bg-slate-100 text-slate-700', $user['status']];

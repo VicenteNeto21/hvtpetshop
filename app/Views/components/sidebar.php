@@ -27,22 +27,6 @@
             <i data-lucide="calendar" class="w-5 h-5 flex-shrink-0"></i>
             <span class="font-medium sidebar-text">Agenda</span>
         </a>
-
-        <!-- Seção: Admin -->
-        <div class="pt-4">
-            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 sidebar-text">Admin</p>
-        </div>
-
-        <a href="<?= base_url('admin') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'admin' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Administração">
-            <i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0"></i>
-            <span class="font-medium sidebar-text">Administração</span>
-        </a>
-
-        <a href="<?= base_url('usuarios') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= strpos(uri_string(), 'usuarios') !== false ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Usuários">
-            <i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0"></i>
-            <span class="font-medium sidebar-text">Usuários</span>
-        </a>
-
         <!-- Seção: Gestão -->
         <div class="pt-4">
             <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 sidebar-text">Gestão</p>
@@ -62,10 +46,41 @@
             <i data-lucide="scissors" class="w-5 h-5 flex-shrink-0"></i>
             <span class="font-medium sidebar-text">Serviços</span>
         </a>
+
+        <?php 
+        $userTipo = session()->get('usuario_tipo');
+        if (!$userTipo && session()->get('usuario_id')) {
+            $userModel = new \App\Models\UsuarioModel();
+            $user = $userModel->find(session()->get('usuario_id'));
+            $userTipo = $user['tipo'] ?? 'funcionario';
+            session()->set('usuario_tipo', $userTipo);
+        }
+        
+        if($userTipo === 'admin'): ?>
+            <!-- Seção: Admin -->
+            <div class="pt-4">
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 sidebar-text">Admin</p>
+            </div>
+
+            <a href="<?= base_url('admin') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'admin' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Administração">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium sidebar-text">Administração</span>
+            </a>
+
+            <a href="<?= base_url('usuarios') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= strpos(uri_string(), 'usuarios') !== false ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Usuários">
+                <i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium sidebar-text">Usuários</span>
+            </a>
+        <?php endif; ?>
     </nav>
 
     <!-- Footer -->
     <div class="p-3 border-t border-slate-800/50 mt-auto">
+        <a href="<?= base_url('perfil') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'perfil' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Meu Perfil">
+            <i data-lucide="user-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="font-medium sidebar-text">Meu Perfil</span>
+        </a>
+
         <a href="<?= base_url('logout') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all" title="Sair">
             <i data-lucide="log-out" class="w-5 h-5 flex-shrink-0"></i>
             <span class="font-medium sidebar-text">Sair</span>

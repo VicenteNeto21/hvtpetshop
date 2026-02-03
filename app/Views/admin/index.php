@@ -64,10 +64,7 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="flex min-h-screen bg-slate-50 print:bg-white">
-    <?= view('components/sidebar') ?>
-
-    <main class="flex-1 md:ml-64 p-4 md:p-8 overflow-x-hidden print:ml-0 print:p-0 print:max-w-none">
+<div class="animate-enter print:bg-white print:ml-0 print:p-0 print:max-w-none">
         <!-- Header & Filter -->
         <div class="mb-8 animate-enter print:hidden">
             <h1 class="text-3xl font-bold text-slate-900 mb-2">Painel Administrativo</h1>

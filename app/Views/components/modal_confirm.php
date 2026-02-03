@@ -66,9 +66,9 @@
             iconBg.classList.add('bg-red-100');
             icon.classList.add('text-red-600');
         } else if (variant === 'success') {
-            confirmBtn.classList.add('bg-emerald-500', 'hover:bg-emerald-600', 'shadow-emerald-500/30');
-            iconBg.classList.add('bg-emerald-100');
-            icon.classList.add('text-emerald-600');
+            confirmBtn.classList.add('bg-brand-500', 'hover:bg-brand-600', 'shadow-brand-500/30');
+            iconBg.classList.add('bg-brand-100');
+            icon.classList.add('text-brand-600');
         } else {
             confirmBtn.classList.add('bg-blue-500', 'hover:bg-blue-600', 'shadow-blue-500/30');
             iconBg.classList.add('bg-blue-100');

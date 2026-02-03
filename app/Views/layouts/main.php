@@ -25,11 +25,11 @@
                     },
                     colors: {
                         brand: {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            500: '#14b8a6', // Teal Moderno
-                            600: '#0d9488',
-                            900: '#134e4a',
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#2563eb', // Azul Premium
+                            600: '#1d4ed8',
+                            900: '#1e3a8a',
                         }
                     }
                 }
@@ -69,9 +69,23 @@
     </style>
     <?= $this->renderSection('styles') ?>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+<body class="bg-[#f1f5f9] text-slate-800 antialiased min-h-screen">
 
-    <?= $this->renderSection('content') ?>
+    <?php if (session()->get('isLoggedIn')): ?>
+        <!-- Barra Lateral -->
+        <?= view('components/sidebar') ?>
+        
+        <!-- Conteúdo Principal -->
+        <main class="md:ml-64 min-h-screen transition-all duration-300 p-4 md:p-8">
+            <div class="max-w-[1600px] mx-auto">
+                <?= $this->renderSection('content') ?>
+            </div>
+        </main>
+    <?php else: ?>
+        <div class="bg-white min-h-screen">
+            <?= $this->renderSection('content') ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Modal de Novidades da Versão -->
     <?php 

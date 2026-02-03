@@ -3,12 +3,8 @@
 <?= $this->section('title') ?>Agenda do Dia<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="flex min-h-screen bg-slate-50">
-    <?= view('components/sidebar') ?>
-
-    <main class="flex-1 md:ml-64 p-4 md:p-8">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 animate-enter">
+<!-- Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 animate-enter">
             <div>
                 <h1 class="text-3xl font-bold text-slate-900">Agenda de Serviços</h1>
                 <p class="text-slate-500 mt-1">Gerencie os banhos, tosas e consultas do dia.</p>
@@ -80,7 +76,7 @@
             </a>
             <a href="<?= base_url('agenda?data=' . $dataSelecionada . '&status=Finalizado') ?>" 
                class="px-4 py-2 rounded-full text-sm font-bold shadow-sm whitespace-nowrap transition-colors
-               <?= $statusSelecionado == 'Finalizado' ? 'bg-emerald-500 text-white shadow-md border-emerald-500' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
+               <?= $statusSelecionado == 'Finalizado' ? 'bg-brand-500 text-white shadow-md border-brand-500' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
                 Finalizados (Dia)
             </a>
         </div>
@@ -116,7 +112,7 @@
                                 <h3 class="text-lg font-bold text-slate-800"><?= $item['pet_nome'] ?></h3>
                                 <span class="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider
                                     <?= $item['status'] == 'Pendente' ? 'bg-amber-100 text-amber-700' : 
-                                       ($item['status'] == 'Finalizado' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700') ?>">
+                                       ($item['status'] == 'Finalizado' ? 'bg-brand-500 text-white' : 'bg-red-100 text-red-700') ?>">
                                     <?= $item['status'] ?>
                                 </span>
                             </div>
@@ -150,14 +146,20 @@
                                 
                                 <!-- Botão Concluir (Leva para Ficha) -->
                                 <a href="<?= base_url('agenda/concluir/' . $item['id']) ?>" 
-                                   class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-green-50 hover:text-green-600 transition-colors" title="Ficha / Concluir">
+                                   class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-brand-50 hover:text-brand-600 transition-colors" title="Ficha / Concluir">
                                     <i data-lucide="clipboard-list" class="w-5 h-5 mx-auto"></i>
                                 </a>
 
                                 <!-- Botão Cancelar -->
-                                <button onclick="openConfirmModal('<?= base_url('agenda/cancelar/' . $item['id']) ?>', 'Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.', 'danger', 'x-circle')"
-                                   class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors" title="Cancelar">
+                                <button onclick="openConfirmModal('<?= base_url('agenda/cancelar/' . $item['id']) ?>', 'Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'danger', 'x-circle')"
+                                   class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors" title="Cancelar">
                                     <i data-lucide="x-circle" class="w-5 h-5 mx-auto"></i>
+                                </button>
+
+                                <!-- Botão Excluir -->
+                                <button onclick="openConfirmModal('<?= base_url('agenda/excluir/' . $item['id']) ?>', 'EXCLUIR Agendamento', 'Deseja excluir permanentemente este agendamento? Esta ação não pode ser desfeita.', 'danger', 'trash-2')"
+                                   class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-100 hover:text-red-700 transition-colors" title="Excluir Permanentemente">
+                                    <i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i>
                                 </button>
                             <?php else: ?>
                                 <span class="text-xs text-slate-400 italic">Ações indisponíveis</span>
@@ -167,7 +169,7 @@
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
-    </main>
-</div>
+        </div>
+<?php /* Tags de fechamento main/div removidas pelo padrão main.php */ ?>
 <?= view('components/modal_confirm') ?>
 <?= $this->endSection() ?>

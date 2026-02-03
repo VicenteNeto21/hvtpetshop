@@ -295,6 +295,23 @@ class Agenda extends BaseController
         return redirect()->back()->with('error', 'Agendamento não encontrado.');
     }
 
+    public function excluir($id)
+    {
+        $agendamentoModel = new AgendamentoModel();
+        $ag = $agendamentoModel->find($id);
+        
+        if ($ag) {
+            // Excluir todos os serviços deste pet neste horário
+            $agendamentoModel->where('pet_id', $ag['pet_id'])
+                             ->where('data_hora', $ag['data_hora'])
+                             ->delete();
+            
+            return redirect()->back()->with('success', 'Agendamento excluído com sucesso.');
+        }
+        
+        return redirect()->back()->with('error', 'Agendamento não encontrado.');
+    }
+
     public function ficha($id)
     {
         $agendamentoModel = new AgendamentoModel();

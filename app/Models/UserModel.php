@@ -12,7 +12,7 @@ class UserModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['nome', 'email', 'senha', 'data_cadastro', 'status', 'tentativas_login_falhas', 'bloqueado_ate'];
+    protected $allowedFields    = ['nome', 'email', 'senha', 'criado_em', 'status', 'tentativas_login_falhas', 'bloqueado_ate'];
 
     // Dates
     protected $useTimestamps = false; // Tabela original não parece usar created_at/updated_at padrão do CI4

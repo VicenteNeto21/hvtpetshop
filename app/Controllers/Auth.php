@@ -21,7 +21,7 @@ class Auth extends BaseController
 
     public function login()
     {
-        $userModel = new UserModel();
+        $userModel = new \App\Models\UsuarioModel();
         $email = $this->request->getPost('email');
         $senha = $this->request->getPost('senha');
 
@@ -57,6 +57,7 @@ class Auth extends BaseController
             session()->set([
                 'usuario_id' => $usuario['id'],
                 'usuario_nome' => $usuario['nome'],
+                'usuario_tipo' => $usuario['tipo'],
                 'isLoggedIn' => true
             ]);
 
@@ -120,7 +121,7 @@ class Auth extends BaseController
             'senha' => password_hash($senha, PASSWORD_DEFAULT),
             'status' => 'pendente',
             'tipo' => 'funcionario', // Por padrão, novos cadastros são funcionários
-            'data_cadastro' => date('Y-m-d H:i:s')
+            'criado_em' => date('Y-m-d H:i:s')
         ];
 
         if ($userModel->insert($dados)) {

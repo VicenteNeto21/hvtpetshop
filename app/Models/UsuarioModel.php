@@ -9,5 +9,5 @@ class UsuarioModel extends UserModel
 {
     // Herda tudo do UserModel
     // Adiciona campo tipo aos campos permitidos
-    protected $allowedFields = ['nome', 'email', 'senha', 'data_cadastro', 'status', 'tipo', 'tentativas_login_falhas', 'bloqueado_ate', 'versao_aviso_visto'];
+    protected $allowedFields = ['nome', 'email', 'senha', 'criado_em', 'status', 'tipo', 'tentativas_login_falhas', 'bloqueado_ate', 'versao_aviso_visto'];
 }

@@ -3,10 +3,7 @@
 <?= $this->section('title') ?>Serviços<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="flex min-h-screen bg-slate-50">
-    <?= view('components/sidebar') ?>
-
-    <main class="flex-1 md:ml-64 p-4 md:p-8">
+<div class="animate-enter">
         <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 animate-enter">
             <div>
@@ -88,6 +85,6 @@
         <div class="mt-8">
             <?= $pager->links('default', 'tailwind_full') ?>
         </div>
-    </main>
 </div>
+<?php /* Tags de fechamento main/div removidas pelo padrão main.php */ ?>
 <?= $this->endSection() ?>

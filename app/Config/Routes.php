@@ -12,6 +12,7 @@ $routes->get('/logout', 'Auth::logout');
 $routes->get('/cadastro', 'Auth::cadastro');
 $routes->post('/auth/processar-cadastro', 'Auth::processarCadastro');
 $routes->get('/dashboard', 'Dashboard::index'); 
+$routes->get('/perfil', 'Perfil::index'); 
 $routes->get('/admin', 'Admin::index'); 
 $routes->get('/admin/relatorio', 'Admin::relatorio');
 $routes->get('/dashboard/agenda-data', 'Dashboard::getAgendaData');
@@ -40,6 +41,7 @@ $routes->post('/agenda/salvar', 'Agenda::salvar');
 $routes->get('/agenda/horarios', 'Agenda::horariosDisponiveis');
 $routes->get('/agenda/concluir/(:num)', 'Agenda::ficha/$1'); // Redireciona para fichas ao concluir
 $routes->get('/agenda/cancelar/(:num)', 'Agenda::cancelar/$1');
+$routes->get('/agenda/excluir/(:num)', 'Agenda::excluir/$1');
 $routes->post('/agenda/salvarFicha', 'Agenda::salvarFicha');
 
 // Tutores Routes

@@ -39,11 +39,22 @@ class Dashboard extends BaseController
                                            ->groupBy('pet_id, data_hora')
                                            ->countAllResults();
 
+        // Dados de usuários pendentes (apenas para Admin)
+        $usuarioModel = new \App\Models\UsuarioModel();
+        $usuarioLogado = $usuarioModel->find(session()->get('usuario_id'));
+        $isAdmin = ($usuarioLogado['tipo'] === 'admin');
+        $usuariosPendentesCount = 0;
+        
+        if ($isAdmin) {
+            $usuariosPendentesCount = $usuarioModel->where('status', 'pendente')->countAllResults();
+        }
+
         $stats = [
             'agendamentos_hoje' => count($agendamentosHojeGrouped),
             'pendentes' => $pendentesCount,
             'total_pets' => $petModel->countAllResults(),
-            'total_tutores' => $tutorModel->countAllResults()
+            'total_tutores' => $tutorModel->countAllResults(),
+            'usuarios_pendentes' => $usuariosPendentesCount
         ];
 
         // Aniversariantes (Logica simples por enquanto)
@@ -71,7 +82,8 @@ class Dashboard extends BaseController
             'aniversariantes' => $aniversariantes,
             'proximosAgendamentos' => $proximosAgendamentos,
             'dataSelecionada' => $dataSelecionada,
-            'statusSelecionado' => $status
+            'statusSelecionado' => $status,
+            'isAdmin' => $isAdmin
         ]);
     }
 

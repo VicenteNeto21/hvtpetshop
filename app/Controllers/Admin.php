@@ -12,6 +12,12 @@ class Admin extends BaseController
             return redirect()->to('/login');
         }
 
+        // Verificar se é admin
+        $userTipo = session()->get('usuario_tipo');
+        if ($userTipo !== 'admin') {
+            return redirect()->to('/dashboard')->with('error', 'Acesso negado.');
+        }
+
         $db = \Config\Database::connect();
         $agendamentoModel = new \App\Models\AgendamentoModel();
         $petModel = new \App\Models\PetModel();
@@ -141,6 +147,12 @@ class Admin extends BaseController
     {
         if (!session()->get('usuario_id')) {
             return redirect()->to('/login');
+        }
+
+        // Verificar se é admin
+        $userTipo = session()->get('usuario_tipo');
+        if ($userTipo !== 'admin') {
+            return redirect()->to('/dashboard')->with('error', 'Acesso negado.');
         }
 
         $db = \Config\Database::connect();

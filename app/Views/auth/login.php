@@ -90,7 +90,7 @@
             <!-- Floating Element -->
             <div class="absolute -bottom-10 -right-10 bg-white p-5 rounded-2xl shadow-xl border border-slate-100 animate-float animation-delay-2000">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                    <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-600">
                         <i data-lucide="check" class="w-5 h-5"></i>
                     </div>
                     <div>
@@ -141,7 +141,7 @@
             statusMsg.textContent = msg;
             statusMsg.classList.remove('hidden');
             if(type === 'success') {
-                statusMsg.className = 'p-4 rounded-xl mb-6 text-sm font-medium border bg-green-50 text-green-700 border-green-200';
+                statusMsg.className = 'p-4 rounded-xl mb-6 text-sm font-medium border bg-brand-50 text-brand-700 border-brand-200';
             } else if (type === 'warning') {
                 statusMsg.className = 'p-4 rounded-xl mb-6 text-sm font-medium border bg-amber-50 text-amber-700 border-amber-200';
             } else {
