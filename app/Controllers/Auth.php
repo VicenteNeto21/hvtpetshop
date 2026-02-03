@@ -82,4 +82,51 @@ class Auth extends BaseController
         session()->destroy();
         return redirect()->to('/login?status=logout');
     }
+
+    public function cadastro()
+    {
+        // Se já estiver logado, redireciona para dashboard
+        if (session()->get('usuario_id')) {
+            return redirect()->to('/dashboard');
+        }
+        return view('auth/register');
+    }
+
+    public function processarCadastro()
+    {
+        $userModel = new \App\Models\UsuarioModel();
+        
+        $nome = $this->request->getPost('nome');
+        $email = $this->request->getPost('email');
+        $senha = $this->request->getPost('senha');
+        $confirmarSenha = $this->request->getPost('confirmar_senha');
+
+        if (!$nome || !$email || !$senha || !$confirmarSenha) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Todos os campos são obrigatórios.']);
+        }
+
+        if ($senha !== $confirmarSenha) {
+            return $this->response->setJSON(['success' => false, 'message' => 'As senhas não coincidem.']);
+        }
+
+        // Verifica se e-mail já existe
+        if ($userModel->where('email', $email)->first()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Este e-mail já está cadastrado.']);
+        }
+
+        $dados = [
+            'nome' => $nome,
+            'email' => $email,
+            'senha' => password_hash($senha, PASSWORD_DEFAULT),
+            'status' => 'pendente',
+            'tipo' => 'funcionario', // Por padrão, novos cadastros são funcionários
+            'data_cadastro' => date('Y-m-d H:i:s')
+        ];
+
+        if ($userModel->insert($dados)) {
+            return $this->response->setJSON(['success' => true, 'message' => 'Cadastro realizado com sucesso! Aguarde a aprovação do administrador.']);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Erro ao realizar cadastro. Tente novamente.']);
+    }
 }

@@ -212,11 +212,11 @@
                         <ul class="space-y-4">
                             <li class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                                    <i data-lucide="syringue" class="w-4 h-4"></i>
+                                    <i data-lucide="syringe" class="w-4 h-4"></i>
                                 </div>
                                 <div>
                                     <p class="text-sm font-bold text-slate-700">Controle de Vacinas</p>
-                                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Últimos Ajustes</p>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Desenvolvimento 60%</p>
                                 </div>
                             </li>
                             <li class="flex items-center gap-3">

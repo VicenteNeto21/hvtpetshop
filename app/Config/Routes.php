@@ -9,6 +9,8 @@ $routes->get('/', 'Auth::index');
 $routes->get('/login', 'Auth::index');
 $routes->post('/login/auth', 'Auth::login');
 $routes->get('/logout', 'Auth::logout');
+$routes->get('/cadastro', 'Auth::cadastro');
+$routes->post('/auth/processar-cadastro', 'Auth::processarCadastro');
 $routes->get('/dashboard', 'Dashboard::index'); 
 $routes->get('/admin', 'Admin::index'); 
 $routes->get('/admin/relatorio', 'Admin::relatorio');
