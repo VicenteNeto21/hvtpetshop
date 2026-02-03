@@ -51,10 +51,22 @@ class Dashboard extends BaseController
                                     ->where("DAY(pets.nascimento) = DAY('$dataSelecionada')")
                                     ->findAll();
 
+        // Próximos Agendamentos (próximos 5 após agora)
+        $proximosAgendamentos = $agendamentoModel->select('agendamentos.*, pets.nome as pet_nome, servicos.nome as servico_nome, tutores.nome as tutor_nome')
+            ->join('pets', 'pets.id = agendamentos.pet_id')
+            ->join('tutores', 'tutores.id = pets.tutor_id')
+            ->join('servicos', 'servicos.id = agendamentos.servico_id')
+            ->where('agendamentos.status', 'Pendente')
+            ->where('agendamentos.data_hora >=', date('Y-m-d H:i:s'))
+            ->orderBy('agendamentos.data_hora', 'ASC')
+            ->limit(5)
+            ->findAll();
+
         return view('dashboard/index', [
             'stats' => $stats,
             'agenda' => $agenda,
             'aniversariantes' => $aniversariantes,
+            'proximosAgendamentos' => $proximosAgendamentos,
             'dataSelecionada' => $dataSelecionada,
             'statusSelecionado' => $status
         ]);

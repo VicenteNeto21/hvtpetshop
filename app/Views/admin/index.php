@@ -110,7 +110,7 @@
         </div>
 
         <!-- 1. Cards KPI -->
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-8 print:grid-cols-5 print:gap-4 animate-enter" style="animation-delay: 0.1s">
+        <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-6 mb-8 print:grid-cols-6 print:gap-4 animate-enter" style="animation-delay: 0.1s">
             <!-- Faturamento -->
             <div class="col-span-2 lg:col-span-1 bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group print:border print:border-slate-300">
                  <div class="absolute right-0 top-0 w-20 h-20 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 print:hidden"></div>
@@ -133,10 +133,24 @@
                  <p class="text-xs text-red-300">No período</p>
             </div>
             
+            <!-- Total Pets -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 print:border print:border-slate-300">
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-wide mb-1">Novos Pets</p>
+                <div class="flex items-center gap-2 mb-1">
+                    <i data-lucide="paw-print" class="w-4 h-4 text-brand-500"></i>
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wide">Total Pets</p>
+                </div>
                 <h3 class="text-2xl lg:text-3xl font-bold text-slate-800"><?= $stats['total_pets'] ?></h3>
-                <p class="text-xs text-slate-400">Total Base</p>
+                <p class="text-xs text-slate-400">Cadastrados</p>
+            </div>
+
+            <!-- Tutores -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 print:border print:border-slate-300">
+                <div class="flex items-center gap-2 mb-1">
+                    <i data-lucide="users" class="w-4 h-4 text-brand-500"></i>
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wide">Tutores</p>
+                </div>
+                <h3 class="text-2xl lg:text-3xl font-bold text-slate-800"><?= $stats['total_tutores'] ?></h3>
+                <p class="text-xs text-slate-400">Cadastrados</p>
             </div>
 
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 print:border print:border-slate-300">

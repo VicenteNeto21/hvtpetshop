@@ -80,6 +80,83 @@
             </div>
         </div>
 
+        <!-- Mini Calendário e Próximos Atendimentos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-enter" style="animation-delay: 0.15s">
+            <!-- Mini Calendário -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+                <h2 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar-days" class="w-4 h-4 text-brand-500"></i>
+                    Selecionar Data
+                </h2>
+                
+                <!-- Data selecionada Formatada -->
+                <div class="bg-brand-50 border border-brand-100 rounded-xl p-4 mb-4 text-center">
+                    <p class="text-xs text-brand-600 uppercase tracking-wider font-medium">Data Selecionada</p>
+                    <p class="text-2xl font-bold text-brand-700 mt-1">
+                        <?= date('d', strtotime($dataSelecionada)) ?>
+                        <span class="text-base font-medium text-brand-500"><?= strftime('%b', strtotime($dataSelecionada)) ?></span>
+                    </p>
+                    <p class="text-xs text-brand-500"><?= date('l', strtotime($dataSelecionada)) == 'Sunday' ? 'Domingo' : 
+                        (date('l', strtotime($dataSelecionada)) == 'Monday' ? 'Segunda-feira' :
+                        (date('l', strtotime($dataSelecionada)) == 'Tuesday' ? 'Terça-feira' :
+                        (date('l', strtotime($dataSelecionada)) == 'Wednesday' ? 'Quarta-feira' :
+                        (date('l', strtotime($dataSelecionada)) == 'Thursday' ? 'Quinta-feira' :
+                        (date('l', strtotime($dataSelecionada)) == 'Friday' ? 'Sexta-feira' : 'Sábado'))))) ?></p>
+                </div>
+                
+                <input type="date" 
+                       id="mini-calendar" 
+                       value="<?= $dataSelecionada ?>" 
+                       onchange="window.location.href='?data=' + this.value"
+                       class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer hover:border-brand-300 transition-colors">
+                
+                <div class="flex gap-2 mt-3">
+                    <button onclick="window.location.href='?data=<?= date('Y-m-d') ?>'" 
+                            class="flex-1 text-xs font-medium px-3 py-2 rounded-lg <?= $dataSelecionada == date('Y-m-d') ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' ?> transition-colors">
+                        Hoje
+                    </button>
+                    <button onclick="window.location.href='?data=<?= date('Y-m-d', strtotime('+1 day')) ?>'" 
+                            class="flex-1 text-xs font-medium px-3 py-2 rounded-lg <?= $dataSelecionada == date('Y-m-d', strtotime('+1 day')) ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' ?> transition-colors">
+                        Amanhã
+                    </button>
+                </div>
+            </div>
+
+            <!-- Próximos Atendimentos -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4 text-orange-500"></i>
+                        Próximos Atendimentos
+                    </h2>
+                    <a href="<?= base_url('agenda') ?>" class="text-xs text-brand-600 hover:text-brand-700 font-medium">Ver todos →</a>
+                </div>
+                
+                <?php if(empty($proximosAgendamentos)): ?>
+                    <p class="text-sm text-slate-400 italic py-4 text-center">Nenhum atendimento pendente.</p>
+                <?php else: ?>
+                    <div class="space-y-2">
+                        <?php foreach($proximosAgendamentos as $prox): ?>
+                            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors group">
+                                <div class="flex-shrink-0 w-14 text-center">
+                                    <div class="text-xs text-slate-400 uppercase"><?= date('D', strtotime($prox['data_hora'])) ?></div>
+                                    <div class="text-lg font-bold text-slate-700"><?= date('d', strtotime($prox['data_hora'])) ?></div>
+                                    <div class="text-xs text-brand-600 font-semibold"><?= date('H:i', strtotime($prox['data_hora'])) ?></div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-slate-800 text-sm truncate"><?= $prox['pet_nome'] ?></p>
+                                    <p class="text-xs text-slate-400 truncate"><?= $prox['tutor_nome'] ?></p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg text-xs font-medium"><?= $prox['servico_nome'] ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-enter" style="animation-delay: 0.2s">
             <!-- Agenda Table (Col Spam 2) -->
             <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
