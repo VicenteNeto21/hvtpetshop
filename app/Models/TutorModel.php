@@ -11,6 +11,9 @@ class TutorModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
-    protected $allowedFields    = ['nome', 'telefone', 'endereco', 'cpf', 'cidade', 'observacoes']; 
+    protected $allowedFields    = [
+        'nome', 'telefone', 'telefone_is_whatsapp', 'email', 
+        'cep', 'rua', 'numero', 'bairro', 'cidade', 'uf', 'observacoes'
+    ]; 
     // Ajustar campos conforme o banco real se necessário (baseado em leituras anteriores, esses parecem ser os padrões)
 }

@@ -20,11 +20,17 @@ class Agenda extends BaseController
         $query = $agendamentoModel->select('agendamentos.*, pets.nome as pet_nome, servicos.nome as servico_nome, tutores.nome as tutor_nome')
             ->join('pets', 'pets.id = agendamentos.pet_id')
             ->join('tutores', 'tutores.id = pets.tutor_id')
-            ->join('servicos', 'servicos.id = agendamentos.servico_id')
-            ->where("DATE(data_hora)", $dataSelecionada);
+            ->join('servicos', 'servicos.id = agendamentos.servico_id');
 
-        if ($status) {
+        if ($status === 'Pendente') {
+            // Se for pendente, mostra todos (global) para encerrar, ordenado por data (antigos primeiro)
             $query->where('agendamentos.status', $status);
+        } else {
+            // Para outros, filtra por dia
+            $query->where("DATE(data_hora)", $dataSelecionada);
+            if ($status) {
+                $query->where('agendamentos.status', $status);
+            }
         }
 
         $agendamentos = $query->orderBy('data_hora', 'ASC')->findAll();
@@ -58,6 +64,73 @@ class Agenda extends BaseController
         ];
 
         return view('agenda/novo', $data);
+    }
+
+    public function cadastroRapido()
+    {
+        return view('agenda/cadastro_rapido');
+    }
+
+    public function salvarCadastroRapido()
+    {
+        $rules = [
+            'tutor_nome' => 'required|min_length[3]',
+            'tutor_telefone' => 'required',
+            'pet_nome' => 'required',
+            'pet_especie' => 'required',
+            'pet_sexo' => 'required'
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $db = \Config\Database::connect();
+        $tutorModel = new \App\Models\TutorModel();
+        $petModel = new \App\Models\PetModel();
+
+        try {
+            $db->transBegin();
+
+            // 1. Criar Tutor
+            $tutorData = [
+                'nome' => $this->request->getPost('tutor_nome'),
+                'telefone' => $this->request->getPost('tutor_telefone'),
+                'email' => null // Simplificado
+            ];
+            $tutorId = $tutorModel->insert($tutorData);
+
+            if (!$tutorId) {
+                throw new \Exception('Erro ao criar tutor.');
+            }
+
+            // 2. Criar Pet
+            $petData = [
+                'tutor_id' => $tutorId,
+                'nome' => $this->request->getPost('pet_nome'),
+                'especie' => $this->request->getPost('pet_especie'),
+                'sexo' => $this->request->getPost('pet_sexo'),
+                'raca' => $this->request->getPost('pet_raca'),
+            ];
+            $petId = $petModel->insert($petData);
+
+            if (!$petId) {
+                throw new \Exception('Erro ao criar pet.');
+            }
+
+            if ($db->transStatus() === false) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('error', 'Erro na transação.');
+            } else {
+                $db->transCommit();
+                // Redireciona de volta para Agendamento com o Pet Pré-selecionado
+                return redirect()->to('agenda/novo?pet=' . $petId)->with('success', 'Cadastro realizado! Prossiga com o agendamento.');
+            }
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
     }
 
     public function salvar()
@@ -158,5 +231,122 @@ class Agenda extends BaseController
         $agendamentoModel = new AgendamentoModel();
         $agendamentoModel->update($id, ['status' => 'Cancelado']);
         return redirect()->back()->with('success', 'Agendamento cancelado.');
+    }
+
+    public function ficha($id)
+    {
+        $agendamentoModel = new AgendamentoModel();
+        $fichaModel = new \App\Models\FichaModel();
+        $obsVisualModel = new \App\Models\ObservacaoVisualModel();
+        $servicoModel = new \App\Models\ServicoModel();
+
+        // Dados do agendamento
+        $agendamento = $agendamentoModel->select('agendamentos.*, pets.nome as pet_nome, pets.especie, pets.raca, pets.sexo, tutores.nome as tutor_nome, tutores.telefone as tutor_telefone')
+            ->join('pets', 'pets.id = agendamentos.pet_id')
+            ->join('tutores', 'tutores.id = pets.tutor_id')
+            ->find($id);
+
+        if (!$agendamento) {
+            return redirect()->to('agenda')->with('error', 'Agendamento não encontrado.');
+        }
+
+        // Ficha existente?
+        $ficha = $fichaModel->where('agendamento_id', $id)->first();
+        
+        // Dados auxiliares
+        $data = [
+            'agendamento' => $agendamento,
+            'ficha' => $ficha,
+            'obs_visuais' => $obsVisualModel->findAll(),
+            'servicos' => $servicoModel->where('id !=', 99)->orderBy('nome', 'ASC')->findAll(),
+            // Se tiver ficha, buscar relacionamentos (fazer queries diretas por simplicidade ou criar models pivot)
+            'obs_marcadas' => [],
+            'servicos_realizados' => []
+        ];
+
+        if ($ficha) {
+            $db = \Config\Database::connect();
+            $data['obs_marcadas'] = $db->table('ficha_observacoes')->where('ficha_id', $ficha['id'])->get()->getResultArray();
+            $data['servicos_realizados'] = $db->table('ficha_servicos_realizados')->where('ficha_id', $ficha['id'])->get()->getResultArray();
+        }
+
+        return view('agenda/ficha', $data);
+    }
+
+    public function salvarFicha()
+    {
+        $agendamentoId = $this->request->getPost('agendamento_id');
+        $fichaModel = new \App\Models\FichaModel();
+        $db = \Config\Database::connect();
+
+        try {
+            $db->transBegin();
+
+            // Dados básicos da ficha
+            $fichaData = [
+                'agendamento_id' => $agendamentoId,
+                'funcionario_id' => session('user_id') ?? 1,
+                'altura_pelos' => $this->request->getPost('altura_pelos'),
+                'doenca_pre_existente' => $this->request->getPost('doenca_pre_existente'),
+                'doenca_ouvido' => $this->request->getPost('doenca_ouvido'),
+                'doenca_pele' => $this->request->getPost('doenca_pele'),
+                'observacoes' => $this->request->getPost('observacoes'),
+                'comportamento_pet' => $this->request->getPost('comportamento_pet'),
+                'recomendacoes_tutor' => $this->request->getPost('recomendacoes_tutor'),
+            ];
+
+            // Verifica se já existe ficha para atualizar ou insert
+            $fichaExistente = $fichaModel->where('agendamento_id', $agendamentoId)->first();
+            
+            if ($fichaExistente) {
+                $fichaModel->update($fichaExistente['id'], $fichaData);
+                $fichaId = $fichaExistente['id'];
+                
+                // Limpar relacionamentos antigos
+                $db->table('ficha_observacoes')->where('ficha_id', $fichaId)->delete();
+                $db->table('ficha_servicos_realizados')->where('ficha_id', $fichaId)->delete();
+            } else {
+                $fichaId = $fichaModel->insert($fichaData);
+            }
+
+            // Salvar Observações Visuais
+            $obsVisuais = $this->request->getPost('observacao_visual');
+            if ($obsVisuais) {
+                foreach ($obsVisuais as $obsId => $val) {
+                    $outros = ($obsId == 7) ? $this->request->getPost('observacao_visual_outros') : null;
+                    $db->table('ficha_observacoes')->insert([
+                        'ficha_id' => $fichaId, 
+                        'observacao_id' => $obsId, 
+                        'outros_detalhes' => $outros
+                    ]);
+                }
+            }
+
+            // Salvar Serviços Realizados
+            $servicosRealizados = $this->request->getPost('servicos_realizados');
+            if ($servicosRealizados) {
+                foreach ($servicosRealizados as $servId) {
+                    $db->table('ficha_servicos_realizados')->insert([
+                        'ficha_id' => $fichaId,
+                        'servico_id' => $servId
+                    ]);
+                }
+            }
+
+            // Atualizar status do agendamento para Finalizado
+            $agendamentoModel = new AgendamentoModel();
+            $agendamentoModel->update($agendamentoId, ['status' => 'Finalizado']);
+
+            if ($db->transStatus() === false) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('error', 'Erro ao salvar ficha.');
+            } else {
+                $db->transCommit();
+                return redirect()->to('agenda')->with('success', 'Ficha salva e atendimento finalizado!');
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
     }
 }

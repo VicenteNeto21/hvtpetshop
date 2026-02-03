@@ -22,52 +22,66 @@
         <!-- Date Navigation Bar -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 animate-enter" style="animation-delay: 0.1s">
             <div class="flex items-center gap-4 w-full md:w-auto">
-                <a href="<?= base_url('agenda?data=' . date('Y-m-d', strtotime($dataSelecionada . ' -1 day'))) ?>" 
-                   class="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-brand-600 transition-colors">
-                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
-                </a>
-                
-                <div class="flex-1 text-center md:text-left">
-                    <h2 class="text-xl font-bold text-slate-800 capitalize">
-                        <?php 
-                            $dateObj = \DateTime::createFromFormat('Y-m-d', $dataSelecionada);
-                            $formatter = new \IntlDateFormatter('pt_BR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE);
-                            echo $dataSelecionada == date('Y-m-d') ? 'Hoje, ' . $dateObj->format('d/m') : $formatter->format($dateObj);
-                        ?>
-                    </h2>
-                </div>
+                <?php if($statusSelecionado == 'Pendente'): ?>
+                    <div class="flex-1 text-center md:text-left">
+                        <h2 class="text-xl font-bold text-slate-800">
+                             Todos os Pendentes
+                        </h2>
+                        <p class="text-sm text-slate-500">Exibindo lista completa de pendências</p>
+                    </div>
+                <?php else: ?>
+                    <a href="<?= base_url('agenda?data=' . date('Y-m-d', strtotime($dataSelecionada . ' -1 day'))) . ($statusSelecionado ? '&status='.$statusSelecionado : '') ?>" 
+                       class="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-brand-600 transition-colors">
+                        <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                    </a>
+                    
+                    <div class="flex-1 text-center md:text-left">
+                        <h2 class="text-xl font-bold text-slate-800 capitalize">
+                            <?php 
+                                $dateObj = \DateTime::createFromFormat('Y-m-d', $dataSelecionada);
+                                $formatter = new \IntlDateFormatter('pt_BR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE);
+                                echo $dataSelecionada == date('Y-m-d') ? 'Hoje, ' . $dateObj->format('d/m') : $formatter->format($dateObj);
+                            ?>
+                        </h2>
+                    </div>
 
-                <a href="<?= base_url('agenda?data=' . date('Y-m-d', strtotime($dataSelecionada . ' +1 day'))) ?>" 
-                   class="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-brand-600 transition-colors">
-                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
-                </a>
+                    <a href="<?= base_url('agenda?data=' . date('Y-m-d', strtotime($dataSelecionada . ' +1 day'))) . ($statusSelecionado ? '&status='.$statusSelecionado : '') ?>" 
+                       class="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-brand-600 transition-colors">
+                        <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                    </a>
+                <?php endif; ?>
             </div>
 
             <!-- Date Picker Jump -->
-            <form action="<?= base_url('agenda') ?>" method="GET" class="flex items-center gap-2">
-                <label for="data" class="text-sm font-medium text-slate-600 hidden md:block">Ir para:</label>
-                <input type="date" name="data" value="<?= $dataSelecionada ?>" 
-                       onchange="this.form.submit()"
-                       class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
-            </form>
+            <!-- Date Picker Jump -->
+            <?php if($statusSelecionado != 'Pendente'): ?>
+                <form action="<?= base_url('agenda') ?>" method="GET" class="flex items-center gap-2">
+                    <label for="data" class="text-sm font-medium text-slate-600 hidden md:block">Ir para:</label>
+                    <input type="date" name="data" value="<?= $dataSelecionada ?>" 
+                           onchange="this.form.submit()"
+                           class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                </form>
+            <?php else: ?>
+                <div></div> <!-- Spacer -->
+            <?php endif; ?>
         </div>
 
         <!-- Filter/Tabs -->
         <div class="flex gap-4 mb-6 overflow-x-auto pb-2 animate-enter" style="animation-delay: 0.15s">
-            <a href="<?= base_url('agenda?data=' . $dataSelecionada) ?>" 
+            <a href="<?= base_url('agenda') ?>" 
                class="px-4 py-2 rounded-full text-sm font-bold shadow-sm whitespace-nowrap transition-colors
                <?= !$statusSelecionado ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
-                Todos
+                Todos (Hoje)
             </a>
-            <a href="<?= base_url('agenda?data=' . $dataSelecionada . '&status=Pendente') ?>" 
+            <a href="<?= base_url('agenda?status=Pendente') ?>" 
                class="px-4 py-2 rounded-full text-sm font-bold shadow-sm whitespace-nowrap transition-colors
                <?= $statusSelecionado == 'Pendente' ? 'bg-amber-500 text-white shadow-md border-amber-500' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
-                Pendentes
+                Todos os Pendentes
             </a>
             <a href="<?= base_url('agenda?data=' . $dataSelecionada . '&status=Finalizado') ?>" 
                class="px-4 py-2 rounded-full text-sm font-bold shadow-sm whitespace-nowrap transition-colors
                <?= $statusSelecionado == 'Finalizado' ? 'bg-emerald-500 text-white shadow-md border-emerald-500' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
-                Finalizados
+                Finalizados (Dia)
             </a>
         </div>
 
@@ -91,6 +105,9 @@
                             <span class="text-2xl font-bold text-slate-800">
                                 <?= date('H:i', strtotime($item['data_hora'])) ?>
                             </span>
+                            <?php if($statusSelecionado == 'Pendente'): ?>
+                                <span class="text-xs text-slate-500 mt-1"><?= date('d/m/Y', strtotime($item['data_hora'])) ?></span>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Info Column -->
@@ -131,11 +148,11 @@
                                     <i data-lucide="edit-2" class="w-5 h-5 mx-auto"></i>
                                 </button>
                                 
-                                <!-- Botão Concluir -->
-                                <button onclick="openConfirmModal('<?= base_url('agenda/concluir/' . $item['id']) ?>', 'Concluir Serviço', 'Deseja marcar este agendamento como finalizado?', 'success', 'check-circle')" 
-                                   class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-green-50 hover:text-green-600 transition-colors" title="Concluir">
-                                    <i data-lucide="check-circle-2" class="w-5 h-5 mx-auto"></i>
-                                </button>
+                                <!-- Botão Concluir (Leva para Ficha) -->
+                                <a href="<?= base_url('agenda/concluir/' . $item['id']) ?>" 
+                                   class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-green-50 hover:text-green-600 transition-colors" title="Ficha / Concluir">
+                                    <i data-lucide="clipboard-list" class="w-5 h-5 mx-auto"></i>
+                                </a>
 
                                 <!-- Botão Cancelar -->
                                 <button onclick="openConfirmModal('<?= base_url('agenda/cancelar/' . $item['id']) ?>', 'Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.', 'danger', 'x-circle')"

@@ -48,6 +48,12 @@
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                            <div class="mt-2 text-right">
+                                <a href="<?= base_url('agenda/cadastro-rapido') ?>" class="text-sm font-medium text-brand-600 hover:text-brand-700 hover:underline flex items-center justify-end gap-1">
+                                    <i data-lucide="zap" class="w-3 h-3"></i>
+                                    Não encontrou? Cadastre Tutor e Pet rapido aqui
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -133,10 +139,7 @@
                         <a href="<?= base_url('agenda') ?>" class="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">
                             Cancelar
                         </a>
-                        <button type="submit" class="px-8 py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition-all flex items-center gap-2">
-                            <i data-lucide="check" class="w-5 h-5"></i>
-                            Confirmar Agendamento
-                        </button>
+                        <?= view('components/btn_salvar', ['label' => 'Confirmar Agendamento']) ?>
                     </div>
                 </form>
             </div>

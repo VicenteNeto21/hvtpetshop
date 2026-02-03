@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Controllers\BaseController;
+use App\Models\TutorModel;
+
+class Tutores extends BaseController
+{
+    public function index()
+    {
+        $tutorModel = new TutorModel();
+        
+        $search = $this->request->getGet('search');
+        
+        if ($search) {
+            $tutorModel->groupStart()
+                ->like('nome', $search)
+                ->orLike('telefone', $search)
+                ->groupEnd();
+        }
+
+        $data = [
+            'tutores' => $tutorModel->orderBy('nome', 'ASC')->paginate(10),
+            'pager' => $tutorModel->pager,
+            'search' => $search
+        ];
+
+        return view('tutores/index', $data);
+    }
+
+    public function novo()
+    {
+        return view('tutores/novo');
+    }
+
+    public function salvar()
+    {
+        $rules = [
+            'nome' => 'required|min_length[3]',
+            'telefone' => 'required',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $tutorModel = new TutorModel();
+        
+        $data = $this->request->getPost();
+        
+        // Handle checkbox
+        $data['telefone_is_whatsapp'] = isset($data['telefone_is_whatsapp']) ? 'Sim' : 'Não';
+
+        if ($tutorModel->save($data)) {
+            return redirect()->to('tutores')->with('success', 'Tutor cadastrado com sucesso!');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Erro ao salvar tutor.');
+        }
+    }
+
+    public function editar($id)
+    {
+        $tutorModel = new TutorModel();
+        $tutor = $tutorModel->find($id);
+
+        if (!$tutor) {
+            return redirect()->to('tutores')->with('error', 'Tutor não encontrado.');
+        }
+
+        return view('tutores/novo', ['tutor' => $tutor]);
+    }
+
+    public function excluir($id)
+    {
+        $tutorModel = new TutorModel();
+        
+        // TODO: Verificar se tem pets ou agendamentos antes de excluir (Soft delete seria ideal)
+        if ($tutorModel->delete($id)) {
+            return redirect()->back()->with('success', 'Tutor removido com sucesso.');
+        } else {
+            return redirect()->back()->with('error', 'Erro ao remover tutor.');
+        }
+    }
+    public function ver($id)
+    {
+        $tutorModel = new TutorModel();
+        $tutor = $tutorModel->find($id);
+
+        if (!$tutor) {
+            return redirect()->to('tutores')->with('error', 'Tutor não encontrado.');
+        }
+
+        // Buscar pets do tutor
+        $petModel = new \App\Models\PetModel();
+        $pets = $petModel->where('tutor_id', $id)->findAll();
+
+        return view('tutores/ver', [
+            'tutor' => $tutor,
+            'pets' => $pets
+        ]);
+    }
+}

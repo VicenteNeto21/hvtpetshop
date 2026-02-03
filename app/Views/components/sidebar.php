@@ -16,6 +16,11 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
+        <a href="<?= base_url('admin') ?>" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all <?= uri_string() == 'admin' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>">
+            <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+            <span class="font-medium">Administração</span>
+        </a>
+
         <a href="<?= base_url('agenda') ?>" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all <?= uri_string() == 'agenda' ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>">
             <i data-lucide="calendar" class="w-5 h-5"></i>
             <span class="font-medium">Agenda</span>

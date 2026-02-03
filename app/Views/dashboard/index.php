@@ -46,12 +46,13 @@
              <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="relative">
-                    <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 mb-4">
-                         <i data-lucide="clock" class="w-6 h-6"></i>
-                    </div>
-                    <p class="text-slate-500 text-sm font-medium">Pendentes</p>
-                    <h3 class="text-3xl font-bold text-slate-800 mt-1"><?= $stats['pendentes'] ?></h3>
-                </div>
+                     <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 mb-4">
+                          <i data-lucide="clock" class="w-6 h-6"></i>
+                     </div>
+                     <p class="text-slate-500 text-sm font-medium">Pendentes</p>
+                     <h3 class="text-3xl font-bold text-slate-800 mt-1"><?= $stats['pendentes'] ?></h3>
+                     <a href="<?= base_url('agenda?status=Pendente') ?>" class="absolute inset-0 z-10" title="Ver Pendentes"></a>
+                 </div>
             </div>
 
             <!-- Card 3 -->
@@ -88,7 +89,7 @@
                         Agenda do Dia
                         <span class="text-sm font-normal text-slate-500 ml-2">(<?= date('d/m/Y', strtotime($dataSelecionada)) ?>)</span>
                     </h2>
-                    <a href="<?= base_url('agendamento/novo') ?>" class="text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-3 py-1.5 rounded-lg transition-colors">
+                    <a href="<?= base_url('agenda/novo') ?>" class="text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-3 py-1.5 rounded-lg transition-colors">
                         + Novo
                     </a>
                 </div>
