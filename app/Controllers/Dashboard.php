@@ -19,27 +19,29 @@ class Dashboard extends BaseController
         $dataSelecionada = $this->request->getGet('data') ?? date('Y-m-d');
         $status = $this->request->getGet('status');
 
-        // Agenda do Dia
-        $query = $agendamentoModel->select('agendamentos.*, pets.nome as pet_nome, servicos.nome as servico_nome, tutores.nome as tutor_nome')
-            ->join('pets', 'pets.id = agendamentos.pet_id')
-            ->join('tutores', 'tutores.id = pets.tutor_id')
-            ->join('servicos', 'servicos.id = agendamentos.servico_id');
+        // Agenda do Dia - Chamando método centralizado no Model que já faz o agrupamento
+        $agenda = $agendamentoModel->getAgendamentosDoDia($dataSelecionada);
 
-        if ($status === 'Pendente') {
-            $query->where('agendamentos.status', 'Pendente');
-        } else {
-             $query->where("DATE(data_hora)", $dataSelecionada);
-             if ($status) {
-                 $query->where('agendamentos.status', $status);
-             }
+        // Se filtrar por status, aplicamos manualmente (ou poderíamos passar pro model)
+        if ($status) {
+            $agenda = array_values(array_filter($agenda, function($ag) use ($status) {
+                return $ag['status'] === $status;
+            }));
         }
-        
-        $agenda = $query->orderBy('data_hora', 'ASC')->findAll();
 
         // Estatísticas Rápidas (Cards do Dashboard Principal)
+        $hoje = date('Y-m-d');
+        $agendamentosHojeGrouped = $agendamentoModel->getAgendamentosDoDia($hoje);
+        
+        // Pendentes (Considerando agrupamento: pet + data_hora único)
+        $pendentesCount = $agendamentoModel->select('id')
+                                           ->where('status', 'Pendente')
+                                           ->groupBy('pet_id, data_hora')
+                                           ->countAllResults();
+
         $stats = [
-            'agendamentos_hoje' => $agendamentoModel->where("DATE(data_hora)", date('Y-m-d'))->where('status !=', 'Cancelado')->countAllResults(),
-            'pendentes' => $agendamentoModel->where('status', 'Pendente')->countAllResults(),
+            'agendamentos_hoje' => count($agendamentosHojeGrouped),
+            'pendentes' => $pendentesCount,
             'total_pets' => $petModel->countAllResults(),
             'total_tutores' => $tutorModel->countAllResults()
         ];
@@ -51,13 +53,14 @@ class Dashboard extends BaseController
                                     ->where("DAY(pets.nascimento) = DAY('$dataSelecionada')")
                                     ->findAll();
 
-        // Próximos Agendamentos (próximos 5 após agora)
-        $proximosAgendamentos = $agendamentoModel->select('agendamentos.*, pets.nome as pet_nome, servicos.nome as servico_nome, tutores.nome as tutor_nome')
+        // Próximos Agendamentos (Agrupados - Próximos 5)
+        $proximosAgendamentos = $agendamentoModel->select('MIN(agendamentos.id) as id, pets.nome as pet_nome, GROUP_CONCAT(servicos.nome SEPARATOR ", ") as servico_nome, tutores.nome as tutor_nome, agendamentos.data_hora, agendamentos.status')
             ->join('pets', 'pets.id = agendamentos.pet_id')
             ->join('tutores', 'tutores.id = pets.tutor_id')
             ->join('servicos', 'servicos.id = agendamentos.servico_id')
             ->where('agendamentos.status', 'Pendente')
             ->where('agendamentos.data_hora >=', date('Y-m-d H:i:s'))
+            ->groupBy('agendamentos.pet_id, agendamentos.data_hora')
             ->orderBy('agendamentos.data_hora', 'ASC')
             ->limit(5)
             ->findAll();
@@ -72,5 +75,46 @@ class Dashboard extends BaseController
         ]);
     }
 
+    /**
+     * AJAX endpoint - Retorna dados da agenda em JSON
+     */
+    public function getAgendaData()
+    {
+        if (!session()->get('usuario_id')) {
+            return $this->response->setJSON(['error' => 'Não autorizado'])->setStatusCode(401);
+        }
 
+        $agendamentoModel = new \App\Models\AgendamentoModel();
+        $petModel = new \App\Models\PetModel();
+
+        $dataSelecionada = $this->request->getGet('data') ?? date('Y-m-d');
+
+        // Agenda do Dia (Garantindo agrupamento)
+        $agenda = $agendamentoModel->getAgendamentosDoDia($dataSelecionada);
+
+        // Aniversariantes
+        $aniversariantes = $petModel->select('pets.nome as pet_nome, tutores.nome as tutor_nome')
+            ->join('tutores', 'tutores.id = pets.tutor_id')
+            ->where("MONTH(pets.nascimento) = MONTH('$dataSelecionada')")
+            ->where("DAY(pets.nascimento) = DAY('$dataSelecionada')")
+            ->findAll();
+
+        // Formatar data para exibição
+        $diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        $meses = ['', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        
+        $dataFormatada = [
+            'dia' => date('d', strtotime($dataSelecionada)),
+            'mes' => $meses[(int)date('m', strtotime($dataSelecionada))],
+            'diaSemana' => $diasSemana[(int)date('w', strtotime($dataSelecionada))],
+            'completa' => date('d/m/Y', strtotime($dataSelecionada))
+        ];
+
+        return $this->response->setJSON([
+            'agenda' => $agenda,
+            'aniversariantes' => $aniversariantes,
+            'dataFormatada' => $dataFormatada,
+            'dataSelecionada' => $dataSelecionada
+        ]);
+    }
 }

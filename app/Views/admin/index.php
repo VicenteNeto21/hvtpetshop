@@ -110,7 +110,7 @@
         </div>
 
         <!-- 1. Cards KPI -->
-        <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-6 mb-8 print:grid-cols-6 print:gap-4 animate-enter" style="animation-delay: 0.1s">
+        <div class="grid grid-cols-2 lg:grid-cols-7 gap-4 lg:gap-6 mb-8 print:grid-cols-7 print:gap-4 animate-enter" style="animation-delay: 0.1s">
             <!-- Faturamento -->
             <div class="col-span-2 lg:col-span-1 bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group print:border print:border-slate-300">
                  <div class="absolute right-0 top-0 w-20 h-20 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 print:hidden"></div>
@@ -125,6 +125,12 @@
                 <p class="text-slate-500 text-xs font-bold uppercase tracking-wide mb-1">Atendimentos</p>
                 <h3 class="text-2xl lg:text-3xl font-bold text-slate-800"><?= $stats['finalizados'] ?></h3>
                 <p class="text-xs text-emerald-600 font-medium">Concluídos</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 print:border print:border-slate-300">
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-wide mb-1">Aguardando</p>
+                <h3 class="text-2xl lg:text-3xl font-bold text-amber-600"><?= $stats['pendentes'] ?></h3>
+                <p class="text-xs text-amber-400 font-medium">Pendentes</p>
             </div>
 
              <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 print:border print:border-slate-300">

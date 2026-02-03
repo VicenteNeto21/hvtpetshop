@@ -34,7 +34,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-brand-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="relative">
-                    <div class="w-12 h-12 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-600 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 mb-4 border border-slate-200">
                          <i data-lucide="calendar" class="w-6 h-6"></i>
                     </div>
                     <p class="text-slate-500 text-sm font-medium">Agendamentos Hoje</p>
@@ -46,7 +46,7 @@
              <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="relative">
-                     <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 mb-4">
+                     <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 mb-4 border border-slate-200">
                           <i data-lucide="clock" class="w-6 h-6"></i>
                      </div>
                      <p class="text-slate-500 text-sm font-medium">Pendentes</p>
@@ -59,7 +59,7 @@
              <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-violet-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="relative">
-                    <div class="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-600 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 mb-4 border border-slate-200">
                          <i data-lucide="dog" class="w-6 h-6"></i>
                     </div>
                     <p class="text-slate-500 text-sm font-medium">Total Pets</p>
@@ -71,7 +71,7 @@
              <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="relative">
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 mb-4 border border-slate-200">
                          <i data-lucide="users" class="w-6 h-6"></i>
                     </div>
                     <p class="text-slate-500 text-sm font-medium">Tutores</p>
@@ -80,94 +80,44 @@
             </div>
         </div>
 
-        <!-- Mini Calendário e Próximos Atendimentos -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-enter" style="animation-delay: 0.15s">
-            <!-- Mini Calendário -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-                <h2 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i data-lucide="calendar-days" class="w-4 h-4 text-brand-500"></i>
-                    Selecionar Data
-                </h2>
-                
-                <!-- Data selecionada Formatada -->
-                <div class="bg-brand-50 border border-brand-100 rounded-xl p-4 mb-4 text-center">
-                    <p class="text-xs text-brand-600 uppercase tracking-wider font-medium">Data Selecionada</p>
-                    <p class="text-2xl font-bold text-brand-700 mt-1">
-                        <?= date('d', strtotime($dataSelecionada)) ?>
-                        <span class="text-base font-medium text-brand-500"><?= strftime('%b', strtotime($dataSelecionada)) ?></span>
-                    </p>
-                    <p class="text-xs text-brand-500"><?= date('l', strtotime($dataSelecionada)) == 'Sunday' ? 'Domingo' : 
-                        (date('l', strtotime($dataSelecionada)) == 'Monday' ? 'Segunda-feira' :
-                        (date('l', strtotime($dataSelecionada)) == 'Tuesday' ? 'Terça-feira' :
-                        (date('l', strtotime($dataSelecionada)) == 'Wednesday' ? 'Quarta-feira' :
-                        (date('l', strtotime($dataSelecionada)) == 'Thursday' ? 'Quinta-feira' :
-                        (date('l', strtotime($dataSelecionada)) == 'Friday' ? 'Sexta-feira' : 'Sábado'))))) ?></p>
-                </div>
-                
-                <input type="date" 
-                       id="mini-calendar" 
-                       value="<?= $dataSelecionada ?>" 
-                       onchange="window.location.href='?data=' + this.value"
-                       class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer hover:border-brand-300 transition-colors">
-                
-                <div class="flex gap-2 mt-3">
-                    <button onclick="window.location.href='?data=<?= date('Y-m-d') ?>'" 
-                            class="flex-1 text-xs font-medium px-3 py-2 rounded-lg <?= $dataSelecionada == date('Y-m-d') ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' ?> transition-colors">
-                        Hoje
-                    </button>
-                    <button onclick="window.location.href='?data=<?= date('Y-m-d', strtotime('+1 day')) ?>'" 
-                            class="flex-1 text-xs font-medium px-3 py-2 rounded-lg <?= $dataSelecionada == date('Y-m-d', strtotime('+1 day')) ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' ?> transition-colors">
-                        Amanhã
-                    </button>
-                </div>
-            </div>
-
-            <!-- Próximos Atendimentos -->
-            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                        <i data-lucide="clock" class="w-4 h-4 text-orange-500"></i>
-                        Próximos Atendimentos
-                    </h2>
-                    <a href="<?= base_url('agenda') ?>" class="text-xs text-brand-600 hover:text-brand-700 font-medium">Ver todos →</a>
-                </div>
-                
-                <?php if(empty($proximosAgendamentos)): ?>
-                    <p class="text-sm text-slate-400 italic py-4 text-center">Nenhum atendimento pendente.</p>
-                <?php else: ?>
-                    <div class="space-y-2">
-                        <?php foreach($proximosAgendamentos as $prox): ?>
-                            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors group">
-                                <div class="flex-shrink-0 w-14 text-center">
-                                    <div class="text-xs text-slate-400 uppercase"><?= date('D', strtotime($prox['data_hora'])) ?></div>
-                                    <div class="text-lg font-bold text-slate-700"><?= date('d', strtotime($prox['data_hora'])) ?></div>
-                                    <div class="text-xs text-brand-600 font-semibold"><?= date('H:i', strtotime($prox['data_hora'])) ?></div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="font-semibold text-slate-800 text-sm truncate"><?= $prox['pet_nome'] ?></p>
-                                    <p class="text-xs text-slate-400 truncate"><?= $prox['tutor_nome'] ?></p>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg text-xs font-medium"><?= $prox['servico_nome'] ?></span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-enter" style="animation-delay: 0.2s">
-            <!-- Agenda Table (Col Spam 2) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-enter" style="animation-delay: 0.15s">
+            <!-- Agenda Table (Col Span 2) -->
             <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <i data-lucide="calendar-check" class="w-5 h-5 text-brand-500"></i>
-                        Agenda do Dia
-                        <span class="text-sm font-normal text-slate-500 ml-2">(<?= date('d/m/Y', strtotime($dataSelecionada)) ?>)</span>
-                    </h2>
-                    <a href="<?= base_url('agenda/novo') ?>" class="text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-3 py-1.5 rounded-lg transition-colors">
-                        + Novo
+                    <div class="flex items-center gap-4">
+                        <button onclick="navegarData(-1)" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" title="Dia anterior">
+                            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <div class="text-center min-w-[140px]">
+                            <h2 class="text-lg font-bold text-slate-800 flex items-center justify-center gap-2">
+                                <i data-lucide="calendar-check" class="w-5 h-5 text-brand-500"></i>
+                                <span id="data-dia"><?php 
+                                    $diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                                    echo $diasSemana[(int)date('w', strtotime($dataSelecionada))] . ', ' . date('d/m', strtotime($dataSelecionada)); 
+                                ?></span>
+                            </h2>
+                            <?php if($dataSelecionada == date('Y-m-d')): ?>
+                                <span class="text-xs text-brand-600 font-medium">Hoje</span>
+                            <?php elseif($dataSelecionada == date('Y-m-d', strtotime('+1 day'))): ?>
+                                <span class="text-xs text-amber-600 font-medium">Amanhã</span>
+                            <?php elseif($dataSelecionada == date('Y-m-d', strtotime('-1 day'))): ?>
+                                <span class="text-xs text-slate-500 font-medium">Ontem</span>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <button onclick="navegarData(1)" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" title="Próximo dia">
+                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <button onclick="irParaHoje()" class="px-3 py-1.5 rounded-lg text-xs font-medium <?= $dataSelecionada == date('Y-m-d') ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' ?> transition-colors" id="btn-hoje">
+                            Hoje
+                        </button>
+                    </div>
+                    
+                    <a href="<?= base_url('agenda/novo') ?>" class="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm shadow-brand-500/20 transition-colors">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Novo Agendamento
                     </a>
                 </div>
 
@@ -179,12 +129,13 @@
                                 <th class="p-3 text-xs font-semibold text-slate-500 uppercase">Pet/Tutor</th>
                                 <th class="p-3 text-xs font-semibold text-slate-500 uppercase">Serviço</th>
                                 <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-center">Status</th>
+                                <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-center">Ações</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50">
+                        <tbody id="agenda-tbody" class="divide-y divide-slate-50">
                             <?php if(empty($agenda)): ?>
                                 <tr>
-                                    <td colspan="4" class="p-8 text-center text-slate-400 text-sm italic">
+                                    <td colspan="5" class="p-8 text-center text-slate-400 text-sm italic">
                                         Nenhum agendamento para hoje.
                                     </td>
                                 </tr>
@@ -215,6 +166,29 @@
                                                 <?= $ag['status'] ?>
                                             </span>
                                         </td>
+                                        <td class="p-3 text-center">
+                                            <div class="flex justify-center gap-1">
+                                                <?php if($ag['status'] == 'Pendente'): ?>
+                                                    <a href="<?= base_url('agenda/concluir/' . $ag['id']) ?>" 
+                                                       class="p-1.5 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors" 
+                                                       title="Iniciar Atendimento">
+                                                        <i data-lucide="play" class="w-4 h-4"></i>
+                                                    </a>
+                                                    <a href="<?= base_url('agenda/cancelar/' . $ag['id']) ?>" 
+                                                       class="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" 
+                                                       title="Cancelar"
+                                                       onclick="return confirm('Cancelar este agendamento?')">
+                                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                                    </a>
+                                                <?php elseif($ag['status'] == 'Finalizado'): ?>
+                                                    <a href="<?= base_url('agenda/concluir/' . $ag['id']) ?>" 
+                                                       class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" 
+                                                       title="Ver Ficha">
+                                                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -235,7 +209,7 @@
                          Aniversariantes
                     </h2>
                     
-                    <div class="space-y-3 relative z-10">
+                    <div id="aniversariantes-lista" class="space-y-3 relative z-10">
                          <?php if(empty($aniversariantes)): ?>
                             <p class="text-sm text-slate-400 italic">Nenhum pet fazendo festa hoje.</p>
                          <?php else: ?>
@@ -276,4 +250,162 @@
 
     </main>
 </div>
+
+<script>
+    // Data atual selecionada
+    let dataSelecionada = '<?= $dataSelecionada ?>';
+    const hoje = '<?= date('Y-m-d') ?>';
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    
+    // Navegar para dia anterior/próximo
+    function navegarData(direcao) {
+        const dataAtual = new Date(dataSelecionada + 'T00:00:00');
+        dataAtual.setDate(dataAtual.getDate() + direcao);
+        const novaData = dataAtual.toISOString().split('T')[0];
+        carregarAgenda(novaData);
+    }
+    
+    // Ir para hoje
+    function irParaHoje() {
+        carregarAgenda(hoje);
+    }
+    
+    // Função para carregar dados via AJAX
+    async function carregarAgenda(data) {
+        dataSelecionada = data;
+        
+        // Atualizar URL sem recarregar
+        history.pushState({}, '', '?data=' + data);
+        
+        // Mostrar loading
+        document.getElementById('agenda-tbody').innerHTML = `
+            <tr>
+                <td colspan="4" class="p-8 text-center text-slate-400 text-sm">
+                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block"></i>
+                    Carregando...
+                </td>
+            </tr>
+        `;
+        
+        try {
+            const response = await fetch('<?= base_url('dashboard/agenda-data') ?>?data=' + data);
+            const dados = await response.json();
+            
+            // Atualizar display de data no header
+            const dataObj = new Date(data + 'T00:00:00');
+            const diaFormatado = diasSemana[dataObj.getDay()] + ', ' + dados.dataFormatada.dia + '/' + String(dataObj.getMonth() + 1).padStart(2, '0');
+            document.getElementById('data-dia').textContent = diaFormatado;
+            
+            // Atualizar botão Hoje
+            const btnHoje = document.getElementById('btn-hoje');
+            if (data === hoje) {
+                btnHoje.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-500 text-white transition-colors';
+            } else {
+                btnHoje.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors';
+            }
+            
+            // Atualizar tabela de agenda
+            if (dados.agenda.length === 0) {
+                document.getElementById('agenda-tbody').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-slate-400 text-sm italic">
+                            Nenhum agendamento para este dia.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                let html = '';
+                dados.agenda.forEach(ag => {
+                    const dataObj = new Date(ag.data_hora);
+                    const horario = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+                    const base_url = '<?= base_url() ?>';
+                    
+                    const statusColors = {
+                        'Pendente': 'bg-amber-100 text-amber-700 border-amber-200',
+                        'Em Atendimento': 'bg-blue-100 text-blue-700 border-blue-200',
+                        'Finalizado': 'bg-green-100 text-green-700 border-green-200',
+                        'Cancelado': 'bg-red-100 text-red-700 border-red-200'
+                    };
+                    const colorClass = statusColors[ag.status] || 'bg-slate-100 text-slate-700';
+                    
+                    let acoes = '';
+                    if (ag.status === 'Pendente') {
+                        acoes = `
+                            <a href="${base_url}/agenda/concluir/${ag.id}" class="p-1.5 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors" title="Iniciar Atendimento">
+                                <i data-lucide="play" class="w-4 h-4"></i>
+                            </a>
+                            <a href="${base_url}/agenda/cancelar/${ag.id}" class="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" title="Cancelar" onclick="return confirm('Cancelar este agendamento?')">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </a>
+                        `;
+                    } else if (ag.status === 'Finalizado') {
+                        acoes = `
+                            <a href="${base_url}/agenda/concluir/${ag.id}" class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" title="Ver Ficha">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                            </a>
+                        `;
+                    }
+
+                    html += `
+                        <tr class="hover:bg-slate-50/80 transition-colors group">
+                            <td class="p-3 font-semibold text-slate-700">${horario}</td>
+                            <td class="p-3">
+                                <div class="font-medium text-slate-800">${ag.pet_nome}</div>
+                                <div class="text-xs text-slate-400">${ag.tutor_nome}</div>
+                            </td>
+                            <td class="p-3 text-sm text-slate-600">
+                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium">
+                                    ${ag.servico_nome}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border ${colorClass}">
+                                    ${ag.status}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <div class="flex justify-center gap-1">
+                                    ${acoes}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('agenda-tbody').innerHTML = html;
+            }
+            
+            // Atualizar aniversariantes
+            if (dados.aniversariantes.length === 0) {
+                document.getElementById('aniversariantes-lista').innerHTML = `
+                    <p class="text-sm text-slate-400 italic">Nenhum pet fazendo festa neste dia.</p>
+                `;
+            } else {
+                let htmlNiver = '';
+                dados.aniversariantes.forEach(niver => {
+                    htmlNiver += `
+                        <div class="flex items-center gap-3 bg-pink-50/50 p-3 rounded-xl border border-pink-100">
+                            <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-500">
+                                <i data-lucide="paw-print" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800 text-sm">${niver.pet_nome}</p>
+                                <p class="text-xs text-slate-500">Tutor: ${niver.tutor_nome}</p>
+                            </div>
+                            <i data-lucide="gift" class="w-5 h-5 text-pink-400 ml-auto"></i>
+                        </div>
+                    `;
+                });
+                document.getElementById('aniversariantes-lista').innerHTML = htmlNiver;
+            }
+            
+            // Recriar ícones Lucide
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            
+        } catch (error) {
+            console.error('Erro ao carregar agenda:', error);
+        }
+    }
+</script>
 <?= $this->endSection() ?>

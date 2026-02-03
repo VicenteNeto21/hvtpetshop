@@ -21,15 +21,23 @@ class Admin extends BaseController
         $dataInicial = $this->request->getGet('data_inicial') ?? date('Y-m-01');
         $dataFinal = $this->request->getGet('data_final') ?? date('Y-m-t');
 
-        // 2. Cards Principais (No Período)
+        // 2. Cards Principais (No Período - Agrupados)
         $finalizados = $agendamentoModel->where('status', 'Finalizado')
             ->where("DATE(data_hora) >=", $dataInicial)
             ->where("DATE(data_hora) <=", $dataFinal)
+            ->groupBy('pet_id, data_hora')
             ->countAllResults();
 
         $cancelados = $agendamentoModel->where('status', 'Cancelado')
             ->where("DATE(data_hora) >=", $dataInicial)
             ->where("DATE(data_hora) <=", $dataFinal)
+            ->groupBy('pet_id, data_hora')
+            ->countAllResults();
+
+        $pendentes = $agendamentoModel->where('status', 'Pendente')
+            ->where("DATE(data_hora) >=", $dataInicial)
+            ->where("DATE(data_hora) <=", $dataFinal)
+            ->groupBy('pet_id, data_hora')
             ->countAllResults();
 
         $totalPets = $petModel->countAllResults();
@@ -44,13 +52,14 @@ class Admin extends BaseController
             ->first();
         $faturamentoEstimado = $faturamentoData['total'] ?? 0;
 
-        // 4. Gráfico: Atendimentos por Dia
-        $sqlPorDia = "SELECT DATE(data_hora) as data, COUNT(*) as total 
-                      FROM agendamentos 
-                      WHERE status != 'Cancelado' 
-                      AND DATE(data_hora) BETWEEN ? AND ? 
-                      GROUP BY DATE(data_hora) 
-                      ORDER BY data ASC";
+        // 4. Gráfico: Atendimentos por Dia (Agrupados: conta 1 por pet/hora)
+        $sqlPorDia = "SELECT data, COUNT(*) as total FROM (
+                        SELECT DATE(data_hora) as data, pet_id, data_hora 
+                        FROM agendamentos 
+                        WHERE status != 'Cancelado' 
+                        AND DATE(data_hora) BETWEEN ? AND ? 
+                        GROUP BY DATE(data_hora), pet_id, data_hora
+                      ) as grouped_data GROUP BY data ORDER BY data ASC";
         $porDiaResult = $db->query($sqlPorDia, [$dataInicial, $dataFinal])->getResultArray();
         
         $graficoLabels = [];
@@ -60,11 +69,13 @@ class Admin extends BaseController
             $graficoData[] = $row['total'];
         }
 
-        // 5. Gráfico: Status
-        $sqlStatus = "SELECT status, COUNT(*) as total 
-                      FROM agendamentos 
-                      WHERE DATE(data_hora) BETWEEN ? AND ? 
-                      GROUP BY status";
+        // 5. Gráfico: Status (Agrupados)
+        $sqlStatus = "SELECT status, COUNT(*) as total FROM (
+                        SELECT status, pet_id, data_hora
+                        FROM agendamentos 
+                        WHERE DATE(data_hora) BETWEEN ? AND ? 
+                        GROUP BY status, pet_id, data_hora
+                      ) as grouped_status GROUP BY status";
         $statusResult = $db->query($sqlStatus, [$dataInicial, $dataFinal])->getResultArray();
         
         $statusLabels = [];
@@ -74,9 +85,9 @@ class Admin extends BaseController
             $statusData[] = $row['total'];
         }
 
-        // 6. Top 5 Tutores
+        // 6. Top 5 Tutores (Agendamentos agrupados)
         $topTutores = $db->query("
-            SELECT t.nome, COUNT(a.id) as total_atendimentos, SUM(s.preco) as total_gasto
+            SELECT t.nome, COUNT(DISTINCT a.pet_id, a.data_hora) as total_atendimentos, SUM(s.preco) as total_gasto
             FROM agendamentos a
             JOIN pets p ON p.id = a.pet_id
             JOIN tutores t ON t.id = p.tutor_id
@@ -109,6 +120,7 @@ class Admin extends BaseController
             'stats' => [
                 'finalizados' => $finalizados,
                 'cancelados' => $cancelados,
+                'pendentes' => $pendentes,
                 'total_pets' => $totalPets,
                 'total_tutores' => $totalTutores,
                 'faturamento' => $faturamentoEstimado,
@@ -146,16 +158,19 @@ class Admin extends BaseController
         $finalizados = $agendamentoModel->where('status', 'Finalizado')
             ->where("DATE(data_hora) >=", $dataInicial)
             ->where("DATE(data_hora) <=", $dataFinal)
+            ->groupBy('pet_id, data_hora')
             ->countAllResults();
 
         $cancelados = $agendamentoModel->where('status', 'Cancelado')
             ->where("DATE(data_hora) >=", $dataInicial)
             ->where("DATE(data_hora) <=", $dataFinal)
+            ->groupBy('pet_id, data_hora')
             ->countAllResults();
 
         $pendentes = $agendamentoModel->where('status', 'Pendente')
             ->where("DATE(data_hora) >=", $dataInicial)
             ->where("DATE(data_hora) <=", $dataFinal)
+            ->groupBy('pet_id, data_hora')
             ->countAllResults();
 
         $totalAtendimentos = $finalizados + $cancelados + $pendentes;
@@ -219,10 +234,11 @@ class Admin extends BaseController
         $dataInicialAnterior = date('Y-m-d', strtotime($dataInicial . " -" . ($diasPeriodo + 1) . " days"));
         $dataFinalAnterior = date('Y-m-d', strtotime($dataInicial . " -1 day"));
 
-        // Atendimentos período anterior
+        // Atendimentos período anterior (Agrupados)
         $finalizadosAnterior = $agendamentoModel->where('status', 'Finalizado')
             ->where("DATE(data_hora) >=", $dataInicialAnterior)
             ->where("DATE(data_hora) <=", $dataFinalAnterior)
+            ->groupBy('pet_id, data_hora')
             ->countAllResults();
 
         // Faturamento período anterior
@@ -247,7 +263,7 @@ class Admin extends BaseController
         // TOP TUTORES E SERVIÇOS
         // =============================================
         $topTutores = $db->query("
-            SELECT t.nome, COUNT(a.id) as total_atendimentos
+            SELECT t.nome, COUNT(DISTINCT a.pet_id, a.data_hora) as total_atendimentos
             FROM agendamentos a
             JOIN pets p ON p.id = a.pet_id
             JOIN tutores t ON t.id = p.tutor_id

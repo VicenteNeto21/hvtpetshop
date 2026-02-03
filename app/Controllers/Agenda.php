@@ -16,18 +16,18 @@ class Agenda extends BaseController
         $status = $this->request->getGet('status');
 
         $agendamentoModel = new AgendamentoModel();
-        
-        $query = $agendamentoModel->select('agendamentos.*, pets.nome as pet_nome, servicos.nome as servico_nome, tutores.nome as tutor_nome')
-            ->join('pets', 'pets.id = agendamentos.pet_id')
-            ->join('tutores', 'tutores.id = pets.tutor_id')
-            ->join('servicos', 'servicos.id = agendamentos.servico_id');
+
+        // Usando query agrupada para evitar duplicidade de serviços por linha
+        $query = $agendamentoModel->select('MIN(agendamentos.id) as id, pets.nome as pet_nome, pets.especie as pet_especie, tutores.nome as tutor_nome, GROUP_CONCAT(servicos.nome SEPARATOR ", ") as servico_nome, agendamentos.data_hora, agendamentos.status, agendamentos.transporte, agendamentos.observacoes')
+                    ->join('pets', 'pets.id = agendamentos.pet_id')
+                    ->join('tutores', 'tutores.id = pets.tutor_id')
+                    ->join('servicos', 'servicos.id = agendamentos.servico_id')
+                    ->groupBy('agendamentos.pet_id, agendamentos.data_hora, pets.nome, pets.especie, tutores.nome, agendamentos.status, agendamentos.transporte, agendamentos.observacoes');
 
         if ($status === 'Pendente') {
-            // Se for pendente, mostra todos (global) para encerrar, ordenado por data (antigos primeiro)
             $query->where('agendamentos.status', $status);
         } else {
-            // Para outros, filtra por dia
-            $query->where("DATE(data_hora)", $dataSelecionada);
+            $query->where("DATE(agendamentos.data_hora)", $dataSelecionada);
             if ($status) {
                 $query->where('agendamentos.status', $status);
             }
@@ -35,10 +35,16 @@ class Agenda extends BaseController
 
         $agendamentos = $query->orderBy('data_hora', 'ASC')->findAll();
 
-        // Estatísticas
+        // Estatísticas agrupadas
         $stats = [
-            'hoje_total' => $agendamentoModel->where("DATE(data_hora)", date('Y-m-d'))->where('status !=', 'Cancelado')->countAllResults(),
-            'hoje_finalizados' => $agendamentoModel->where("DATE(data_hora)", date('Y-m-d'))->where('status', 'Finalizado')->countAllResults(),
+            'hoje_total' => $agendamentoModel->where("DATE(data_hora)", date('Y-m-d'))
+                                            ->where('status !=', 'Cancelado')
+                                            ->groupBy('pet_id, data_hora')
+                                            ->countAllResults(),
+            'hoje_finalizados' => $agendamentoModel->where("DATE(data_hora)", date('Y-m-d'))
+                                                  ->where('status', 'Finalizado')
+                                                  ->groupBy('pet_id, data_hora')
+                                                  ->countAllResults(),
         ];
 
         return view('agenda/index', [
@@ -152,33 +158,58 @@ class Agenda extends BaseController
         $servicos = $this->request->getPost('servicos'); // Array
         $observacoes = $this->request->getPost('observacoes');
         $transporte = $this->request->getPost('transporte');
+        $recorrenciaTipo = $this->request->getPost('recorrencia_tipo') ?? 'unico';
+        $repeticoes = (int)($this->request->getPost('recorrencia_repeticoes') ?? 1);
+        if ($recorrenciaTipo === 'unico') $repeticoes = 1;
 
         $agendamentoModel = new AgendamentoModel();
         $db = \Config\Database::connect();
+        $recorrenciaGrupoId = ($recorrenciaTipo !== 'unico') ? uniqid('rec_') : null;
         
         try {
             $db->transBegin();
             
-            $dataHora = $data . ' ' . $horario . ':00';
+            for ($i = 0; $i < $repeticoes; $i++) {
+                // Calcular data baseada na recorrência
+                $dataObjeto = new \DateTime($data . ' ' . $horario);
+                if ($i > 0) {
+                    if ($recorrenciaTipo === 'semanal') {
+                        $dataObjeto->modify("+$i week");
+                    } elseif ($recorrenciaTipo === 'quinzenal') {
+                        $dias = $i * 14;
+                        $dataObjeto->modify("+$dias days");
+                    } elseif ($recorrenciaTipo === 'mensal') {
+                        $dataObjeto->modify("+$i month");
+                    }
+                }
+                
+                $dataHoraFinal = $dataObjeto->format('Y-m-d H:i:s');
 
-            foreach ($servicos as $servicoId) {
-                $agendamentoModel->insert([
-                    'pet_id' => $petId,
-                    'servico_id' => $servicoId,
-                    'data_hora' => $dataHora,
-                    'transporte' => $transporte,
-                    'observacoes' => $observacoes,
-                    'status' => 'Pendente',
-                    'criado_por' => session('user_id') ?? 1 // Fallback temp
-                ]);
+                // Verificar se o pet já tem agendamento nesse exato momento (evitar duplicados no loop)
+                // Ou se o slot está ocupado (opcional, mas bom para robustez)
+                
+                foreach ($servicos as $servicoId) {
+                    $agendamentoModel->insert([
+                        'pet_id' => $petId,
+                        'servico_id' => $servicoId,
+                        'data_hora' => $dataHoraFinal,
+                        'transporte' => $transporte,
+                        'observacoes' => ($i > 0 ? "[Recorrência " . ($i+1) . "/$repeticoes] " : "") . $observacoes,
+                        'status' => 'Pendente',
+                        'usuario_id' => session()->get('usuario_id') ?? 1,
+                        'recorrencia_grupo_id' => $recorrenciaGrupoId,
+                        'recorrencia_tipo' => $recorrenciaTipo
+                    ]);
+                }
             }
 
             if ($db->transStatus() === false) {
                 $db->transRollback();
-                return redirect()->back()->withInput()->with('error', 'Erro ao salvar agendamento.');
+                return redirect()->back()->withInput()->with('error', 'Erro ao salvar agendamento recorrente.');
             } else {
                 $db->transCommit();
-                return redirect()->to('agenda')->with('success', 'Agendamento realizado com sucesso!');
+                $msg = ($recorrenciaTipo !== 'unico') ? "Agendamento recorrente ($repeticoes vezes) realizado com sucesso!" : "Agendamento realizado com sucesso!";
+                return redirect()->to('agenda')->with('success', $msg);
             }
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('error', $e->getMessage());
@@ -186,7 +217,7 @@ class Agenda extends BaseController
     }
 
     /**
-     * AJAX: Retorna horários disponíveis
+     * AJAX: Retorna horários com status de disponibilidade
      */
     public function horariosDisponiveis()
     {
@@ -194,43 +225,74 @@ class Agenda extends BaseController
         if (!$data) return $this->response->setJSON([]);
 
         // Horários de funcionamento (Ex: 08:00 as 18:00)
-        $horarios = [];
+        $todosHorarios = [];
         for ($h = 8; $h < 18; $h++) {
-            $horarios[] = str_pad($h, 2, '0', STR_PAD_LEFT) . ':00';
-            $horarios[] = str_pad($h, 2, '0', STR_PAD_LEFT) . ':30';
+            $todosHorarios[] = str_pad($h, 2, '0', STR_PAD_LEFT) . ':00';
+            $todosHorarios[] = str_pad($h, 2, '0', STR_PAD_LEFT) . ':30';
         }
 
-        // Buscar horários ocupados
+        // Buscar horários ocupados - usando BETWEEN para usar o índice
         $agendamentoModel = new AgendamentoModel();
-        $ocupados = $agendamentoModel->where("DATE(data_hora)", $data)
-                                     ->where('status !=', 'Cancelado')
-                                     ->findColumn('data_hora') ?? [];
+        $ocupados = $agendamentoModel
+            ->select('data_hora')
+            ->where('data_hora >=', $data . ' 00:00:00')
+            ->where('data_hora <=', $data . ' 23:59:59')
+            ->where('status !=', 'Cancelado')
+            ->findColumn('data_hora') ?? [];
 
-        // Filtra horários (Simples: se já existe agendamento naquele horário exato)
-        // Melhoria futura: considerar duração do serviço
-        $horariosOcupados = array_map(function($dt) {
-            return date('H:i', strtotime($dt));
-        }, $ocupados);
+        // Mapeia para formato H:i
+        $horariosOcupados = [];
+        foreach ($ocupados as $dt) {
+            $horariosOcupados[] = date('H:i', strtotime($dt));
+        }
 
-        $disponiveis = array_diff($horarios, $horariosOcupados);
+        // Retorna todos os horários com status
+        $resultado = [];
+        foreach ($todosHorarios as $horario) {
+            $resultado[] = [
+                'horario' => $horario,
+                'disponivel' => !in_array($horario, $horariosOcupados)
+            ];
+        }
 
-        return $this->response->setJSON(array_values($disponiveis));
+        return $this->response->setJSON($resultado);
     }
 
     public function concluir($id)
     {
         $agendamentoModel = new AgendamentoModel();
-        $agendamentoModel->update($id, ['status' => 'Finalizado']);
+        $ag = $agendamentoModel->find($id);
         
-        // TODO: Redirecionar para a Ficha de Atendimento (será implementada a seguir)
-        return redirect()->back()->with('success', 'Agendamento concluído!');
+        if ($ag) {
+            // Finalizar todos os serviços deste pet neste horário
+            $agendamentoModel->where('pet_id', $ag['pet_id'])
+                             ->where('data_hora', $ag['data_hora'])
+                             ->where('status !=', 'Cancelado')
+                             ->set(['status' => 'Finalizado'])
+                             ->update();
+            
+            return redirect()->to('agenda/ficha/' . $id)->with('success', 'Atendimento iniciado/concluído!');
+        }
+        
+        return redirect()->back()->with('error', 'Agendamento não encontrado.');
     }
 
     public function cancelar($id)
     {
         $agendamentoModel = new AgendamentoModel();
-        $agendamentoModel->update($id, ['status' => 'Cancelado']);
-        return redirect()->back()->with('success', 'Agendamento cancelado.');
+        $ag = $agendamentoModel->find($id);
+        
+        if ($ag) {
+            // Cancelar todos os serviços deste pet neste horário
+            $agendamentoModel->where('pet_id', $ag['pet_id'])
+                             ->where('data_hora', $ag['data_hora'])
+                             ->set(['status' => 'Cancelado'])
+                             ->update();
+            
+            return redirect()->back()->with('success', 'Atendimento cancelado por completo.');
+        }
+        
+        return redirect()->back()->with('error', 'Agendamento não encontrado.');
     }
 
     public function ficha($id)
@@ -240,14 +302,24 @@ class Agenda extends BaseController
         $obsVisualModel = new \App\Models\ObservacaoVisualModel();
         $servicoModel = new \App\Models\ServicoModel();
 
-        // Dados do agendamento
-        $agendamento = $agendamentoModel->select('agendamentos.*, pets.nome as pet_nome, pets.especie, pets.raca, pets.sexo, tutores.nome as tutor_nome, tutores.telefone as tutor_telefone')
+        // 1. Pegar info base do agendamento solicitado
+        $agBase = $agendamentoModel->find($id);
+        if (!$agBase) {
+            return redirect()->to('agenda')->with('error', 'Agendamento não encontrado.');
+        }
+
+        // 2. Buscar dados agrupados por Pet e Horário (Harmonia)
+        $agendamento = $agendamentoModel->select('agendamentos.*, pets.nome as pet_nome, pets.especie, pets.raca, pets.sexo, tutores.nome as tutor_nome, tutores.telefone as tutor_telefone, GROUP_CONCAT(servicos.nome SEPARATOR ", ") as servicos_previstos, GROUP_CONCAT(servicos.id) as servicos_ids')
             ->join('pets', 'pets.id = agendamentos.pet_id')
             ->join('tutores', 'tutores.id = pets.tutor_id')
-            ->find($id);
+            ->join('servicos', 'servicos.id = agendamentos.servico_id')
+            ->where('agendamentos.pet_id', $agBase['pet_id'])
+            ->where('agendamentos.data_hora', $agBase['data_hora'])
+            ->groupBy('agendamentos.pet_id, agendamentos.data_hora')
+            ->first();
 
         if (!$agendamento) {
-            return redirect()->to('agenda')->with('error', 'Agendamento não encontrado.');
+            return redirect()->to('agenda')->with('error', 'Erro ao carregar dados do atendimento.');
         }
 
         // Ficha existente?
@@ -259,7 +331,6 @@ class Agenda extends BaseController
             'ficha' => $ficha,
             'obs_visuais' => $obsVisualModel->findAll(),
             'servicos' => $servicoModel->where('id !=', 99)->orderBy('nome', 'ASC')->findAll(),
-            // Se tiver ficha, buscar relacionamentos (fazer queries diretas por simplicidade ou criar models pivot)
             'obs_marcadas' => [],
             'servicos_realizados' => []
         ];
@@ -268,6 +339,17 @@ class Agenda extends BaseController
             $db = \Config\Database::connect();
             $data['obs_marcadas'] = $db->table('ficha_observacoes')->where('ficha_id', $ficha['id'])->get()->getResultArray();
             $data['servicos_realizados'] = $db->table('ficha_servicos_realizados')->where('ficha_id', $ficha['id'])->get()->getResultArray();
+        } else {
+            // Se for ficha nova, pré-carregar os serviços que foram agendados
+            $idsServicosAgendados = explode(',', $agendamento['servicos_ids']);
+            foreach ($idsServicosAgendados as $sId) {
+                $data['servicos_realizados'][] = ['servico_id' => $sId];
+            }
+        }
+
+        // Se o status for finalizado, mostra a tela de visualização (somente leitura)
+        if ($agendamento['status'] === 'Finalizado') {
+            return view('agenda/visualizar_ficha', $data);
         }
 
         return view('agenda/ficha', $data);
@@ -295,9 +377,9 @@ class Agenda extends BaseController
                 'recomendacoes_tutor' => $this->request->getPost('recomendacoes_tutor'),
             ];
 
-            // Verifica se já existe ficha para atualizar ou insert
+            // Ficha básica
             $fichaExistente = $fichaModel->where('agendamento_id', $agendamentoId)->first();
-            
+
             if ($fichaExistente) {
                 $fichaModel->update($fichaExistente['id'], $fichaData);
                 $fichaId = $fichaExistente['id'];
@@ -308,6 +390,18 @@ class Agenda extends BaseController
             } else {
                 $fichaId = $fichaModel->insert($fichaData);
             }
+
+            // --- Harmonia: Finalizar todo o grupo ---
+            $agModel = new \App\Models\AgendamentoModel();
+            $agOriginal = $agModel->find($agendamentoId);
+            if ($agOriginal) {
+                $agModel->where('pet_id', $agOriginal['pet_id'])
+                        ->where('data_hora', $agOriginal['data_hora'])
+                        ->where('status !=', 'Cancelado')
+                        ->set(['status' => 'Finalizado'])
+                        ->update();
+            }
+            // ----------------------------------------
 
             // Salvar Observações Visuais
             $obsVisuais = $this->request->getPost('observacao_visual');

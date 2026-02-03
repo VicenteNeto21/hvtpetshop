@@ -11,7 +11,18 @@ $routes->post('/login/auth', 'Auth::login');
 $routes->get('/logout', 'Auth::logout');
 $routes->get('/dashboard', 'Dashboard::index'); 
 $routes->get('/admin', 'Admin::index'); 
-$routes->get('/admin/relatorio', 'Admin::relatorio'); 
+$routes->get('/admin/relatorio', 'Admin::relatorio');
+$routes->get('/dashboard/agenda-data', 'Dashboard::getAgendaData');
+
+// Usuários (Admin)
+$routes->get('/usuarios', 'Usuarios::index');
+$routes->post('/usuarios/aprovar/(:num)', 'Usuarios::aprovar/$1');
+$routes->post('/usuarios/rejeitar/(:num)', 'Usuarios::rejeitar/$1');
+$routes->post('/usuarios/excluir/(:num)', 'Usuarios::excluir/$1');
+$routes->post('/usuarios/alternar-tipo/(:num)', 'Usuarios::alternarTipo/$1'); 
+
+// Utils
+$routes->post('/utils/marcar-aviso-visto', 'Utils::marcarAvisoVisto');
 
 // Pets
 $routes->get('/pets', 'Pets::index');

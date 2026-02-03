@@ -52,6 +52,20 @@
             from { opacity: 0; transform: translateY(10px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
     <?= $this->renderSection('styles') ?>
 </head>
@@ -59,10 +73,207 @@
 
     <?= $this->renderSection('content') ?>
 
+    <!-- Modal de Novidades da Versão -->
+    <?php 
+    $versaoAtualAviso = '3.1.0-PRO';
+    $mostrarAviso = false;
+    
+    if (session()->get('usuario_id')) {
+        $versaoVista = session()->get('aviso_visto_versao');
+        if (!$versaoVista) {
+            // Buscar do banco
+            $usuarioModel = new \App\Models\UsuarioModel();
+            $usuario = $usuarioModel->find(session()->get('usuario_id'));
+            $versaoVista = $usuario['versao_aviso_visto'] ?? null;
+            session()->set('aviso_visto_versao', $versaoVista);
+        }
+        $mostrarAviso = ($versaoVista !== $versaoAtualAviso);
+    }
+    ?>
+    
+    <?php if ($mostrarAviso): ?>
+    <div id="aviso-funcionalidades" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full text-left relative animate-enter overflow-hidden border border-slate-100">
+            <!-- Header Decorativo -->
+            <div class="h-2 bg-gradient-to-r from-brand-400 via-brand-600 to-indigo-600 w-full"></div>
+            
+            <button onclick="fecharAvisoNovidades()" 
+                class="absolute top-4 right-5 text-slate-400 hover:text-red-500 transition-colors bg-white rounded-full p-1" 
+                title="Fechar">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            
+            <div class="p-8 md:p-10">
+                <!-- Título e Intro -->
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-500 flex items-center justify-center text-white shadow-xl shadow-brand-500/20">
+                        <i data-lucide="rocket" class="w-7 h-7"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Novidades CereniaPet</h2>
+                        <p class="text-slate-500 font-medium">Versão 3.1.0 — O futuro do seu petshop hoje.</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Coluna: Nesta Versão -->
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-brand-500"></i>
+                            Evolução do Sistema
+                        </h3>
+                        <div class="space-y-6 overflow-y-auto max-h-[350px] pr-2 custom-scrollbar">
+                            <!-- Bloco: Design & UX -->
+                            <div class="space-y-3">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Design & Experiência</p>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-brand-50 rounded-lg text-brand-600 shrink-0">
+                                        <i data-lucide="palette" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Interface Minimalista v3.1</p>
+                                        <p class="text-xs text-slate-500">Novo visual Dark Sidebar, ícones flat e cores de alto contraste focados em produtividade.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-brand-50 rounded-lg text-brand-600 shrink-0">
+                                        <i data-lucide="mouse-pointer-2" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Navegação Expressa</p>
+                                        <p class="text-xs text-slate-500">Transições suaves e carregamento instantâneo entre Dashboard e Agenda.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bloco: Atendimento -->
+                            <div class="space-y-3 pt-2">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Gestão de Atendimento</p>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 shrink-0">
+                                        <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Ficha Digital Inteligente</p>
+                                        <p class="text-xs text-slate-500">Auto-seleção de serviços agendados, avaliação visual técnica e bloqueio de edição pós-finalização.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 shrink-0">
+                                        <i data-lucide="printer" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Impressão A4 Profissional</p>
+                                        <p class="text-xs text-slate-500">Geração de documentos técnicos otimizados para arquivamento físico.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 shrink-0">
+                                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Agendamentos Recorrentes</p>
+                                        <p class="text-xs text-slate-500">Recurso de repetição semanal ou mensal para tutores fidelizados.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bloco: Administração -->
+                            <div class="space-y-3 pt-2">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Controle & Admin</p>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-amber-50 rounded-lg text-amber-600 shrink-0">
+                                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Gestão de Permissões</p>
+                                        <p class="text-xs text-slate-500">Controle completo de usuários, cargos e níveis de acesso ao sistema.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-amber-50 rounded-lg text-amber-600 shrink-0">
+                                        <i data-lucide="line-chart" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Indicadores de Performance</p>
+                                        <p class="text-xs text-slate-500">Ranking de clientes e estatísticas de atendimentos unificados (Harmonia).</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Coluna: Em Breve -->
+                    <div class="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 h-fit">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-brand-500"></i>
+                            Roadmap 2026
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                                    <i data-lucide="syringue" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">Controle de Vacinas</p>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Últimos Ajustes</p>
+                                </div>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                                    <i data-lucide="package" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">Controle de Estoque</p>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Próxima Fase</p>
+                                </div>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">Relatórios Financeiros</p>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Planejamento</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Footer do Modal -->
+                <div class="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 pt-6 text-center md:text-left">
+                    <p class="text-xs text-slate-400 max-w-[200px]">Esta mensagem aparecerá apenas uma vez por atualização.</p>
+                    <button onclick="fecharAvisoNovidades()" 
+                        class="w-full md:w-auto bg-slate-900 hover:bg-black text-white font-bold py-3 px-10 rounded-2xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        Vamos lá!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <script>
         const baseUrl = '<?= base_url() ?>';
+        
         // Initialize Icons
         lucide.createIcons();
+        
+        // Função para fechar modal de novidades
+        function fecharAvisoNovidades() {
+            fetch('<?= base_url('utils/marcar-aviso-visto') ?>', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('aviso-funcionalidades').remove();
+                    }
+                })
+                .catch(() => {
+                    // Remove mesmo em caso de erro
+                    document.getElementById('aviso-funcionalidades')?.remove();
+                });
+        }
     </script>
     <?= $this->renderSection('scripts') ?>
 </body>

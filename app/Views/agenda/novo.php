@@ -116,7 +116,35 @@
                         </div>
                     </div>
 
-                    <!-- 4. Detalhes Finais -->
+                    <!-- 4. Recorrência -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-dashed border-slate-200 mt-4">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 text-brand-500"></i>
+                            Agendamento Recorrente
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-2">Frequência</label>
+                                <select name="recorrencia_tipo" onchange="toggleRecorrencia(this.value)" class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                                    <option value="unico" selected>Não repetir (Único)</option>
+                                    <option value="semanal">Semanal (Todo mesmo dia)</option>
+                                    <option value="quinzenal">Quinzenal (A cada 15 dias)</option>
+                                    <option value="mensal">Mensal (Mesmo dia todo mês)</option>
+                                </select>
+                            </div>
+                            <div id="repcet-container" class="opacity-40 pointer-events-none transition-all duration-300">
+                                <label class="block text-sm font-medium text-slate-600 mb-2">Repetir quantas vezes?</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="number" name="recorrencia_repeticoes" value="1" min="1" max="12" 
+                                        class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                                    <span class="text-xs text-slate-400 font-medium">vezes</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1 italic">* Máximo de 12 repetições por vez.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Detalhes Finais -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-600 mb-2">Transporte</label>
@@ -180,22 +208,33 @@
                     return;
                 }
 
-                slots.forEach(time => {
+                slots.forEach(slot => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = `p-2 rounded-lg border text-sm font-medium transition-all hover:border-brand-500 hover:text-brand-600 ${horarioInput.value === time ? 'bg-brand-500 text-white border-brand-500 shadow-md ring-2 ring-brand-200' : 'bg-white border-slate-200 text-slate-600'}`;
-                    btn.textContent = time;
+                    btn.textContent = slot.horario;
                     
-                    btn.addEventListener('click', () => {
-                        // Reset all buttons
-                        Array.from(slotsContainer.children).forEach(b => {
-                            b.className = 'p-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium transition-all hover:border-brand-500 hover:text-brand-600 bg-white';
-                        });
+                    if (slot.disponivel) {
+                        // Horário disponível - clicável
+                        btn.className = `p-2 rounded-lg border text-sm font-medium transition-all hover:border-brand-500 hover:text-brand-600 ${horarioInput.value === slot.horario ? 'bg-brand-500 text-white border-brand-500 shadow-md ring-2 ring-brand-200' : 'bg-white border-slate-200 text-slate-600'}`;
                         
-                        // Select clicked
-                        btn.className = 'p-2 rounded-lg border border-brand-500 bg-brand-500 text-white text-sm font-medium shadow-md ring-2 ring-brand-200 transition-all scale-105';
-                        horarioInput.value = time;
-                    });
+                        btn.addEventListener('click', () => {
+                            // Reset apenas botões disponíveis
+                            Array.from(slotsContainer.children).forEach(b => {
+                                if (!b.disabled) {
+                                    b.className = 'p-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium transition-all hover:border-brand-500 hover:text-brand-600 bg-white';
+                                }
+                            });
+                            
+                            // Select clicked
+                            btn.className = 'p-2 rounded-lg border border-brand-500 bg-brand-500 text-white text-sm font-medium shadow-md ring-2 ring-brand-200 transition-all scale-105';
+                            horarioInput.value = slot.horario;
+                        });
+                    } else {
+                        // Horário ocupado - desabilitado, cinza
+                        btn.disabled = true;
+                        btn.className = 'p-2 rounded-lg border border-slate-100 bg-slate-100 text-slate-400 text-sm font-medium cursor-not-allowed line-through';
+                        btn.title = 'Horário ocupado';
+                    }
 
                     slotsContainer.appendChild(btn);
                 });
@@ -218,5 +257,20 @@
             fetchHorarios(dataInput.value);
         }
     });
+
+    // Função para alternar campos de recorrência no escopo global
+    function toggleRecorrencia(tipo) {
+        const container = document.getElementById('repcet-container');
+        const input = container.querySelector('input');
+        
+        if (tipo === 'unico') {
+            container.classList.add('opacity-40', 'pointer-events-none');
+            input.value = 1;
+        } else {
+            container.classList.remove('opacity-40', 'pointer-events-none');
+            input.value = 4; // Sugestão padrão (ex: 4 semanas)
+            input.focus();
+        }
+    }
 </script>
 <?= $this->endSection() ?>
