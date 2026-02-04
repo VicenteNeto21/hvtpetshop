@@ -107,12 +107,16 @@ class Pets extends BaseController
         
         $data = $this->request->getPost();
         
-        // Conversão de data se necessário (se o input for d/m/Y, converter para Y-m-d)
-        // Assumindo input type="date" retorna Y-m-d, então sem conversão complexa por enquanto.
+        // Tratar campos opcionais vazios para salvar como NULL (evita 0000-00-00 ou erro de conversão)
+        if (empty($data['nascimento'])) $data['nascimento'] = null;
+        if (empty($data['peso']))       $data['peso'] = null;
+        if (empty($data['raca']))       $data['raca'] = null;
+        if (empty($data['cor']))        $data['cor'] = null;
+        if (empty($data['observacoes'])) $data['observacoes'] = null;
 
         if ($petModel->save($data)) {
-            // Se for edição volta para lista, se for novo talvez detalhe? Vamos padronizar lista.
-            return redirect()->to('pets')->with('success', 'Pet salvo com sucesso!');
+            $id = $data['id'] ?? $petModel->getInsertID();
+            return redirect()->to('pets/ver/' . $id)->with('success', 'Pet salvo com sucesso!');
         } else {
             return redirect()->back()->withInput()->with('error', 'Erro ao salvar pet.');
         }

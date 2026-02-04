@@ -72,7 +72,16 @@
                             </div>
                             <div>
                                 <label class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Nascimento</label>
-                                <p class="text-slate-700 font-medium"><?= $pet['nascimento'] ? date('d/m/Y', strtotime($pet['nascimento'])) : '-' ?></p>
+                                <p class="text-slate-700 font-medium">
+                                    <?php 
+                                        $nasc = $pet['nascimento'] ?? null;
+                                        if ($nasc && $nasc != '0000-00-00' && strtotime($nasc) > 0) {
+                                            echo date('d/m/Y', strtotime($nasc));
+                                        } else {
+                                            echo '-';
+                                        }
+                                    ?>
+                                </p>
                             </div>
                         </div>
                         

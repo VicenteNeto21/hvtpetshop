@@ -53,7 +53,8 @@ class Tutores extends BaseController
         $data['telefone_is_whatsapp'] = isset($data['telefone_is_whatsapp']) ? 'Sim' : 'Não';
 
         if ($tutorModel->save($data)) {
-            return redirect()->to('tutores')->with('success', 'Tutor cadastrado com sucesso!');
+            $id = $data['id'] ?? $tutorModel->getInsertID();
+            return redirect()->to('tutores/ver/' . $id)->with('success', 'Tutor salvo com sucesso!');
         } else {
             return redirect()->back()->withInput()->with('error', 'Erro ao salvar tutor.');
         }
