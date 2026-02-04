@@ -67,7 +67,6 @@
                             <div>
                                 <label class="block text-sm font-medium text-slate-600 mb-2">Data do Atendimento</label>
                                 <input type="date" name="data" id="data" required 
-                                    min="<?= isset($agendamento) ? '' : date('Y-m-d') ?>" 
                                     value="<?= isset($agendamento) ? date('Y-m-d', strtotime($agendamento['data_hora'])) : date('Y-m-d') ?>"
                                     class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
                             </div>
