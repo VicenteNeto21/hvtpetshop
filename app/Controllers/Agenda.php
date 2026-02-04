@@ -114,7 +114,7 @@ class Agenda extends BaseController
     {
         $rules = [
             'tutor_nome' => 'required|min_length[3]',
-            'tutor_telefone' => 'required',
+            'tutor_telefone' => 'permit_empty',
             'pet_nome' => 'required',
             'pet_especie' => 'required',
             'pet_sexo' => 'required'
@@ -134,7 +134,7 @@ class Agenda extends BaseController
             // 1. Criar Tutor
             $tutorData = [
                 'nome' => $this->request->getPost('tutor_nome'),
-                'telefone' => $this->request->getPost('tutor_telefone'),
+                'telefone' => $this->request->getPost('tutor_telefone') ?: null,
                 'email' => null // Simplificado
             ];
             $tutorId = $tutorModel->insert($tutorData);
