@@ -1,71 +1,35 @@
-# 🚀 Tutorial: Hospedando no InfinityFree (CereniaPet v3.1.0)
+# Instruções para Deploy na InfinityFree (CereniaPet)
 
-Este guia explica como subir seu sistema **CodeIgniter 4** para o InfinityFree. Como o InfinityFree é um serviço gratuito, ele tem algumas limitações e uma estrutura de pastas específica (geralmente `htdocs` ou `public_html`).
+Como o sistema foi adaptado para rodar diretamente da pasta `htdocs`, siga estes passos simples para colocar o site no ar:
 
----
+## 1. Copiar os Arquivos
+Mova todos os arquivos da pasta local do seu computador para a pasta **`htdocs`** no servidor da InfinityFree.
 
-## 1. Preparação do Banco de Dados
+> [!IMPORTANT]
+> **NÃO COPIE** apenas o conteúdo da pasta `public`. 
+> Você deve copiar **TODAS** as pastas da raiz do projeto (`app`, `system`, `writable`, `assets`, `icons`, `vendor`, etc) para dentro da `htdocs`.
 
-1. Acesse o seu **phpMyAdmin** local (XAMPP).
-2. Selecione o banco de dados do projeto.
-3. Clique na aba **Exportar** e depois em **Executar**. Salve o arquivo `.sql`.
-4. No painel do InfinityFree:
-   - Vá em **MySQL Databases**.
-   - Crie um novo banco de dados.
-   - Anote o **Nome do Banco**, **Usuário**, **Senha** e **Hostname** (geralmente algo como `sql123.infinityfree.com`).
-   - Acesse o phpMyAdmin do InfinityFree e **Importe** o arquivo `.sql` que você baixou.
+## 2. Ponto de Entrada
+Note que agora existe um arquivo `index.php` e um `.htaccess` diretamente na raiz do projeto. Isso permite que o sistema funcione sem precisar digitar `/public` na URL.
 
----
+## 3. Configuração Final do .env
+Eu já configurei o banco de dados conforme você passou:
+- **Host:** sql308.infinityfree.com
+- **Banco:** if0_39359166_hvt_petshop_2
+- **Usuário:** if0_39359166
+- **Senha:** K3JCBE3vB4XX
 
-## 2. Ajuste na Estrutura de Pastas
-
-O CodeIgniter 4 coloca o arquivo `index.php` dentro da pasta `/public`, mas o InfinityFree espera que tudo o que for público esteja na raiz da pasta `htdocs`.
-
-### Opção Recomendada: Estrutura Segura
-Mova o conteúdo da pasta `/public` do seu projeto para a pasta `htdocs` do servidor. O restante do projeto (app, system, writable) deve ficar **fora** da `htdocs` ou em uma subpasta lateral por segurança.
-
-Se você decidir subir tudo para dentro da `htdocs`, crie um arquivo `.htaccess` na raiz da `htdocs` com este conteúdo:
-
-```apache
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^(.*)$ public/$1 [L]
-</IfModule>
+### Verifique a URL Base:
+Abra o arquivo `.env` no servidor e procure pela linha `app.baseURL`. Ajuste-a para a URL do seu site:
+```properties
+app.baseURL = 'http://seu-dominio-na-infinityfree.com/'
 ```
 
----
+## 4. Pastas de Escrita
+Certifique-se de que a pasta `writable` e suas subpastas tenham permissão de escrita no servidor (geralmente a InfinityFree já cuida disso, mas se der erro de log, verifique as permissões 755 ou 777).
 
-## 3. Configurações do CodeIgniter (.env)
-
-No servidor, você precisará editar o arquivo `.env` (ou configurar via `app/Config/Database.php` e `app/Config/App.php`).
-
-### No arquivo `.env`:
-1. **CI_ENVIRONMENT**: Mude para `production`.
-2. **app.baseURL**: Coloque a URL que o InfinityFree te deu (ex: `http://seusite.infinityfreeapp.com/`).
-3. **Database**:
-   - `database.default.hostname`: O hostname do InfinityFree.
-   - `database.default.database`: O nome do banco criado.
-   - `database.default.username`: O usuário do banco.
-   - `database.default.password`: A senha do banco.
-   - `database.default.DBDriver`: `MySQLi`
+## 5. Limpeza de Cache
+Após o deploy, ao acessar o site, pressione `Ctrl + Shift + R` para limpar o cache do navegador e garantir que o novo PWA e ícones carreguem corretamente.
 
 ---
-
-## 4. Subindo os Arquivos
-
-1. Recomendo usar um cliente FTP como o **FileZilla**.
-2. Pegue os dados de acesso FTP no painel do InfinityFree (**FTP Details**).
-3. Envie todos os arquivos do projeto.
-   - **IMPORTANTE:** A pasta `writable` deve ter permissão de escrita (CHMOD 777 ou 755 no servidor).
-
----
-
-## 5. Dicas Extras para InfinityFree
-
-- **Versão do PHP:** Certifique-se de que o InfinityFree está usando PHP 8.1 ou superior (o CI4 exige isso). Você pode mudar isso no painel (Alter PHP Version).
-- **Limite de CPU:** O InfinityFree tem limites rígidos. Evite processos muito pesados ou muitos usuários simultâneos no plano gratuito.
-- **Erro de HTTPS:** Se o site carregar sem estilos, verifique se a `baseURL` no `.env` está exatamente igual à URL que você está acessando (com ou sem `http/https`).
-
----
-
-**Sucesso no Deploy! 🚀**
+🚀 **Seu sistema está pronto para decolar!**

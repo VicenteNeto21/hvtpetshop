@@ -12,6 +12,7 @@ $routes->get('/logout', 'Auth::logout');
 $routes->get('/cadastro', 'Auth::cadastro');
 $routes->post('/auth/processar-cadastro', 'Auth::processarCadastro');
 $routes->get('/dashboard', 'Dashboard::index'); 
+$routes->get('/sobre', 'Dashboard::sobre'); 
 $routes->get('/perfil', 'Perfil::index'); 
 $routes->get('/admin', 'Admin::index'); 
 $routes->get('/admin/relatorio', 'Admin::relatorio');

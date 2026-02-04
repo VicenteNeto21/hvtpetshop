@@ -129,4 +129,9 @@ class Dashboard extends BaseController
             'dataSelecionada' => $dataSelecionada
         ]);
     }
+    
+    public function sobre()
+    {
+        return view('sobre');
+    }
 }

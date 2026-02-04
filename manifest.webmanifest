@@ -1,0 +1,44 @@
+{
+    "name": "CereniaPet",
+    "short_name": "CereniaPet",
+    "description": "Sistema de gestão para pet shops - Agendamentos, pets, tutores e serviços",
+    "start_url": "./dashboard",
+    "display": "standalone",
+    "background_color": "#f1f5f9",
+    "theme_color": "#1e40af",
+    "orientation": "any",
+    "scope": "./",
+    "lang": "pt-BR",
+    "icons": [
+        {
+            "src": "icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "business",
+        "productivity"
+    ],
+    "shortcuts": [
+        {
+            "name": "Nova Agenda",
+            "short_name": "Agendar",
+            "description": "Criar novo agendamento",
+            "url": "./agenda/novo"
+        },
+        {
+            "name": "Novo Pet",
+            "short_name": "Pet",
+            "description": "Cadastrar novo pet",
+            "url": "./pets/novo"
+        }
+    ]
+}

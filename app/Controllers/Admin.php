@@ -28,23 +28,9 @@ class Admin extends BaseController
         $dataFinal = $this->request->getGet('data_final') ?? date('Y-m-t');
 
         // 2. Cards Principais (No Período - Agrupados)
-        $finalizados = $agendamentoModel->where('status', 'Finalizado')
-            ->where("DATE(data_hora) >=", $dataInicial)
-            ->where("DATE(data_hora) <=", $dataFinal)
-            ->groupBy('pet_id, data_hora')
-            ->countAllResults();
-
-        $cancelados = $agendamentoModel->where('status', 'Cancelado')
-            ->where("DATE(data_hora) >=", $dataInicial)
-            ->where("DATE(data_hora) <=", $dataFinal)
-            ->groupBy('pet_id, data_hora')
-            ->countAllResults();
-
-        $pendentes = $agendamentoModel->where('status', 'Pendente')
-            ->where("DATE(data_hora) >=", $dataInicial)
-            ->where("DATE(data_hora) <=", $dataFinal)
-            ->groupBy('pet_id, data_hora')
-            ->countAllResults();
+        $finalizados = $this->countGroupedAppointments($agendamentoModel, 'Finalizado', $dataInicial, $dataFinal);
+        $cancelados  = $this->countGroupedAppointments($agendamentoModel, 'Cancelado', $dataInicial, $dataFinal);
+        $pendentes   = $this->countGroupedAppointments($agendamentoModel, 'Pendente', $dataInicial, $dataFinal);
 
         $totalPets = $petModel->countAllResults();
         $totalTutores = $tutorModel->countAllResults();
@@ -56,7 +42,7 @@ class Admin extends BaseController
             ->where("DATE(agendamentos.data_hora) >=", $dataInicial)
             ->where("DATE(agendamentos.data_hora) <=", $dataFinal)
             ->first();
-        $faturamentoEstimado = $faturamentoData['total'] ?? 0;
+        $faturamentoEstimado = ($faturamentoData && isset($faturamentoData['total'])) ? $faturamentoData['total'] : 0;
 
         // 4. Gráfico: Atendimentos por Dia (Agrupados: conta 1 por pet/hora)
         $sqlPorDia = "SELECT data, COUNT(*) as total FROM (
@@ -145,9 +131,10 @@ class Admin extends BaseController
 
     public function relatorio()
     {
-        if (!session()->get('usuario_id')) {
-            return redirect()->to('/login');
-        }
+        try {
+            if (!session()->get('usuario_id')) {
+                return redirect()->to('/login');
+            }
 
         // Verificar se é admin
         $userTipo = session()->get('usuario_tipo');
@@ -167,23 +154,9 @@ class Admin extends BaseController
         // =============================================
         // 1. DISTRIBUIÇÃO POR STATUS
         // =============================================
-        $finalizados = $agendamentoModel->where('status', 'Finalizado')
-            ->where("DATE(data_hora) >=", $dataInicial)
-            ->where("DATE(data_hora) <=", $dataFinal)
-            ->groupBy('pet_id, data_hora')
-            ->countAllResults();
-
-        $cancelados = $agendamentoModel->where('status', 'Cancelado')
-            ->where("DATE(data_hora) >=", $dataInicial)
-            ->where("DATE(data_hora) <=", $dataFinal)
-            ->groupBy('pet_id, data_hora')
-            ->countAllResults();
-
-        $pendentes = $agendamentoModel->where('status', 'Pendente')
-            ->where("DATE(data_hora) >=", $dataInicial)
-            ->where("DATE(data_hora) <=", $dataFinal)
-            ->groupBy('pet_id, data_hora')
-            ->countAllResults();
+        $finalizados = $this->countGroupedAppointments($agendamentoModel, 'Finalizado', $dataInicial, $dataFinal);
+        $cancelados  = $this->countGroupedAppointments($agendamentoModel, 'Cancelado', $dataInicial, $dataFinal);
+        $pendentes   = $this->countGroupedAppointments($agendamentoModel, 'Pendente', $dataInicial, $dataFinal);
 
         $totalAtendimentos = $finalizados + $cancelados + $pendentes;
 
@@ -194,7 +167,7 @@ class Admin extends BaseController
             ->where("DATE(agendamentos.data_hora) >=", $dataInicial)
             ->where("DATE(agendamentos.data_hora) <=", $dataFinal)
             ->first();
-        $faturamento = $faturamentoData['total'] ?? 0;
+        $faturamento = ($faturamentoData && isset($faturamentoData['total'])) ? $faturamentoData['total'] : 0;
 
         // Taxa de Conversão
         $totalTentados = $finalizados + $cancelados;
@@ -204,7 +177,7 @@ class Admin extends BaseController
         // 2. TAXA DE RETORNO DE CLIENTES
         // =============================================
         // Clientes que vieram mais de uma vez no período
-        $clientesRetorno = $db->query("
+        $retornoRow = $db->query("
             SELECT COUNT(*) as total FROM (
                 SELECT p.tutor_id, COUNT(a.id) as visitas
                 FROM agendamentos a
@@ -214,29 +187,37 @@ class Admin extends BaseController
                 GROUP BY p.tutor_id
                 HAVING visitas > 1
             ) as recorrentes
-        ", [$dataInicial, $dataFinal])->getRow()->total ?? 0;
+        ", [$dataInicial, $dataFinal])->getRow();
+        $clientesRetorno = $retornoRow ? $retornoRow->total : 0;
 
         // Total de clientes únicos no período
-        $totalClientesUnicos = $db->query("
+        $unicosRow = $db->query("
             SELECT COUNT(DISTINCT p.tutor_id) as total
             FROM agendamentos a
             JOIN pets p ON p.id = a.pet_id
             WHERE a.status = 'Finalizado'
             AND DATE(a.data_hora) BETWEEN ? AND ?
-        ", [$dataInicial, $dataFinal])->getRow()->total ?? 0;
+        ", [$dataInicial, $dataFinal])->getRow();
+        $totalClientesUnicos = $unicosRow ? $unicosRow->total : 0;
 
         $taxaRetorno = $totalClientesUnicos > 0 ? ($clientesRetorno / $totalClientesUnicos) * 100 : 0;
 
         // =============================================
         // 3. NOVOS CADASTROS NO PERÍODO
         // =============================================
-        $novosTutores = $tutorModel->where("DATE(created_at) >=", $dataInicial)
-            ->where("DATE(created_at) <=", $dataFinal)
-            ->countAllResults();
+        try {
+            $novosTutores = $tutorModel->where("DATE(created_at) >=", $dataInicial)
+                ->where("DATE(created_at) <=", $dataFinal)
+                ->countAllResults();
 
-        $novosPets = $petModel->where("DATE(created_at) >=", $dataInicial)
-            ->where("DATE(created_at) <=", $dataFinal)
-            ->countAllResults();
+            $novosPets = $petModel->where("DATE(created_at) >=", $dataInicial)
+                ->where("DATE(created_at) <=", $dataFinal)
+                ->countAllResults();
+        } catch (\Exception $e) {
+            // Caso a coluna created_at não exista no banco (InfinityFree), não quebra o sistema
+            $novosTutores = 0;
+            $novosPets = 0;
+        }
 
         // =============================================
         // 4. COMPARATIVO COM PERÍODO ANTERIOR
@@ -247,11 +228,7 @@ class Admin extends BaseController
         $dataFinalAnterior = date('Y-m-d', strtotime($dataInicial . " -1 day"));
 
         // Atendimentos período anterior (Agrupados)
-        $finalizadosAnterior = $agendamentoModel->where('status', 'Finalizado')
-            ->where("DATE(data_hora) >=", $dataInicialAnterior)
-            ->where("DATE(data_hora) <=", $dataFinalAnterior)
-            ->groupBy('pet_id, data_hora')
-            ->countAllResults();
+        $finalizadosAnterior = $this->countGroupedAppointments($agendamentoModel, 'Finalizado', $dataInicialAnterior, $dataFinalAnterior);
 
         // Faturamento período anterior
         $faturamentoAnteriorData = $agendamentoModel->selectSum('servicos.preco', 'total')
@@ -260,7 +237,7 @@ class Admin extends BaseController
             ->where("DATE(agendamentos.data_hora) >=", $dataInicialAnterior)
             ->where("DATE(agendamentos.data_hora) <=", $dataFinalAnterior)
             ->first();
-        $faturamentoAnterior = $faturamentoAnteriorData['total'] ?? 0;
+        $faturamentoAnterior = ($faturamentoAnteriorData && isset($faturamentoAnteriorData['total'])) ? $faturamentoAnteriorData['total'] : 0;
 
         // Calcular variações percentuais
         $variacaoAtendimentos = $finalizadosAnterior > 0 
@@ -296,36 +273,61 @@ class Admin extends BaseController
             LIMIT 5
         ", [$dataInicial, $dataFinal])->getResultArray();
 
-        return view('admin/relatorio', [
-            'dataInicial' => $dataInicial,
-            'dataFinal' => $dataFinal,
-            'stats' => [
-                'finalizados' => $finalizados,
-                'cancelados' => $cancelados,
-                'pendentes' => $pendentes,
-                'total' => $totalAtendimentos,
-                'faturamento' => $faturamento,
-                'conversao' => $conversao
-            ],
-            'retorno' => [
-                'clientes_recorrentes' => $clientesRetorno,
-                'clientes_unicos' => $totalClientesUnicos,
-                'taxa' => $taxaRetorno
-            ],
-            'novos' => [
-                'tutores' => $novosTutores,
-                'pets' => $novosPets
-            ],
-            'comparativo' => [
-                'periodo_anterior' => $dataInicialAnterior . ' a ' . $dataFinalAnterior,
-                'atendimentos_anterior' => $finalizadosAnterior,
-                'faturamento_anterior' => $faturamentoAnterior,
-                'variacao_atendimentos' => $variacaoAtendimentos,
-                'variacao_faturamento' => $variacaoFaturamento
-            ],
-            'top_tutores' => $topTutores,
-            'top_servicos' => $topServicos
-        ]);
+            return view('admin/relatorio', [
+                'dataInicial' => $dataInicial,
+                'dataFinal' => $dataFinal,
+                'stats' => [
+                    'finalizados' => $finalizados,
+                    'cancelados' => $cancelados,
+                    'pendentes' => $pendentes,
+                    'total' => $totalAtendimentos,
+                    'faturamento' => $faturamento,
+                    'conversao' => $conversao
+                ],
+                'retorno' => [
+                    'clientes_recorrentes' => $clientesRetorno,
+                    'clientes_unicos' => $totalClientesUnicos,
+                    'taxa' => $taxaRetorno
+                ],
+                'novos' => [
+                    'tutores' => $novosTutores,
+                    'pets' => $novosPets
+                ],
+                'comparativo' => [
+                    'periodo_anterior' => $dataInicialAnterior . ' a ' . $dataFinalAnterior,
+                    'atendimentos_anterior' => $finalizadosAnterior,
+                    'faturamento_anterior' => $faturamentoAnterior,
+                    'variacao_atendimentos' => $variacaoAtendimentos,
+                    'variacao_faturamento' => $variacaoFaturamento
+                ],
+                'top_tutores' => $topTutores,
+                'top_servicos' => $topServicos
+            ]);
+        } catch (\Throwable $e) {
+            // Log do erro silencioso para o desenvolvedor (opcional)
+            log_message('error', '[Relatório] Falha técnica: ' . $e->getMessage());
+
+            return redirect()->to('/admin')->with('error', 'Não foi possível gerar o relatório completo neste período devido a uma limitação técnica no servidor. Tente um período menor ou contate o suporte.');
+        }
+    }
+
+    /**
+     * Função auxiliar para contar agendamentos agrupados de forma robusta.
+     * Necessária pois countAllResults() com groupBy() ou subqueries complexas podem falhar 
+     * em ambientes shared hosting limitados (como InfinityFree).
+     */
+    private function countGroupedAppointments($model, $status, $inicio, $fim)
+    {
+        $db = \Config\Database::connect();
+        
+        // Usamos COUNT(DISTINCT ...) para contar agendamentos únicos (mesmo pet no mesmo horário)
+        // Isso evita subqueries complexas que consomem muita memória e podem falhar.
+        $sql = "SELECT COUNT(DISTINCT pet_id, data_hora) as total 
+                FROM agendamentos 
+                WHERE status = ? 
+                AND DATE(data_hora) BETWEEN ? AND ?";
+        
+        $row = $db->query($sql, [$status, $inicio, $fim])->getRow();
+        return $row ? (int)$row->total : 0;
     }
 }
-

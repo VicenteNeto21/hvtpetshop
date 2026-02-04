@@ -76,6 +76,11 @@
 
     <!-- Footer -->
     <div class="p-3 border-t border-slate-800/50 mt-auto">
+        <a href="<?= base_url('sobre') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'sobre' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Sobre o Sistema">
+            <i data-lucide="help-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="font-medium sidebar-text">Sobre o Sistema</span>
+        </a>
+
         <a href="<?= base_url('perfil') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'perfil' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Meu Perfil">
             <i data-lucide="user-circle" class="w-5 h-5 flex-shrink-0"></i>
             <span class="font-medium sidebar-text">Meu Perfil</span>

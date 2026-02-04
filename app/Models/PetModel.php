@@ -11,7 +11,7 @@ class PetModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
-    protected $allowedFields    = ['nome', 'tutor_id', 'especie', 'raca', 'sexo', 'nascimento', 'peso', 'cor', 'observacoes'];
+    protected $allowedFields    = ['nome', 'tutor_id', 'especie', 'raca', 'idade', 'sexo', 'nascimento', 'peso', 'cor', 'observacoes'];
     
     // Dates
     protected $useTimestamps = false;

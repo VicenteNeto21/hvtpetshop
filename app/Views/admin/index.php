@@ -277,15 +277,14 @@
 </div>
 
 <!-- Template do Relatório PDF (Layout A4 Formal) -->
-<!-- Inicialmente oculto. Usado tanto para gerar PDF quanto para Preview -->
-<div id="report-overlay" class="hidden fixed inset-0 z-50 bg-slate-900/80 overflow-y-auto flex justify-center py-8">
-    <div class="relative">
+<div id="report-overlay" class="hidden fixed inset-0 z-50 bg-slate-900/80 overflow-y-auto flex justify-center py-4 md:py-8">
+    <div class="relative w-full max-w-4xl px-4 md:px-0">
         <!-- Close Button for Preview -->
-        <button onclick="fecharRelatorio()" class="absolute -right-12 top-0 text-white hover:text-slate-300 p-2">
-            <i data-lucide="x" class="w-8 h-8"></i>
+        <button onclick="fecharRelatorio()" class="fixed top-4 right-4 md:absolute md:-right-12 md:top-0 text-white hover:text-slate-300 p-2 bg-slate-800 md:bg-transparent rounded-full z-[60]">
+            <i data-lucide="x" class="w-6 h-6 md:w-8 md:h-8"></i>
         </button>
 
-        <div id="report-template" class="bg-white text-slate-800 mx-auto" style="width: 210mm; min-height: 297mm; padding: 25mm 20mm; position: relative; font-family: 'Outfit', sans-serif;">
+        <div id="report-template" class="bg-white text-slate-800 mx-auto transform origin-top scale-[0.6] sm:scale-75 md:scale-100" style="width: 210mm; min-height: 297mm; padding: 25mm 20mm; position: relative; font-family: 'Outfit', sans-serif;">
             <!-- Header Border -->
             <div class="absolute top-0 left-0 w-full h-1.5 bg-brand-600 no-print"></div>
 

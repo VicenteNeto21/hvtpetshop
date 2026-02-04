@@ -27,7 +27,13 @@
             <?php endif; ?>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
-                <!-- Dados Principais -->
+                <form action="<?= base_url('pets/salvar') ?>" method="POST" class="space-y-8" onsubmit="this.querySelector('button[type=submit]').classList.add('opacity-75', 'cursor-wait'); this.querySelector('button[type=submit] i').classList.replace('check', 'loader-2'); this.querySelector('button[type=submit] i').classList.add('animate-spin');">
+                    <?php if(isset($pet)): ?>
+                        <input type="hidden" name="id" value="<?= $pet['id'] ?>">
+                    <?php endif; ?>
+                    <?= csrf_field() ?>
+
+                    <!-- Dados Principais -->
                     <div class="space-y-6">
                         <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
                             <i data-lucide="dog" class="w-5 h-5 text-brand-500"></i>

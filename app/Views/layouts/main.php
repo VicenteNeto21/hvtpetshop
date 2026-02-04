@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="<?= base_url('icons/favicon.png') ?>">
     
     <!-- PWA Meta Tags -->
-    <link rel="manifest" href="<?= base_url('manifest.json') ?>">
+    <link rel="manifest" href="<?= base_url('manifest.webmanifest') ?>" crossorigin="use-credentials">
     <meta name="theme-color" content="#1e40af">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -130,18 +130,18 @@
     ?>
     
     <?php if ($mostrarAviso): ?>
-    <div id="aviso-funcionalidades" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full text-left relative animate-enter overflow-hidden border border-slate-100">
+    <div id="aviso-funcionalidades" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full text-left relative animate-enter max-h-[95vh] flex flex-col border border-slate-100">
             <!-- Header Decorativo -->
             <div class="h-2 bg-gradient-to-r from-brand-400 via-brand-600 to-indigo-600 w-full"></div>
             
             <button onclick="fecharAvisoNovidades()" 
-                class="absolute top-4 right-5 text-slate-400 hover:text-red-500 transition-colors bg-white rounded-full p-1" 
+                class="absolute top-3 right-3 md:top-4 md:right-5 text-slate-400 hover:text-red-500 transition-colors bg-slate-100 md:bg-white hover:bg-red-50 rounded-full p-2 z-10" 
                 title="Fechar">
-                <i data-lucide="x" class="w-6 h-6"></i>
+                <i data-lucide="x" class="w-5 h-5 md:w-6 md:h-6"></i>
             </button>
             
-            <div class="p-8 md:p-10">
+            <div class="overflow-y-auto px-6 py-8 md:p-10 custom-scrollbar">
                 <!-- Título e Intro -->
                 <div class="flex items-center gap-4 mb-8">
                     <div class="w-14 h-14 rounded-2xl bg-brand-500 flex items-center justify-center text-white shadow-xl shadow-brand-500/20">
@@ -280,8 +280,8 @@
                 </div>
                 
                 <!-- Footer do Modal -->
-                <div class="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 pt-6 text-center md:text-left">
-                    <p class="text-xs text-slate-400 max-w-[200px]">Esta mensagem aparecerá apenas uma vez por atualização.</p>
+                <div class="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 pt-6 text-center md:text-left sticky bottom-0 bg-white pb-2">
+                    <p class="text-[10px] md:text-xs text-slate-400 max-w-[200px]">Esta mensagem aparecerá apenas uma vez por atualização.</p>
                     <button onclick="fecharAvisoNovidades()" 
                         class="w-full md:w-auto bg-slate-900 hover:bg-black text-white font-bold py-3 px-10 rounded-2xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
                         Vamos lá!
