@@ -12,8 +12,8 @@
             
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-3xl font-bold shadow-sm">
-                        <?= mb_substr($tutor['nome'], 0, 1) ?>
+                    <div class="w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center text-3xl font-bold shadow-sm border border-brand-100/50">
+                        <?= mb_strtoupper(mb_substr(trim($tutor['nome']), 0, 1)) ?>
                     </div>
                     <div>
                         <h1 class="text-3xl font-bold text-slate-900"><?= $tutor['nome'] ?></h1>

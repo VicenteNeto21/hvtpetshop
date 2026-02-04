@@ -118,7 +118,7 @@
                             <i data-lucide="phone" class="w-4 h-4 text-slate-400"></i>
                             <?= $pet['tutor_telefone'] ?: 'Não informado' ?>
                         </div>
-                        <a href="<?= base_url('tutores/editar/' . $pet['tutor_id']) ?>" class="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-brand-600 border border-brand-200 rounded-lg hover:bg-brand-50 transition-colors">
+                        <a href="<?= base_url('tutores/ver/' . $pet['tutor_id']) ?>" class="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-brand-600 border border-brand-200 rounded-lg hover:bg-brand-50 transition-colors">
                             Ver Cadastro Completo
                         </a>
                     </div>
