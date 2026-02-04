@@ -139,10 +139,11 @@
                         <!-- Actions Column -->
                         <div class="flex gap-2 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
                             <?php if ($item['status'] != 'Finalizado' && $item['status'] != 'Cancelado'): ?>
-                                <!-- Botão Editar (Futuro: Link para editar) -->
-                                <button class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors" title="Editar">
-                                    <i data-lucide="edit-2" class="w-5 h-5 mx-auto"></i>
-                                </button>
+                                <!-- Botão Editar -->
+                                <a href="<?= base_url('agenda/editar/' . $item['id']) ?>" 
+                                   class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors flex items-center justify-center" title="Editar">
+                                    <i data-lucide="edit-2" class="w-5 h-5"></i>
+                                </a>
                                 
                                 <!-- Botão Concluir (Leva para Ficha) -->
                                 <a href="<?= base_url('agenda/concluir/' . $item['id']) ?>" 

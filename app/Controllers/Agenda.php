@@ -66,7 +66,40 @@ class Agenda extends BaseController
                                ->orderBy('pets.nome', 'ASC')
                                ->findAll(),
             'servicos' => $servicoModel->orderBy('nome', 'ASC')->findAll(),
-            'preselected_pet_id' => $this->request->getGet('pet')
+            'preselected_pet_id' => $this->request->getGet('pet'),
+            'title' => 'Novo Agendamento'
+        ];
+
+        return view('agenda/novo', $data);
+    }
+
+    public function editar($id)
+    {
+        $agendamentoModel = new AgendamentoModel();
+        $petModel = new PetModel();
+        $servicoModel = new ServicoModel();
+
+        $agBase = $agendamentoModel->find($id);
+        if (!$agBase) {
+            return redirect()->to('agenda')->with('error', 'Agendamento não encontrado.');
+        }
+
+        // Buscar todos os serviços do mesmo pet no mesmo horário (agrupamento harmonia)
+        $servicosAgendados = $agendamentoModel->where('pet_id', $agBase['pet_id'])
+                                             ->where('data_hora', $agBase['data_hora'])
+                                             ->where('status !=', 'Cancelado')
+                                             ->findColumn('servico_id') ?? [];
+
+        $data = [
+            'agendamento' => $agBase,
+            'pets' => $petModel->select('pets.*, tutores.nome as tutor_nome')
+                               ->join('tutores', 'tutores.id = pets.tutor_id')
+                               ->orderBy('pets.nome', 'ASC')
+                               ->findAll(),
+            'servicos' => $servicoModel->orderBy('nome', 'ASC')->findAll(),
+            'servicos_selecionados' => $servicosAgendados,
+            'preselected_pet_id' => null,
+            'title' => 'Editar Agendamento'
         ];
 
         return view('agenda/novo', $data);
@@ -141,6 +174,7 @@ class Agenda extends BaseController
 
     public function salvar()
     {
+        $id = $this->request->getPost('id');
         $rules = [
             'pet_id' => 'required|integer',
             'data' => 'required|valid_date',
@@ -168,6 +202,17 @@ class Agenda extends BaseController
         
         try {
             $db->transBegin();
+            
+            // Se for edição, vamos deletar os registros anteriores do grupo antes de reinserir
+            // Isso simplifica a lógica de atualização de múltiplos serviços
+            if ($id) {
+                $agOriginal = $agendamentoModel->find($id);
+                if ($agOriginal) {
+                    $agendamentoModel->where('pet_id', $agOriginal['pet_id'])
+                                     ->where('data_hora', $agOriginal['data_hora'])
+                                     ->delete();
+                }
+            }
             
             for ($i = 0; $i < $repeticoes; $i++) {
                 // Calcular data baseada na recorrência
@@ -205,10 +250,10 @@ class Agenda extends BaseController
 
             if ($db->transStatus() === false) {
                 $db->transRollback();
-                return redirect()->back()->withInput()->with('error', 'Erro ao salvar agendamento recorrente.');
+                return redirect()->back()->withInput()->with('error', 'Erro ao salvar agendamento.');
             } else {
                 $db->transCommit();
-                $msg = ($recorrenciaTipo !== 'unico') ? "Agendamento recorrente ($repeticoes vezes) realizado com sucesso!" : "Agendamento realizado com sucesso!";
+                $msg = $id ? "Agendamento atualizado com sucesso!" : (($recorrenciaTipo !== 'unico') ? "Agendamento recorrente ($repeticoes vezes) realizado com sucesso!" : "Agendamento realizado com sucesso!");
                 return redirect()->to('agenda')->with('success', $msg);
             }
         } catch (\Exception $e) {
@@ -233,12 +278,24 @@ class Agenda extends BaseController
 
         // Buscar horários ocupados - usando BETWEEN para usar o índice
         $agendamentoModel = new AgendamentoModel();
-        $ocupados = $agendamentoModel
+        $query = $agendamentoModel
             ->select('data_hora')
             ->where('data_hora >=', $data . ' 00:00:00')
             ->where('data_hora <=', $data . ' 23:59:59')
-            ->where('status !=', 'Cancelado')
-            ->findColumn('data_hora') ?? [];
+            ->where('status !=', 'Cancelado');
+
+        // Se estivermos editando, ignorar o slot atual do próprio pet
+        $ignorePetId = $this->request->getGet('ignore_pet_id');
+        $ignoreDataHora = $this->request->getGet('ignore_data_hora');
+
+        if ($ignorePetId && $ignoreDataHora) {
+            $query->groupStart()
+                  ->where('pet_id !=', $ignorePetId)
+                  ->orWhere('data_hora !=', $ignoreDataHora)
+                  ->groupEnd();
+        }
+
+        $ocupados = $query->findColumn('data_hora') ?? [];
 
         // Mapeia para formato H:i
         $horariosOcupados = [];

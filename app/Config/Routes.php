@@ -36,6 +36,7 @@ $routes->get('/pets/ver/(:num)', 'Pets::ver/$1');
 // Agenda
 $routes->get('/agenda', 'Agenda::index');
 $routes->get('/agenda/novo', 'Agenda::novo');
+$routes->get('/agenda/editar/(:num)', 'Agenda::editar/$1');
 $routes->get('/agenda/cadastro-rapido', 'Agenda::cadastroRapido');
 $routes->post('/agenda/salvar-cadastro-rapido', 'Agenda::salvarCadastroRapido');
 $routes->post('/agenda/salvar', 'Agenda::salvar');

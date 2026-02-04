@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/main') ?>
 
-<?= $this->section('title') ?>Novo Agendamento<?= $this->endSection() ?>
+<?= $this->section('title') ?><?= $title ?? 'Novo Agendamento' ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <div class="w-full animate-enter">
@@ -10,14 +10,17 @@
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     Voltar para Agenda
                 </a>
-                <h1 class="text-3xl font-bold text-slate-900">Novo Agendamento</h1>
-                <p class="text-slate-500 mt-1">Preencha os dados abaixo para marcar um horário.</p>
+                <h1 class="text-3xl font-bold text-slate-900"><?= $title ?? 'Novo Agendamento' ?></h1>
+                <p class="text-slate-500 mt-1"><?= isset($agendamento) ? 'Ajuste os dados do agendamento abaixo.' : 'Preencha os dados abaixo para marcar um horário.' ?></p>
             </div>
 
             <!-- Form Card -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <form action="<?= base_url('agenda/salvar') ?>" method="POST" class="p-6 md:p-8 space-y-8">
                     <?= csrf_field() ?>
+                    <?php if(isset($agendamento)): ?>
+                        <input type="hidden" name="id" value="<?= $agendamento['id'] ?>">
+                    <?php endif; ?>
 
                     <!-- 1. Seleção do Pet -->
                     <div>
@@ -39,7 +42,7 @@
                             <select name="pet_id" id="pet_id" required placeholder="Digite o nome do pet ou tutor...">
                                 <option value="">Digite para buscar...</option>
                                 <?php foreach ($pets as $pet): ?>
-                                    <option value="<?= $pet['id'] ?>" <?= $preselected_pet_id == $pet['id'] ? 'selected' : '' ?>>
+                                    <option value="<?= $pet['id'] ?>" <?= (isset($agendamento) && $agendamento['pet_id'] == $pet['id']) || (($preselected_pet_id ?? null) == $pet['id']) ? 'selected' : '' ?>>
                                         <?= $pet['nome'] ?> | Tutor: <?= $pet['tutor_nome'] ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -64,7 +67,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-slate-600 mb-2">Data do Atendimento</label>
                                 <input type="date" name="data" id="data" required 
-                                    min="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>"
+                                    min="<?= isset($agendamento) ? '' : date('Y-m-d') ?>" 
+                                    value="<?= isset($agendamento) ? date('Y-m-d', strtotime($agendamento['data_hora'])) : date('Y-m-d') ?>"
                                     class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
                             </div>
 
@@ -75,7 +79,7 @@
                                         Selecione uma data para ver os horários
                                     </div>
                                 </div>
-                                <input type="hidden" name="horario" id="horario_input" required>
+                                <input type="hidden" name="horario" id="horario_input" required value="<?= isset($agendamento) ? date('H:i', strtotime($agendamento['data_hora'])) : '' ?>">
                                 <p id="horario-error" class="hidden text-red-500 text-xs mt-2 font-medium">Por favor, selecione um horário.</p>
                             </div>
                         </div>
@@ -91,7 +95,9 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <?php foreach ($servicos as $servico): ?>
                                 <label class="group relative flex items-start gap-3 p-4 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-brand-500 hover:shadow-md hover:shadow-brand-500/5 transition-all">
-                                    <input type="checkbox" name="servicos[]" value="<?= $servico['id'] ?>" class="peer sr-only">
+                                    <input type="checkbox" name="servicos[]" value="<?= $servico['id'] ?>" 
+                                        <?= (isset($servicos_selecionados) && in_array($servico['id'], $servicos_selecionados)) ? 'checked' : '' ?>
+                                        class="peer sr-only">
                                     
                                     <!-- Custom Checkbox UI -->
                                     <div class="w-5 h-5 mt-0.5 rounded border border-slate-300 peer-checked:bg-brand-500 peer-checked:border-brand-500 flex items-center justify-center text-white transition-colors">
@@ -112,7 +118,8 @@
                         </div>
                     </div>
 
-                    <!-- 4. Recorrência -->
+                    <!-- 4. Recorrência (Não exibida em edição) -->
+                    <?php if(!isset($agendamento)): ?>
                     <div class="bg-slate-50 p-6 rounded-2xl border border-dashed border-slate-200 mt-4">
                         <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <i data-lucide="refresh-cw" class="w-4 h-4 text-brand-500"></i>
@@ -139,22 +146,23 @@
                             </div>
                         </div>
                     </div>
+                    <?php endif; ?>
 
                     <!-- 5. Detalhes Finais -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-600 mb-2">Transporte</label>
                             <select name="transporte" class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all">
-                                <option value="Petshop busca e entrega">Petshop busca e entrega</option>
-                                <option value="Petshop busca, tutor retira">Petshop busca, tutor retira</option>
-                                <option value="Tutor leva, Petshop entrega">Tutor leva, Petshop entrega</option>
-                                <option value="Tutor leva e retira" selected>Tutor leva e retira</option>
+                                <option value="Petshop busca e entrega" <?= (isset($agendamento) && $agendamento['transporte'] == 'Petshop busca e entrega') ? 'selected' : '' ?>>Petshop busca e entrega</option>
+                                <option value="Petshop busca, tutor retira" <?= (isset($agendamento) && $agendamento['transporte'] == 'Petshop busca, tutor retira') ? 'selected' : '' ?>>Petshop busca, tutor retira</option>
+                                <option value="Tutor leva, Petshop entrega" <?= (isset($agendamento) && $agendamento['transporte'] == 'Tutor leva, Petshop entrega') ? 'selected' : '' ?>>Tutor leva, Petshop entrega</option>
+                                <option value="Tutor leva e retira" <?= (isset($agendamento) && $agendamento['transporte'] == 'Tutor leva e retira') || !isset($agendamento) ? 'selected' : '' ?>>Tutor leva e retira</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-600 mb-2">Observações</label>
                             <textarea name="observacoes" rows="1" placeholder="Ex: Alérgico a perfume, Cuidado com a pata..." 
-                                class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all resize-none"></textarea>
+                                class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all resize-none"><?= $agendamento['observacoes'] ?? '' ?></textarea>
                         </div>
                     </div>
 
@@ -187,14 +195,15 @@
         const dataInput = document.getElementById('data');
         const slotsContainer = document.getElementById('slots-container');
         const horarioInput = document.getElementById('horario_input');
-        
         // Fetch slots
         async function fetchHorarios(date) {
             slotsContainer.innerHTML = '<div class="col-span-4 py-8 flex justify-center"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-brand-500"></i></div>';
             lucide.createIcons();
 
             try {
-                const response = await fetch(`<?= base_url('agenda/horarios') ?>?data=${date}`);
+                const petId = document.getElementById('pet_id').value;
+                const ignoreDataHora = '<?= isset($agendamento) ? $agendamento['data_hora'] : '' ?>';
+                const response = await fetch(`<?= base_url('agenda/horarios') ?>?data=${date}&ignore_pet_id=${petId}&ignore_data_hora=${ignoreDataHora}`);
                 const slots = await response.json();
                 
                 slotsContainer.innerHTML = '';
