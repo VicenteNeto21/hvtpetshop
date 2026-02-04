@@ -38,7 +38,7 @@ class Tutores extends BaseController
     {
         $rules = [
             'nome' => 'required|min_length[3]',
-            'telefone' => 'required',
+            'telefone' => 'permit_empty',
         ];
 
         if (!$this->validate($rules)) {

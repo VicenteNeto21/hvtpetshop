@@ -53,20 +53,28 @@
                             <div>
                                 <label class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Telefone</label>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <p class="text-slate-700 font-medium"><?= $tutor['telefone'] ?></p>
-                                    <?php if($tutor['telefone_is_whatsapp'] == 'Sim'): ?>
-                                        <a href="https://wa.me/55<?= preg_replace('/\D/', '', $tutor['telefone']) ?>" target="_blank" class="bg-green-100 hover:bg-green-200 text-green-700 text-xs px-2 py-0.5 rounded-full font-bold flex items-center gap-1 transition-colors">
-                                            <i data-lucide="message-circle" class="w-3 h-3"></i> Zap
-                                        </a>
+                                    <?php if(!empty($tutor['telefone'])): ?>
+                                        <p class="text-slate-700 font-medium"><?= $tutor['telefone'] ?></p>
+                                        <?php if($tutor['telefone_is_whatsapp'] == 'Sim'): ?>
+                                            <a href="https://wa.me/55<?= preg_replace('/\D/', '', $tutor['telefone']) ?>" target="_blank" class="bg-green-100 hover:bg-green-200 text-green-700 text-xs px-2 py-0.5 rounded-full font-bold flex items-center gap-1 transition-colors">
+                                                <i data-lucide="message-circle" class="w-3 h-3"></i> Zap
+                                            </a>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <p class="text-slate-400 italic font-normal text-sm">Não informado</p>
                                     <?php endif; ?>
                                 </div>
                             </div>
                             
                             <div>
                                 <label class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Email</label>
-                                <p class="text-slate-700 font-medium truncate" title="<?= $tutor['email'] ?>">
-                                    <?= !empty($tutor['email']) ? $tutor['email'] : '<span class="text-slate-400 italic">Não informado</span>' ?>
-                                </p>
+                                <?php if(!empty($tutor['email'])): ?>
+                                    <p class="text-slate-700 font-medium truncate" title="<?= $tutor['email'] ?>">
+                                        <?= $tutor['email'] ?>
+                                    </p>
+                                <?php else: ?>
+                                    <p class="text-slate-400 italic font-normal text-sm mt-1">Não informado</p>
+                                <?php endif; ?>
                             </div>
                             
                             <?php if(!empty($tutor['cidade'])): ?>

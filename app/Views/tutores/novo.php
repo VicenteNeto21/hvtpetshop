@@ -48,19 +48,25 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Telefone / WhatsApp *</label>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Telefone / WhatsApp</label>
                                 <div class="relative">
                                     <i data-lucide="phone" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <input type="text" name="telefone" value="<?= $tutor['telefone'] ?? '' ?>" required oninput="mascaraTelefone(this)" maxlength="15"
-                                        class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all placeholder:text-slate-400"
+                                    <input type="text" name="telefone" id="telefone_input" value="<?= $tutor['telefone'] ?? '' ?>" oninput="mascaraTelefone(this)" maxlength="15"
+                                        class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
                                         placeholder="(00) 00000-0000">
                                 </div>
-                                <label class="flex items-center gap-2 mt-2 cursor-pointer">
-                                    <input type="checkbox" name="telefone_is_whatsapp" value="Sim" 
-                                        <?= (isset($tutor) && $tutor['telefone_is_whatsapp'] == 'Sim') ? 'checked' : '' ?>
-                                        class="rounded text-brand-600 focus:ring-brand-500 border-gray-300">
-                                    <span class="text-sm text-slate-500">Este número é WhatsApp</span>
-                                </label>
+                                <div class="flex flex-col gap-2 mt-3">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="no_phone" onchange="togglePhoneField(this)" class="rounded text-brand-600 focus:ring-brand-500 border-gray-300">
+                                        <span class="text-sm text-slate-500">Não informado</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="telefone_is_whatsapp" value="Sim" 
+                                            <?= (isset($tutor) && $tutor['telefone_is_whatsapp'] == 'Sim') ? 'checked' : '' ?>
+                                            class="rounded text-brand-600 focus:ring-brand-500 border-gray-300">
+                                        <span class="text-sm text-slate-500">Este número é WhatsApp</span>
+                                    </label>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
@@ -133,6 +139,18 @@
 </div>
 
 <script>
+    function togglePhoneField(checkbox) {
+        const input = document.getElementById('telefone_input');
+        if (checkbox.checked) {
+            input.value = '';
+            input.disabled = true;
+            input.placeholder = "Não informado";
+        } else {
+            input.disabled = false;
+            input.placeholder = "(00) 00000-0000";
+        }
+    }
+
     function mascaraTelefone(input) {
         let v = input.value.replace(/\D/g, '');
         if (v.length > 11) v = v.slice(0, 11);
