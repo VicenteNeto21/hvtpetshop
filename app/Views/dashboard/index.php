@@ -375,14 +375,11 @@
         history.pushState({}, '', '?data=' + data);
         
         // Mostrar loading
-        document.getElementById('agenda-tbody').innerHTML = `
-            <tr>
-                <td colspan="4" class="p-8 text-center text-slate-400 text-sm">
-                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block"></i>
-                    Carregando...
-                </td>
-            </tr>
-        `;
+        const loadingDesktop = `<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm"><i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block"></i> Carregando...</td></tr>`;
+        const loadingMobile = `<div class="p-8 text-center text-slate-400 text-sm"><i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block"></i> Carregando...</div>`;
+        
+        document.getElementById('agenda-tbody-desktop').innerHTML = loadingDesktop;
+        document.getElementById('agenda-tbody').innerHTML = loadingMobile;
         
         try {
             const response = await fetch('<?= base_url('dashboard/agenda-data') ?>?data=' + data);
@@ -401,17 +398,17 @@
                 btnHoje.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors';
             }
             
-            // Atualizar tabela de agenda
+            // Atualizar tabela de agenda (Desktop e Mobile)
             if (dados.agenda.length === 0) {
-                document.getElementById('agenda-tbody').innerHTML = `
-                    <tr>
-                        <td colspan="4" class="p-8 text-center text-slate-400 text-sm italic">
-                            Nenhum agendamento para este dia.
-                        </td>
-                    </tr>
-                `;
+                const emptyDesktop = `<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm italic">Nenhum agendamento para este dia.</td></tr>`;
+                const emptyMobile = `<div class="p-6 text-center text-slate-400 text-sm italic">Nenhum agendamento para hoje.</div>`;
+                
+                document.getElementById('agenda-tbody-desktop').innerHTML = emptyDesktop;
+                document.getElementById('agenda-tbody').innerHTML = emptyMobile;
             } else {
-                let html = '';
+                let htmlDesktop = '';
+                let htmlMobile = '';
+                
                 dados.agenda.forEach(ag => {
                     const dataObj = new Date(ag.data_hora);
                     const horario = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
@@ -419,21 +416,41 @@
                     
                     const statusColors = {
                         'Pendente': 'bg-amber-100 text-amber-700 border-amber-200',
-                        'Em Atendimento': 'bg-blue-100 text-blue-700 border-blue-200',
-                        'Finalizado': 'bg-green-100 text-green-700 border-green-200',
+                        'Em Atendimento': 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                        'Finalizado': 'bg-brand-500 text-white border-brand-600',
                         'Cancelado': 'bg-red-100 text-red-700 border-red-200'
                     };
                     const colorClass = statusColors[ag.status] || 'bg-slate-100 text-slate-700';
                     
                     let acoes = '';
+                    let acoesMobile = '';
+                    
                     if (ag.status === 'Pendente') {
                         acoes = `
-                            <a href="${base_url}/agenda/concluir/${ag.id}" class="p-1.5 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors" title="Iniciar Atendimento">
+                            <a href="${base_url}/agenda/concluir/${ag.id}" class="p-1.5 rounded-lg bg-brand-100 text-brand-600 hover:bg-brand-200 transition-colors" title="Iniciar Atendimento">
                                 <i data-lucide="play" class="w-4 h-4"></i>
                             </a>
-                            <a href="${base_url}/agenda/cancelar/${ag.id}" class="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" title="Cancelar" onclick="return confirm('Cancelar este agendamento?')">
+                            <button onclick="openConfirmModal('${base_url}/agenda/cancelar/${ag.id}', 'Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'danger', 'x-circle')"
+                                    class="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" title="Cancelar">
                                 <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="openConfirmModal('${base_url}/agenda/excluir/${ag.id}', 'EXCLUIR Agendamento', 'Deseja excluir permanentemente este agendamento?', 'danger', 'trash-2')"
+                                    class="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-700 transition-colors" title="Excluir Permanentemente">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        `;
+                        acoesMobile = `
+                            <a href="${base_url}/agenda/concluir/${ag.id}" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-500 text-white text-xs font-medium hover:bg-brand-600 transition-colors">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i> Iniciar
                             </a>
+                            <button onclick="openConfirmModal('${base_url}/agenda/cancelar/${ag.id}', 'Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'danger', 'x-circle')"
+                                    class="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-red-100 text-red-600 text-xs font-medium hover:bg-red-200 transition-colors">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="openConfirmModal('${base_url}/agenda/excluir/${ag.id}', 'EXCLUIR Agendamento', 'Deseja excluir permanentemente este agendamento?', 'danger', 'trash-2')"
+                                    class="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-slate-200 text-slate-600 text-xs font-medium hover:bg-red-100 hover:text-red-700 transition-colors">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
                         `;
                     } else if (ag.status === 'Finalizado') {
                         acoes = `
@@ -441,9 +458,15 @@
                                 <i data-lucide="file-text" class="w-4 h-4"></i>
                             </a>
                         `;
+                        acoesMobile = `
+                            <a href="${base_url}/agenda/concluir/${ag.id}" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Ver Ficha
+                            </a>
+                        `;
                     }
 
-                    html += `
+                    // Desktop Row
+                    htmlDesktop += `
                         <tr class="hover:bg-slate-50/80 transition-colors group">
                             <td class="p-3 font-semibold text-slate-700">${horario}</td>
                             <td class="p-3">
@@ -461,14 +484,32 @@
                                 </span>
                             </td>
                             <td class="p-3 text-center">
-                                <div class="flex justify-center gap-1">
-                                    ${acoes}
-                                </div>
+                                <div class="flex justify-center gap-1">${acoes}</div>
                             </td>
                         </tr>
                     `;
+                    
+                    // Mobile Card
+                    htmlMobile += `
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-lg font-bold text-slate-800">${horario}</span>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold border ${colorClass}">${ag.status}</span>
+                            </div>
+                            <div class="mb-2">
+                                <p class="font-semibold text-slate-800">${ag.pet_nome}</p>
+                                <p class="text-xs text-slate-500">${ag.tutor_nome}</p>
+                            </div>
+                            <div class="mb-3">
+                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium">${ag.servico_nome}</span>
+                            </div>
+                            <div class="flex gap-2 pt-2 border-t border-slate-200">${acoesMobile || '<span class="text-xs text-slate-400 italic">Sem ações disponíveis</span>'}</div>
+                        </div>
+                    `;
                 });
-                document.getElementById('agenda-tbody').innerHTML = html;
+                
+                document.getElementById('agenda-tbody-desktop').innerHTML = htmlDesktop;
+                document.getElementById('agenda-tbody').innerHTML = htmlMobile;
             }
             
             // Atualizar aniversariantes
