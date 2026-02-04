@@ -3,7 +3,7 @@
     <div class="p-4 flex items-center justify-between border-b border-slate-800/50">
         <a href="<?= base_url('dashboard') ?>" class="flex items-center gap-3 sidebar-logo">
             <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 flex-shrink-0">
-                <i data-lucide="paw-print" class="w-5 h-5"></i>
+            <i data-lucide="cat" class="w-5 h-5"></i>
             </div>
             <span class="text-xl font-bold text-white tracking-wide sidebar-text">Cerenia<span class="text-brand-400">Pet</span></span>
         </a>

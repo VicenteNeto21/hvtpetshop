@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $this->renderSection('title') ?> - CereniaPet</title>
-    <link rel="icon" type="image/x-icon" href="<?= base_url('icons/pet.jpg') ?>">
+    <link rel="icon" type="image/png" href="<?= base_url('icons/favicon.png') ?>">
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="<?= base_url('manifest.json') ?>">
@@ -84,7 +84,7 @@
         <header class="md:hidden fixed top-0 left-0 right-0 z-30 bg-slate-900 px-4 py-3 flex items-center justify-between shadow-lg">
             <a href="<?= base_url('dashboard') ?>" class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white">
-                    <i data-lucide="paw-print" class="w-4 h-4"></i>
+                    <i data-lucide="cat" class="w-4 h-4"></i>
                 </div>
                 <span class="text-lg font-bold text-white">Cerenia<span class="text-brand-400">Pet</span></span>
             </a>
