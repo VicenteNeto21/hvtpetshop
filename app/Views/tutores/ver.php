@@ -123,9 +123,6 @@
                             <i data-lucide="dog" class="w-5 h-5 text-brand-500"></i>
                             Pets Vinculados
                         </h2>
-                        <a href="<?= base_url('pets/novo?tutor_id=' . $tutor['id']) ?>" class="text-sm font-medium text-brand-600 hover:text-brand-700 hover:underline">
-                            + Adicionar Novo
-                        </a>
                     </div>
 
                     <?php if(empty($pets)): ?>
