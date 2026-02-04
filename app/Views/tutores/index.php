@@ -28,7 +28,9 @@
 
         <!-- List -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-enter" style="animation-delay: 0.2s">
-            <div class="overflow-x-auto">
+            
+            <!-- Desktop Table (hidden on mobile) -->
+            <div class="hidden sm:block">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-slate-100 bg-slate-50/50 text-xs uppercase text-slate-500 font-bold tracking-wider">
@@ -96,7 +98,6 @@
                                             <a href="<?= base_url('tutores/editar/' . $tutor['id']) ?>" class="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors" title="Editar">
                                                 <i data-lucide="edit-2" class="w-5 h-5"></i>
                                             </a>
-                                            <!-- Botão Excluir Com Modal -->
                                             <button onclick="openConfirmModal('<?= base_url('tutores/excluir/' . $tutor['id']) ?>', 'Excluir Tutor', 'Tem certeza que deseja excluir <?= addslashes($tutor['nome']) ?>? Isso pode afetar os pets vinculados.', 'danger', 'trash-2')" 
                                                 class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Excluir">
                                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
@@ -108,6 +109,70 @@
                         <?php endif; ?>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile Cards (hidden on desktop) -->
+            <div class="sm:hidden p-4 space-y-3">
+                <?php if(empty($tutores)): ?>
+                    <div class="p-8 text-center text-slate-400">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-slate-200">
+                            <i data-lucide="user-x" class="w-8 h-8 text-slate-300"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-slate-900">Nenhum tutor encontrado</h3>
+                        <p class="text-slate-500">Tente buscar por outro termo.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach($tutores as $tutor): ?>
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                            <!-- Tutor Info -->
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-base shrink-0">
+                                    <?= substr($tutor['nome'], 0, 2) ?>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-bold text-slate-800 text-lg truncate"><?= $tutor['nome'] ?></h3>
+                                </div>
+                            </div>
+                            
+                            <!-- Contact -->
+                            <div class="space-y-1 mb-3 pb-3 border-b border-slate-200">
+                                <a href="https://wa.me/55<?= preg_replace('/\D/', '', $tutor['telefone']) ?>" target="_blank" class="flex items-center gap-2 text-sm text-slate-600 hover:text-green-600 transition-colors">
+                                    <i data-lucide="phone" class="w-4 h-4 text-green-500"></i>
+                                    <?= $tutor['telefone'] ?>
+                                </a>
+                                <?php if($tutor['email']): ?>
+                                    <div class="flex items-center gap-2 text-sm text-slate-500">
+                                        <i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>
+                                        <span class="truncate"><?= $tutor['email'] ?></span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if($tutor['cidade']): ?>
+                                    <div class="flex items-center gap-2 text-sm text-slate-500">
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i>
+                                        <?= $tutor['cidade'] ?><?= $tutor['uf'] ? ' - ' . $tutor['uf'] : '' ?>
+                                        <?= $tutor['bairro'] ? ', ' . $tutor['bairro'] : '' ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="flex gap-2">
+                                <a href="<?= base_url('tutores/ver/' . $tutor['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-blue-100 text-blue-600 text-xs font-medium hover:bg-blue-200 transition-colors">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    Ver
+                                </a>
+                                <a href="<?= base_url('tutores/editar/' . $tutor['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-100 text-brand-600 text-xs font-medium hover:bg-brand-200 transition-colors">
+                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                    Editar
+                                </a>
+                                <button onclick="openConfirmModal('<?= base_url('tutores/excluir/' . $tutor['id']) ?>', 'Excluir Tutor', 'Tem certeza que deseja excluir <?= addslashes($tutor['nome']) ?>?', 'danger', 'trash-2')"
+                                        class="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-red-100 text-red-600 text-xs font-medium hover:bg-red-200 transition-colors">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
             
             <!-- Pagination -->

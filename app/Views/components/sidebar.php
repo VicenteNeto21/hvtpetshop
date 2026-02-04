@@ -1,4 +1,4 @@
-<aside id="sidebar" class="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 h-screen fixed left-0 top-0 overflow-y-auto z-20 transition-all duration-300">
+<aside id="sidebar" class="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-800 overflow-y-auto z-40 transition-transform duration-300 -translate-x-full md:translate-x-0 flex flex-col">
     <!-- Logo -->
     <div class="p-4 flex items-center justify-between border-b border-slate-800/50">
         <a href="<?= base_url('dashboard') ?>" class="flex items-center gap-3 sidebar-logo">
@@ -183,4 +183,38 @@
             setTimeout(() => lucide.createIcons(), 100);
         }
     }
+    
+    // Mobile sidebar toggle
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const hamburger = document.getElementById('hamburger-btn');
+        
+        const isOpen = sidebar.classList.toggle('translate-x-0');
+        sidebar.classList.toggle('-translate-x-full', !isOpen);
+        
+        if (overlay) {
+            overlay.classList.toggle('hidden', !isOpen);
+        }
+        
+        // Change hamburger icon
+        if (hamburger && typeof lucide !== 'undefined') {
+            const icon = hamburger.querySelector('i');
+            if (icon) {
+                icon.setAttribute('data-lucide', isOpen ? 'x' : 'menu');
+                lucide.createIcons();
+            }
+        }
+    }
+    
+    // Close mobile sidebar on window resize to desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 768) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+            if (overlay) overlay.classList.add('hidden');
+        }
+    });
 </script>

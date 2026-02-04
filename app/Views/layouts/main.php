@@ -6,6 +6,14 @@
     <title><?= $this->renderSection('title') ?> - CereniaPet</title>
     <link rel="icon" type="image/x-icon" href="<?= base_url('icons/pet.jpg') ?>">
     
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="<?= base_url('manifest.json') ?>">
+    <meta name="theme-color" content="#1e40af">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CereiaPet">
+    <link rel="apple-touch-icon" href="<?= base_url('icons/icon-512x512.png') ?>">
+    <meta name="description" content="Sistema de gestão para pet shops - Agendamentos, pets, tutores e serviços">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,11 +80,27 @@
 <body class="bg-[#f1f5f9] text-slate-800 antialiased min-h-screen">
 
     <?php if (session()->get('isLoggedIn')): ?>
+        <!-- Mobile Header com Hamburger -->
+        <header class="md:hidden fixed top-0 left-0 right-0 z-30 bg-slate-900 px-4 py-3 flex items-center justify-between shadow-lg">
+            <a href="<?= base_url('dashboard') ?>" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white">
+                    <i data-lucide="paw-print" class="w-4 h-4"></i>
+                </div>
+                <span class="text-lg font-bold text-white">Cerenia<span class="text-brand-400">Pet</span></span>
+            </a>
+            <button onclick="toggleMobileSidebar()" class="p-2 rounded-lg text-white hover:bg-slate-800 transition-colors" id="hamburger-btn">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </header>
+        
+        <!-- Overlay para fechar sidebar mobile -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden" onclick="toggleMobileSidebar()"></div>
+        
         <!-- Barra Lateral -->
         <?= view('components/sidebar') ?>
         
         <!-- Conteúdo Principal -->
-        <main class="md:ml-64 min-h-screen transition-all duration-300 p-4 md:p-8">
+        <main class="md:ml-64 min-h-screen transition-all duration-300 p-4 md:p-8 pt-20 md:pt-8">
             <div class="max-w-[1600px] mx-auto">
                 <?= $this->renderSection('content') ?>
             </div>
@@ -287,6 +311,19 @@
                     // Remove mesmo em caso de erro
                     document.getElementById('aviso-funcionalidades')?.remove();
                 });
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registrado:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('❌ Service Worker falhou:', error);
+                    });
+            });
         }
     </script>
     <?= $this->renderSection('scripts') ?>

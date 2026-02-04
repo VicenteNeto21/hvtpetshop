@@ -3,10 +3,7 @@
 <?= $this->section('title') ?>Gerenciar Usuários<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="flex min-h-screen bg-slate-50">
-    <?= view('components/sidebar') ?>
-
-    <main class="flex-1 md:ml-64 p-4 md:p-8 overflow-x-hidden">
+<div class="animate-enter">
         <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 animate-enter">
             <div>
@@ -72,7 +69,9 @@
 
         <!-- Lista de Usuários -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-enter" style="animation-delay: 0.2s">
-            <div class="overflow-x-auto">
+            
+            <!-- Desktop Table (hidden on mobile) -->
+            <div class="hidden sm:block">
                 <table class="w-full">
                     <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
@@ -174,8 +173,97 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Mobile Cards (hidden on desktop) -->
+            <div class="sm:hidden p-4 space-y-3">
+                <?php if(empty($usuarios)): ?>
+                    <div class="p-8 text-center text-slate-400 italic">
+                        Nenhum usuário encontrado.
+                    </div>
+                <?php else: ?>
+                    <?php foreach($usuarios as $user): ?>
+                        <?php
+                            $statusConfig = [
+                                'pendente' => ['bg-amber-100 text-amber-700 border-amber-200', 'Pendente'],
+                                'aprovado' => ['bg-brand-50 text-brand-700 border-brand-200', 'Aprovado'],
+                                'rejeitado' => ['bg-red-100 text-red-700 border-red-200', 'Rejeitado']
+                            ];
+                            $config = $statusConfig[$user['status']] ?? ['bg-slate-100 text-slate-700', $user['status']];
+                        ?>
+                        <div id="user-mobile-<?= $user['id'] ?>" class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                            <!-- Header: Avatar + Name + Status -->
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-lg shrink-0">
+                                    <?= strtoupper(substr($user['nome'], 0, 1)) ?>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-bold text-slate-800 truncate">
+                                        <?= $user['nome'] ?>
+                                        <?php if($user['id'] == session()->get('usuario_id')): ?>
+                                            <span class="text-xs text-brand-600">(Você)</span>
+                                        <?php endif; ?>
+                                    </h3>
+                                    <p class="text-sm text-slate-500 truncate"><?= $user['email'] ?></p>
+                                </div>
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold border <?= $config[0] ?> shrink-0">
+                                    <?= $config[1] ?>
+                                </span>
+                            </div>
+                            
+                            <!-- Info -->
+                            <div class="flex items-center gap-4 text-xs text-slate-500 mb-3 pb-3 border-b border-slate-200">
+                                <span class="flex items-center gap-1">
+                                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                                    <?= date('d/m/Y', strtotime($user['criado_em'])) ?>
+                                </span>
+                                <?php if($user['id'] != session()->get('usuario_id')): ?>
+                                    <button onclick="alternarTipo(<?= $user['id'] ?>)" 
+                                            id="tipo-mobile-<?= $user['id'] ?>"
+                                            class="px-2 py-0.5 rounded text-xs font-medium <?= $user['tipo'] == 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-600' ?>">
+                                        <?= ucfirst($user['tipo'] ?? 'funcionario') ?>
+                                    </button>
+                                <?php else: ?>
+                                    <span class="px-2 py-0.5 rounded text-xs font-medium <?= $user['tipo'] == 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-600' ?>">
+                                        <?= ucfirst($user['tipo'] ?? 'funcionario') ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="flex gap-2">
+                                <?php if($user['status'] == 'pendente'): ?>
+                                    <button onclick="aprovarUsuario(<?= $user['id'] ?>)" 
+                                            class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-green-100 text-green-600 text-xs font-medium hover:bg-green-200 transition-colors">
+                                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        Aprovar
+                                    </button>
+                                    <button onclick="rejeitarUsuario(<?= $user['id'] ?>)" 
+                                            class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-red-100 text-red-600 text-xs font-medium hover:bg-red-200 transition-colors">
+                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                        Rejeitar
+                                    </button>
+                                <?php elseif($user['status'] == 'rejeitado'): ?>
+                                    <button onclick="aprovarUsuario(<?= $user['id'] ?>)" 
+                                            class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-green-100 text-green-600 text-xs font-medium hover:bg-green-200 transition-colors">
+                                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        Aprovar
+                                    </button>
+                                <?php else: ?>
+                                    <span class="flex-1 text-center text-xs text-slate-400 py-2">Usuário aprovado</span>
+                                <?php endif; ?>
+                                
+                                <?php if($user['id'] != session()->get('usuario_id')): ?>
+                                    <button onclick="excluirUsuario(<?= $user['id'] ?>, '<?= addslashes($user['nome']) ?>')" 
+                                            class="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-slate-200 text-slate-600 text-xs font-medium hover:bg-red-100 hover:text-red-600 transition-colors">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
         </div>
-    </main>
 </div>
 
 <script>

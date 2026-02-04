@@ -29,9 +29,11 @@
             </form>
         </div>
 
-        <!-- Pets List (Table) -->
+        <!-- Pets List -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-enter" style="animation-delay: 0.2s">
-            <div class="overflow-x-auto">
+            
+            <!-- Desktop Table (hidden on mobile) -->
+            <div class="hidden sm:block">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-slate-100 bg-slate-50/50 text-xs uppercase text-slate-500 font-bold tracking-wider">
@@ -87,11 +89,6 @@
                                                 <a href="<?= base_url('tutores/ver/' . $pet['tutor_id']) ?>" class="font-medium hover:text-brand-600 transition-colors">
                                                     <?= $pet['tutor_nome'] ?>
                                                 </a>
-                                                 <!-- Opcional: Telefone 
-                                                <div class="text-xs text-slate-400">
-                                                    Contato do tutor...
-                                                </div>
-                                                 -->
                                             </div>
                                         </div>
                                     </td>
@@ -113,6 +110,65 @@
                         <?php endif; ?>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile Cards (hidden on desktop) -->
+            <div class="sm:hidden p-4 space-y-3">
+                <?php if(empty($pets)): ?>
+                    <div class="p-8 text-center text-slate-400">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-slate-200">
+                            <i data-lucide="search-x" class="w-8 h-8 text-slate-300"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-slate-900">Nenhum pet encontrado</h3>
+                        <p class="text-slate-500">Tente buscar por outro termo.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach($pets as $pet): ?>
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                            <!-- Pet Info -->
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 rounded-xl bg-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-50 text-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-500 flex items-center justify-center shrink-0">
+                                    <?php if(isset($pet['especie']) && $pet['especie'] == 'Gato'): ?>
+                                        <i data-lucide="cat" class="w-6 h-6"></i>
+                                    <?php else: ?>
+                                        <i data-lucide="dog" class="w-6 h-6"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-bold text-slate-800 text-lg truncate"><?= $pet['nome'] ?></h3>
+                                    <div class="flex items-center gap-2 text-sm text-slate-500">
+                                        <span class="bg-slate-200 px-2 py-0.5 rounded-full text-xs font-medium">
+                                            <?= $pet['raca'] ?: 'SRD' ?>
+                                        </span>
+                                        <span><?= $pet['sexo'] == 'M' ? 'Macho' : 'Fêmea' ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Tutor -->
+                            <div class="flex items-center gap-2 text-sm text-slate-600 mb-3 pb-3 border-b border-slate-200">
+                                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                                <span><?= $pet['tutor_nome'] ?></span>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="flex gap-2">
+                                <a href="<?= base_url('pets/ver/' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-blue-100 text-blue-600 text-xs font-medium hover:bg-blue-200 transition-colors">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    Ver
+                                </a>
+                                <a href="<?= base_url('pets/editar/' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-100 text-brand-600 text-xs font-medium hover:bg-brand-200 transition-colors">
+                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                    Editar
+                                </a>
+                                <a href="<?= base_url('agenda/novo?pet=' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-500 text-white text-xs font-medium hover:bg-brand-600 transition-colors">
+                                    <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
+                                    Agendar
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
             
             <!-- Pagination -->

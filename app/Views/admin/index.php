@@ -274,8 +274,6 @@
          <div class="hidden print:block text-center mt-12 border-t border-slate-200 pt-6">
             <p class="text-sm text-slate-400">Relatório gerado em <?= date('d/m/Y H:i') ?> pelo sistema HVT Petshop.</p>
         </div>
-
-    </main>
 </div>
 
 <!-- Template do Relatório PDF (Layout A4 Formal) -->

@@ -3,10 +3,6 @@
 <?= $this->section('title') ?>Detalhes do Tutor<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="flex min-h-screen bg-slate-50">
-    <?= view('components/sidebar') ?>
-
-    <main class="flex-1 md:ml-64 p-4 md:p-8">
         <!-- Breadcrumb & Header -->
         <div class="mb-8 animate-enter">
             <a href="<?= base_url('tutores') ?>" class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-brand-600 mb-4 transition-colors">
