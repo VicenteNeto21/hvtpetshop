@@ -90,7 +90,16 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-slate-800">Agenda Expressa</h4>
-                        <p class="text-sm text-slate-500">Agendamentos rápidos com suporte a recorrência semanal/mensal para fidelizar seus clientes.</p>
+                        <p class="text-sm text-slate-500">Agendamentos rápidos com suporte a recorrência e <strong>cadastro retroativo</strong> para lançar atendimentos passados.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="p-2 bg-slate-50 rounded-lg text-brand-500">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Cadastro Rápido Turbinado</h4>
+                        <p class="text-sm text-slate-500">Registre tutor e pet em uma única tela com seleção inteligente de raças e telefone opcional.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -100,6 +109,15 @@
                     <div>
                         <h4 class="font-bold text-slate-800">Fichas Técnicas Digitais</h4>
                         <p class="text-sm text-slate-500">Histórico completo de atendimentos com avaliação de pelagem, comportamento e impressão em A4.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="p-2 bg-slate-50 rounded-lg text-brand-500">
+                        <i data-lucide="palette" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Interface Premium</h4>
+                        <p class="text-sm text-slate-500">Componentes personalizados, scrollbar estilizada e dropdowns animados para uma experiência visual de alto nível.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -161,7 +179,7 @@
             <a href="<?= base_url('dashboard') ?>" class="w-full sm:w-auto px-8 py-4 bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition-all">
                 Voltar ao Dashboard
             </a>
-            <p class="text-[10px] text-slate-400">Versão 3.1.0 - Em honra à Cerenia</p>
+            <p class="text-[10px] text-slate-400">Versão 3.2.0 - Em honra à Cerenia</p>
         </div>
     </div>
 </div>
