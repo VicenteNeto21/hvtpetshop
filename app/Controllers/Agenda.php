@@ -67,7 +67,8 @@ class Agenda extends BaseController
                                ->findAll(),
             'servicos' => $servicoModel->orderBy('nome', 'ASC')->findAll(),
             'preselected_pet_id' => $this->request->getGet('pet'),
-            'title' => 'Novo Agendamento'
+            'title' => 'Novo Agendamento',
+            'data_preenchida' => $this->request->getGet('data') ?? date('Y-m-d')
         ];
 
         return view('agenda/novo', $data);
@@ -254,7 +255,17 @@ class Agenda extends BaseController
             } else {
                 $db->transCommit();
                 $msg = $id ? "Agendamento atualizado com sucesso!" : (($recorrenciaTipo !== 'unico') ? "Agendamento recorrente ($repeticoes vezes) realizado com sucesso!" : "Agendamento realizado com sucesso!");
-                return redirect()->to('agenda')->with('success', $msg);
+                
+                // Verificar ação: Salvar e Novo ou Salvar normal
+                $acao = $this->request->getPost('acao') ?? 'salvar';
+                
+                if ($acao === 'salvar_e_novo') {
+                    // Volta para o formulário mantendo a data selecionada
+                    return redirect()->to('agenda/novo?data=' . $data)->with('success', $msg);
+                }
+                
+                // Volta para a lista da agenda no dia do agendamento criado
+                return redirect()->to('agenda?data=' . $data)->with('success', $msg);
             }
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('error', $e->getMessage());

@@ -67,7 +67,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-slate-600 mb-2">Data do Atendimento</label>
                                 <input type="date" name="data" id="data" required 
-                                    value="<?= isset($agendamento) ? date('Y-m-d', strtotime($agendamento['data_hora'])) : date('Y-m-d') ?>"
+                                    value="<?= isset($agendamento) ? date('Y-m-d', strtotime($agendamento['data_hora'])) : ($data_preenchida ?? date('Y-m-d')) ?>"
                                     class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
                             </div>
 
@@ -165,12 +165,26 @@
                         </div>
                     </div>
 
+                    <!-- Hidden field para controlar a ação -->
+                    <input type="hidden" name="acao" id="acao_input" value="salvar">
+
                     <!-- Actions -->
-                    <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-50">
-                        <a href="<?= base_url('agenda') ?>" class="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 border-t border-slate-50">
+                        <a href="<?= base_url('agenda') ?>" class="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors text-center">
                             Cancelar
                         </a>
-                        <?= view('components/btn_salvar', ['label' => 'Confirmar Agendamento']) ?>
+                        <?php if(!isset($agendamento)): ?>
+                        <button type="submit" onclick="document.getElementById('acao_input').value='salvar_e_novo'" 
+                            class="px-6 py-3 rounded-xl border-2 border-brand-500 text-brand-600 font-bold hover:bg-brand-50 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            <span>Salvar e Agendar Outro</span>
+                        </button>
+                        <?php endif; ?>
+                        <button type="submit" onclick="document.getElementById('acao_input').value='salvar'" 
+                            class="px-8 py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="check" class="w-5 h-5"></i>
+                            <span>Confirmar Agendamento</span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -276,5 +290,22 @@
             input.focus();
         }
     }
+
+    // Toast de sucesso
+    document.addEventListener('DOMContentLoaded', () => {
+        <?php if(session()->getFlashdata('success')): ?>
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl shadow-emerald-600/30 animate-enter font-medium';
+        toast.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i><span><?= session()->getFlashdata('success') ?></span>';
+        document.body.appendChild(toast);
+        lucide.createIcons();
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.5s, transform 0.5s';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+        <?php endif; ?>
+    });
 </script>
 <?= $this->endSection() ?>
