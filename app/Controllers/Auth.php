@@ -10,6 +10,8 @@ class Auth extends BaseController
 {
     use ResponseTrait;
 
+    protected bool $skipAuth = true;
+
     public function index()
     {
         // Se já estiver logado, redireciona para dashboard

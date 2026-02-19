@@ -25,21 +25,26 @@ abstract class BaseController extends Controller
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
 
-    // protected $session;
+    /**
+     * Se true, pula a verificação de autenticação.
+     * Sobrescreva como true nos controllers públicos (Auth, Home).
+     */
+    protected bool $skipAuth = false;
 
     /**
      * @return void
      */
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
-        // Load here all helpers you want to be available in your controllers that extend BaseController.
-        // Caution: Do not put the this below the parent::initController() call below.
-        // $this->helpers = ['form', 'url'];
-
         // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
 
-        // Preload any models, libraries, etc, here.
-        // $this->session = service('session');
+        // Verificação centralizada de autenticação
+        if (!$this->skipAuth && !session()->get('usuario_id')) {
+            // Redireciona para login se não autenticado
+            $response->redirect(site_url('/login'));
+            $response->send();
+            exit;
+        }
     }
 }
