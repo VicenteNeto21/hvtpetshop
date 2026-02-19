@@ -332,6 +332,11 @@ class Agenda extends BaseController
         $ag = $agendamentoModel->find($id);
         
         if ($ag) {
+            // Se já está finalizado, apenas redirecionar para a ficha (sem toast repetido)
+            if ($ag['status'] === 'Finalizado') {
+                return redirect()->to('agenda/ficha/' . $id);
+            }
+            
             // Finalizar todos os serviços deste pet neste horário
             $agendamentoModel->where('pet_id', $ag['pet_id'])
                              ->where('data_hora', $ag['data_hora'])

@@ -41,7 +41,8 @@ $routes->get('/agenda/cadastro-rapido', 'Agenda::cadastroRapido');
 $routes->post('/agenda/salvar-cadastro-rapido', 'Agenda::salvarCadastroRapido');
 $routes->post('/agenda/salvar', 'Agenda::salvar');
 $routes->get('/agenda/horarios', 'Agenda::horariosDisponiveis');
-$routes->get('/agenda/concluir/(:num)', 'Agenda::ficha/$1'); // Redireciona para fichas ao concluir
+$routes->get('/agenda/concluir/(:num)', 'Agenda::concluir/$1');
+$routes->get('/agenda/ficha/(:num)', 'Agenda::ficha/$1');
 $routes->get('/agenda/cancelar/(:num)', 'Agenda::cancelar/$1');
 $routes->get('/agenda/excluir/(:num)', 'Agenda::excluir/$1');
 $routes->post('/agenda/salvarFicha', 'Agenda::salvarFicha');

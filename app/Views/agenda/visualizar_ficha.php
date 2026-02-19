@@ -149,7 +149,7 @@
 
         <!-- Rodapé do Documento (Apenas para Impressão) -->
         <div class="hidden print-footer mt-12 pt-6 border-t border-slate-200 flex justify-between items-center text-[9px] text-slate-400">
-            <div>Ficha gerada via <strong>CereniaPet v3.2.0</strong> em <?= date('d/m/Y') ?></div>
+            <div>Ficha gerada via <strong>CereniaPet v3.3.0</strong> em <?= date('d/m/Y') ?></div>
             <div>Assinatura do Responsável: ____________________________________</div>
         </div>
 
@@ -160,38 +160,55 @@
     .ficha-documento h2 span { color: #2563eb; }
     
     @media print {
-        @page { size: A4; margin: 0; }
+        @page { size: A4; margin: 10mm; }
         
-        /* Reset Completo de HTML/Body para evitar loops de layout */
+        /* Reset global */
         html, body { 
             background: white !important; 
             font-family: 'Outfit', sans-serif; 
-            opacity: 1 !important; 
-            visibility: visible !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
             height: auto !important;
             min-height: 0 !important;
             overflow: visible !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
         }
         
-        .no-print { display: none !important; }
+        /* Esconder tudo que não é conteúdo */
+        aside,                          /* Sidebar */
+        header,                         /* Mobile header */
+        #sidebar-overlay,              /* Overlay mobile */
+        #aviso-funcionalidades,        /* Modal novidades */
+        .no-print,                     /* Elementos marcados */
+        [id^="toast"],                 /* Toast container */
+        .toast-container               /* Toast */
+        {
+            display: none !important;
+            visibility: hidden !important;
+        }
         
-        /* Forçar visibilidade e anular animações */
+        /* Remover margem do sidebar no main */
+        main {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        
+        /* Anular animações */
         .animate-enter, [class*="animate-"] { 
             opacity: 1 !important; 
             transform: none !important; 
             animation: none !important;
             visibility: visible !important;
         }
-        .hidden { display: block !important; } /* Mostrar Rodapé no Print */
-        .print-footer { display: flex !important; }
         
-        /* Layout Global Print */
-        .md\:ml-64, nav, aside { display: none !important; }
-        main { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+        /* Mostrar rodapé de impressão */
+        .print-footer { 
+            display: flex !important; 
+            visibility: visible !important;
+        }
         
+        /* Layout do documento */
         .ficha-documento {
             margin: 0 !important;
             padding: 15mm !important;
@@ -199,14 +216,21 @@
             max-width: none !important;
             border: none !important;
             box-shadow: none !important;
+            border-radius: 0 !important;
         }
         
-        .bg-slate-50 { background-color: #f8fafc !important; -webkit-print-color-adjust: exact !important; }
-        .bg-brand-500 { background-color: #2563eb !important; color: white !important; -webkit-print-color-adjust: exact !important; }
-        .border-brand-500 { border-color: #2563eb !important; -webkit-print-color-adjust: exact !important; }
+        /* Preservar cores */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        .bg-slate-50 { background-color: #f8fafc !important; }
+        .bg-brand-500 { background-color: #2563eb !important; color: white !important; }
+        .border-brand-500 { border-color: #2563eb !important; }
         .text-brand-600 { color: #2563eb !important; }
-
-        /* Garantir que o conteúdo não seja cortado */
+        
+        /* Conteúdo não cortado */
         main, .ficha-documento {
             overflow: visible !important;
             position: static !important;
