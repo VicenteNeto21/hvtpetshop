@@ -351,6 +351,9 @@
             });
         }
     </script>
+
+    <?= view('components/toast') ?>
+
     <?= $this->renderSection('scripts') ?>
 </body>
 </html>

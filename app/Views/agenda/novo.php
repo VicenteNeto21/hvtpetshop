@@ -290,22 +290,5 @@
             input.focus();
         }
     }
-
-    // Toast de sucesso
-    document.addEventListener('DOMContentLoaded', () => {
-        <?php if(session()->getFlashdata('success')): ?>
-        const toast = document.createElement('div');
-        toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl shadow-emerald-600/30 animate-enter font-medium';
-        toast.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i><span><?= session()->getFlashdata('success') ?></span>';
-        document.body.appendChild(toast);
-        lucide.createIcons();
-        setTimeout(() => {
-            toast.style.transition = 'opacity 0.5s, transform 0.5s';
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(10px)';
-            setTimeout(() => toast.remove(), 500);
-        }, 4000);
-        <?php endif; ?>
-    });
 </script>
 <?= $this->endSection() ?>

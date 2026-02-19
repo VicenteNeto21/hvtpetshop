@@ -19,14 +19,6 @@
             </a>
         </header>
 
-        <!-- Flash Messages -->
-        <?php if(session()->getFlashdata('success')): ?>
-            <div class="bg-green-50 text-green-700 p-4 rounded-xl mb-6 shadow-sm border border-green-100 flex items-center gap-3 animate-enter">
-                <i data-lucide="check-circle" class="w-5 h-5"></i>
-                <?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
-
         <!-- Search -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 animate-enter" style="animation-delay: 0.1s">
             <form action="<?= base_url('servicos') ?>" method="GET" class="relative">
