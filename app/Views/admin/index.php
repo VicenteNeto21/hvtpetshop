@@ -168,7 +168,7 @@
             <!-- Line Chart: Atendimentos por Dia -->
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 print:border print:border-slate-300 print:break-inside-avoid">
                 <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-brand-500"></i>
+                    <i data-lucide="trending-up" class="w-5 h-5 text-brand-500"></i>
                     Evolução Diária
                 </h3>
                 <div class="relative h-72 w-full">
@@ -472,16 +472,29 @@
 
     // 1. Chart Timeline
     const ctxTimeline = document.getElementById('chartTimeline');
+    
+    // Gradient fill
+    const gradient = ctxTimeline.getContext('2d').createLinearGradient(0, 0, 0, 280);
+    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.25)');
+    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.01)');
+    
     const chartTimeline = new Chart(ctxTimeline, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: <?= json_encode($charts['timeline']['labels']) ?>,
             datasets: [{
                 label: 'Atendimentos',
                 data: <?= json_encode($charts['timeline']['data']) ?>,
-                backgroundColor: '#3b82f6',
-                borderRadius: 4,
-                barThickness: 20
+                borderColor: '#8b5cf6',
+                backgroundColor: gradient,
+                borderWidth: 2.5,
+                pointBackgroundColor: '#8b5cf6',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.4,
+                fill: true
             }]
         },
         options: {

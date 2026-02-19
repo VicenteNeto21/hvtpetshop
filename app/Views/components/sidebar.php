@@ -97,7 +97,7 @@
                 © <?= date('Y') ?> CereniaPet. Todos os direitos reservados.
             </p>
             <p class="text-[10px] text-slate-500 text-center mt-1">
-                <span class="font-semibold text-brand-500">AMPN 3.1.0</span>
+                <span class="font-semibold text-brand-500">AMPN 3.3.0</span>
             </p>
             <p class="text-[9px] text-slate-600 text-center mt-0.5">
                 Desenvolvido com ☕ por: Vicente Neto

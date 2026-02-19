@@ -129,6 +129,33 @@
                         <p class="text-sm text-slate-500">Instale o sistema como um aplicativo no seu celular e receba notificações de novos agendamentos.</p>
                     </div>
                 </div>
+                <div class="flex items-start gap-4">
+                    <div class="p-2 bg-slate-50 rounded-lg text-brand-500">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Segurança Centralizada</h4>
+                        <p class="text-sm text-slate-500">Proteção automática contra acesso não-autorizado em todas as rotas do sistema, com bloqueio por tentativas de login.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="p-2 bg-slate-50 rounded-lg text-brand-500">
+                        <i data-lucide="repeat" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Agendamento em Lote</h4>
+                        <p class="text-sm text-slate-500">Cadastre vários pets seguidos com o botão <strong>"Salvar e Agendar Outro"</strong>, mantendo a data selecionada entre os cadastros.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="p-2 bg-slate-50 rounded-lg text-brand-500">
+                        <i data-lucide="bell-ring" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Notificações Toast</h4>
+                        <p class="text-sm text-slate-500">Feedback visual instantâneo em todas as telas: confirmações de cadastro, atualizações e alertas de erro.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -179,7 +206,7 @@
             <a href="<?= base_url('dashboard') ?>" class="w-full sm:w-auto px-8 py-4 bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition-all">
                 Voltar ao Dashboard
             </a>
-            <p class="text-[10px] text-slate-400">Versão 3.2.0 - Em honra à Cerenia</p>
+            <p class="text-[10px] text-slate-400">Versão 3.3.0 - Em honra à Cerenia</p>
         </div>
     </div>
 </div>
