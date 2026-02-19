@@ -114,11 +114,13 @@ class Pets extends BaseController
         if (empty($data['cor']))        $data['cor'] = null;
         if (empty($data['observacoes'])) $data['observacoes'] = null;
 
+        $isEdit = !empty($data['id']);
         if ($petModel->save($data)) {
             $id = $data['id'] ?? $petModel->getInsertID();
-            return redirect()->to('pets/ver/' . $id)->with('success', 'Pet salvo com sucesso!');
+            $msg = $isEdit ? 'Cadastro do pet atualizado!' : 'Pet cadastrado com sucesso!';
+            return redirect()->to('pets/ver/' . $id)->with('success', $msg);
         } else {
-            return redirect()->back()->withInput()->with('error', 'Erro ao salvar pet.');
+            return redirect()->back()->withInput()->with('error', 'Não foi possível salvar o pet. Verifique os dados.');
         }
     }
 
@@ -146,9 +148,9 @@ class Pets extends BaseController
         
         // TODO: Verificar se tem agendamentos antes de excluir
         if ($petModel->delete($id)) {
-            return redirect()->back()->with('success', 'Pet removido com sucesso.');
+            return redirect()->back()->with('success', 'Pet removido do sistema.');
         } else {
-            return redirect()->back()->with('error', 'Erro ao remover pet.');
+            return redirect()->back()->with('error', 'Não foi possível remover o pet.');
         }
     }
 }

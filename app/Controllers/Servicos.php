@@ -53,10 +53,12 @@ class Servicos extends BaseController
         // Remove formatação de moeda se vier (ex: R$ 100,00 -> 100.00)
         // Mas assumiremos input number por enquanto ou trataremos viz view
         
+        $isEdit = !empty($data['id']);
         if ($servicoModel->save($data)) {
-            return redirect()->to('servicos')->with('success', 'Serviço salvo com sucesso!');
+            $msg = $isEdit ? 'Serviço atualizado!' : 'Serviço cadastrado com sucesso!';
+            return redirect()->to('servicos')->with('success', $msg);
         } else {
-            return redirect()->back()->withInput()->with('error', 'Erro ao salvar serviço.');
+            return redirect()->back()->withInput()->with('error', 'Não foi possível salvar o serviço. Verifique os dados.');
         }
     }
 
@@ -79,9 +81,9 @@ class Servicos extends BaseController
         // TODO: Verificar dependências (agendamentos futuros?)
         
         if ($servicoModel->delete($id)) {
-            return redirect()->back()->with('success', 'Serviço removido com sucesso.');
+            return redirect()->back()->with('success', 'Serviço removido do catálogo.');
         } else {
-            return redirect()->back()->with('error', 'Erro ao remover serviço.');
+            return redirect()->back()->with('error', 'Não foi possível remover o serviço.');
         }
     }
 }

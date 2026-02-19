@@ -52,11 +52,13 @@ class Tutores extends BaseController
         // Handle checkbox
         $data['telefone_is_whatsapp'] = isset($data['telefone_is_whatsapp']) ? 'Sim' : 'Não';
 
+        $isEdit = !empty($data['id']);
         if ($tutorModel->save($data)) {
             $id = $data['id'] ?? $tutorModel->getInsertID();
-            return redirect()->to('tutores/ver/' . $id)->with('success', 'Tutor salvo com sucesso!');
+            $msg = $isEdit ? 'Dados do tutor atualizados!' : 'Tutor cadastrado com sucesso!';
+            return redirect()->to('tutores/ver/' . $id)->with('success', $msg);
         } else {
-            return redirect()->back()->withInput()->with('error', 'Erro ao salvar tutor.');
+            return redirect()->back()->withInput()->with('error', 'Não foi possível salvar o tutor. Verifique os dados.');
         }
     }
 
@@ -78,9 +80,9 @@ class Tutores extends BaseController
         
         // TODO: Verificar se tem pets ou agendamentos antes de excluir (Soft delete seria ideal)
         if ($tutorModel->delete($id)) {
-            return redirect()->back()->with('success', 'Tutor removido com sucesso.');
+            return redirect()->back()->with('success', 'Tutor removido do sistema.');
         } else {
-            return redirect()->back()->with('error', 'Erro ao remover tutor.');
+            return redirect()->back()->with('error', 'Não foi possível remover o tutor.');
         }
     }
     public function ver($id)

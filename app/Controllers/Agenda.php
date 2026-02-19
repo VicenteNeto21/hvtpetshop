@@ -164,7 +164,7 @@ class Agenda extends BaseController
             } else {
                 $db->transCommit();
                 // Redireciona de volta para Agendamento com o Pet Pré-selecionado
-                return redirect()->to('agenda/novo?pet=' . $petId)->with('success', 'Cadastro realizado! Prossiga com o agendamento.');
+                return redirect()->to('agenda/novo?pet=' . $petId)->with('success', 'Tutor e pet cadastrados! Prossiga com o agendamento.');
             }
 
         } catch (\Exception $e) {
@@ -339,7 +339,7 @@ class Agenda extends BaseController
                              ->set(['status' => 'Finalizado'])
                              ->update();
             
-            return redirect()->to('agenda/ficha/' . $id)->with('success', 'Atendimento iniciado/concluído!');
+            return redirect()->to('agenda/ficha/' . $id)->with('success', 'Atendimento marcado como concluído!');
         }
         
         return redirect()->back()->with('error', 'Agendamento não encontrado.');
@@ -357,7 +357,7 @@ class Agenda extends BaseController
                              ->set(['status' => 'Cancelado'])
                              ->update();
             
-            return redirect()->back()->with('success', 'Atendimento cancelado por completo.');
+            return redirect()->back()->with('success', 'Agendamento cancelado.');
         }
         
         return redirect()->back()->with('error', 'Agendamento não encontrado.');
@@ -374,7 +374,7 @@ class Agenda extends BaseController
                              ->where('data_hora', $ag['data_hora'])
                              ->delete();
             
-            return redirect()->back()->with('success', 'Agendamento excluído com sucesso.');
+            return redirect()->back()->with('success', 'Agendamento removido do sistema.');
         }
         
         return redirect()->back()->with('error', 'Agendamento não encontrado.');
@@ -521,7 +521,7 @@ class Agenda extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Erro ao salvar ficha.');
             } else {
                 $db->transCommit();
-                return redirect()->to('agenda')->with('success', 'Ficha salva e atendimento finalizado!');
+                return redirect()->to('agenda')->with('success', 'Ficha do atendimento salva com sucesso!');
             }
 
         } catch (\Exception $e) {

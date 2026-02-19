@@ -40,19 +40,19 @@ if (session()->getFlashdata('errors') && is_array(session()->getFlashdata('error
             default   => 'info'
         };
     ?>
-    <div class="toast-item flex items-center gap-3 <?= $colors ?> text-white px-5 py-4 rounded-2xl shadow-2xl font-medium text-sm animate-enter"
+    <div class="toast-item flex items-center gap-3 <?= $colors ?> text-white px-5 py-4 rounded-2xl shadow-2xl font-medium text-sm animate-enter cursor-pointer"
          style="animation-delay: <?= $i * 0.1 ?>s"
          onclick="this.style.transition='opacity 0.3s,transform 0.3s';this.style.opacity='0';this.style.transform='translateX(20px)';setTimeout(()=>this.remove(),300)">
         <i data-lucide="<?= $icon ?>" class="w-5 h-5 shrink-0"></i>
         <span class="flex-1"><?= esc($toast['message']) ?></span>
-        <button class="shrink-0 opacity-60 hover:opacity-100 transition-opacity" onclick="event.stopPropagation();this.parentElement.style.transition='opacity 0.3s,transform 0.3s';this.parentElement.style.opacity='0';this.parentElement.style.transform='translateX(20px)';setTimeout(()=>this.parentElement.remove(),300)">
-            <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
     </div>
     <?php endforeach; ?>
 </div>
 
 <script>
+    // Inicializar ícones Lucide no toast
+    lucide.createIcons();
+    
     // Auto-dismiss toasts after 5 seconds
     setTimeout(() => {
         document.querySelectorAll('.toast-item').forEach((t, i) => {
