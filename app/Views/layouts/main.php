@@ -144,7 +144,7 @@
 
     <!-- Modal de Novidades da Versão -->
     <?php 
-    $versaoAtualAviso = '3.1.0-PRO';
+    $versaoAtualAviso = '3.4.0';
     $mostrarAviso = false;
     
     if (session()->get('usuario_id')) {
@@ -180,7 +180,7 @@
                     </div>
                     <div>
                         <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Novidades CereniaPet</h2>
-                        <p class="text-slate-500 font-medium">Versão 3.1.0 — O futuro do seu petshop hoje.</p>
+                        <p class="text-slate-500 font-medium">Versão 3.4.0 — O Módulo de Vacinas e muito mais.</p>
                     </div>
                 </div>
                 
@@ -192,25 +192,30 @@
                             Evolução do Sistema
                         </h3>
                         <div class="space-y-6 overflow-y-auto max-h-[350px] pr-2 custom-scrollbar">
-                            <!-- Bloco: Design & UX -->
+                            <!-- Bloco: Vacinas e Saúde -->
                             <div class="space-y-3">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Saúde e Imunização</p>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-brand-50 rounded-lg text-brand-600 shrink-0">
+                                        <i data-lucide="syringe" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Controle de Vacinas Inteligente</p>
+                                        <p class="text-xs text-slate-500">Gestão completa da carteirinha digital. O sistema recalcula sozinho a data da próxima dose e suporta séries e exclusões em cadeia.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bloco: Design & UX -->
+                            <div class="space-y-3 pt-2">
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Design & Experiência</p>
                                 <div class="flex items-start gap-3">
                                     <div class="p-2 bg-brand-50 rounded-lg text-brand-600 shrink-0">
                                         <i data-lucide="palette" class="w-4 h-4"></i>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-bold text-slate-800">Interface Minimalista v3.1</p>
-                                        <p class="text-xs text-slate-500">Novo visual Dark Sidebar, ícones flat e cores de alto contraste focados em produtividade.</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-start gap-3">
-                                    <div class="p-2 bg-brand-50 rounded-lg text-brand-600 shrink-0">
-                                        <i data-lucide="mouse-pointer-2" class="w-4 h-4"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-bold text-slate-800">Navegação Expressa</p>
-                                        <p class="text-xs text-slate-500">Transições suaves e carregamento instantâneo entre Dashboard e Agenda.</p>
+                                        <p class="text-sm font-bold text-slate-800">Interface "Banho de Loja"</p>
+                                        <p class="text-xs text-slate-500">Ajustes refinados nas tabelas (resolvido problema de quebra ao passar o mouse) e 100% de adequação ao "Purple Ban".</p>
                                     </div>
                                 </div>
                             </div>
@@ -281,11 +286,11 @@
                         <ul class="space-y-4">
                             <li class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                                    <i data-lucide="syringe" class="w-4 h-4"></i>
+                                    <i data-lucide="message-square" class="w-4 h-4"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-bold text-slate-700">Controle de Vacinas</p>
-                                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Desenvolvimento 60%</p>
+                                    <p class="text-sm font-bold text-slate-700">Lembretes por WhatsApp</p>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Planejamento</p>
                                 </div>
                             </li>
                             <li class="flex items-center gap-3">
