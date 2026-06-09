@@ -37,7 +37,13 @@ class Tutores extends BaseController
     public function salvar()
     {
         $rules = [
-            'nome' => 'required|min_length[3]',
+            'nome' => [
+                'rules' => 'required|min_length[3]',
+                'errors' => [
+                    'required' => 'O nome do tutor é obrigatório.',
+                    'min_length' => 'O nome deve ter no mínimo 3 caracteres.'
+                ]
+            ],
             'telefone' => 'permit_empty',
         ];
 

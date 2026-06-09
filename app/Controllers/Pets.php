@@ -14,7 +14,7 @@ class Pets extends BaseController
         $search = $this->request->getGet('search');
         
         // Base Query
-        $petModel->select('pets.*, tutores.nome as tutor_nome')
+        $petModel->select('pets.*, tutores.nome as tutor_nome, tutores.telefone as tutor_telefone')
                  ->join('tutores', 'tutores.id = pets.tutor_id');
 
         if ($search) {
@@ -40,7 +40,7 @@ class Pets extends BaseController
         $term = $this->request->getGet('term');
         $petModel = new PetModel();
         
-        $pets = $petModel->select('pets.*, tutores.nome as tutor_nome')
+        $pets = $petModel->select('pets.*, tutores.nome as tutor_nome, tutores.telefone as tutor_telefone')
                          ->join('tutores', 'tutores.id = pets.tutor_id')
                          ->groupStart()
                             ->like('pets.nome', $term)
@@ -72,9 +72,16 @@ class Pets extends BaseController
         // Histórico de Agendamentos
         $historico = $agendamentoModel->getHistoricoPorPet($id);
 
+        // Carteira de Vacinação
+        $vacinaModel = new \App\Models\VacinaModel();
+        $vacinas = $vacinaModel->where('pet_id', $id)
+                               ->orderBy('data_aplicacao', 'DESC')
+                               ->findAll();
+
         return view('pets/ver', [
             'pet' => $pet, 
-            'historico' => $historico
+            'historico' => $historico,
+            'vacinas' => $vacinas
         ]);
     }
     public function novo()
@@ -93,10 +100,31 @@ class Pets extends BaseController
     public function salvar()
     {
         $rules = [
-            'nome' => 'required|min_length[2]',
-            'tutor_id' => 'required|is_not_unique[tutores.id]',
-            'especie' => 'required',
-            'sexo' => 'required|in_list[M,F]',
+            'nome' => [
+                'rules' => 'required|min_length[2]',
+                'errors' => [
+                    'required' => 'O nome do pet é obrigatório.',
+                    'min_length' => 'O nome do pet deve ter no mínimo 2 caracteres.'
+                ]
+            ],
+            'tutor_id' => [
+                'rules' => 'required|is_not_unique[tutores.id]',
+                'errors' => [
+                    'required' => 'Você precisa selecionar um tutor.',
+                    'is_not_unique' => 'O tutor selecionado não existe no banco de dados.'
+                ]
+            ],
+            'especie' => [
+                'rules' => 'required',
+                'errors' => ['required' => 'A espécie do pet é obrigatória.']
+            ],
+            'sexo' => [
+                'rules' => 'required|in_list[M,F]',
+                'errors' => [
+                    'required' => 'O sexo do pet é obrigatório.',
+                    'in_list' => 'Sexo inválido.'
+                ]
+            ],
         ];
 
         if (!$this->validate($rules)) {

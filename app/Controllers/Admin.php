@@ -8,16 +8,6 @@ class Admin extends BaseController
 {
     public function index()
     {
-        if (!session()->get('usuario_id')) {
-            return redirect()->to('/login');
-        }
-
-        // Verificar se é admin
-        $userTipo = session()->get('usuario_tipo');
-        if ($userTipo !== 'admin') {
-            return redirect()->to('/dashboard')->with('error', 'Acesso negado.');
-        }
-
         $db = \Config\Database::connect();
         $agendamentoModel = new \App\Models\AgendamentoModel();
         $petModel = new \App\Models\PetModel();
@@ -132,17 +122,7 @@ class Admin extends BaseController
     public function relatorio()
     {
         try {
-            if (!session()->get('usuario_id')) {
-                return redirect()->to('/login');
-            }
-
-        // Verificar se é admin
-        $userTipo = session()->get('usuario_tipo');
-        if ($userTipo !== 'admin') {
-            return redirect()->to('/dashboard')->with('error', 'Acesso negado.');
-        }
-
-        $db = \Config\Database::connect();
+            $db = \Config\Database::connect();
         $agendamentoModel = new \App\Models\AgendamentoModel();
         $tutorModel = new \App\Models\TutorModel();
         $petModel = new \App\Models\PetModel();
@@ -206,15 +186,15 @@ class Admin extends BaseController
         // 3. NOVOS CADASTROS NO PERÍODO
         // =============================================
         try {
-            $novosTutores = $tutorModel->where("DATE(created_at) >=", $dataInicial)
-                ->where("DATE(created_at) <=", $dataFinal)
+            $novosTutores = $tutorModel->where("DATE(criado_em) >=", $dataInicial)
+                ->where("DATE(criado_em) <=", $dataFinal)
                 ->countAllResults();
 
-            $novosPets = $petModel->where("DATE(created_at) >=", $dataInicial)
-                ->where("DATE(created_at) <=", $dataFinal)
+            $novosPets = $petModel->where("DATE(criado_em) >=", $dataInicial)
+                ->where("DATE(criado_em) <=", $dataFinal)
                 ->countAllResults();
         } catch (\Exception $e) {
-            // Caso a coluna created_at não exista no banco (InfinityFree), não quebra o sistema
+            // Caso a coluna criado_em não exista no banco, não quebra o sistema
             $novosTutores = 0;
             $novosPets = 0;
         }
@@ -273,6 +253,21 @@ class Admin extends BaseController
             LIMIT 5
         ", [$dataInicial, $dataFinal])->getResultArray();
 
+        // Vacinas e Medicamentos (Prevenção)
+        $vacinasRow = $db->query("
+            SELECT COUNT(*) as total FROM vacinas
+            WHERE tipo_registro = 'vacina'
+            AND status = 'Aplicada'
+            AND data_aplicacao BETWEEN ? AND ?
+        ", [$dataInicial, $dataFinal])->getRow();
+        
+        $medicamentosRow = $db->query("
+            SELECT COUNT(*) as total FROM vacinas
+            WHERE tipo_registro = 'medicamento'
+            AND status = 'Aplicada'
+            AND data_aplicacao BETWEEN ? AND ?
+        ", [$dataInicial, $dataFinal])->getRow();
+
             return view('admin/relatorio', [
                 'dataInicial' => $dataInicial,
                 'dataFinal' => $dataFinal,
@@ -301,7 +296,11 @@ class Admin extends BaseController
                     'variacao_faturamento' => $variacaoFaturamento
                 ],
                 'top_tutores' => $topTutores,
-                'top_servicos' => $topServicos
+                'top_servicos' => $topServicos,
+                'prevencao' => [
+                    'vacinas' => $vacinasRow ? $vacinasRow->total : 0,
+                    'medicamentos' => $medicamentosRow ? $medicamentosRow->total : 0
+                ]
             ]);
         } catch (\Throwable $e) {
             // Log do erro silencioso para o desenvolvedor (opcional)

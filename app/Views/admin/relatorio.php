@@ -76,11 +76,26 @@
         .footer { margin-top: 30px; padding-top: 15px; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
         .footer strong { color: #64748b; }
         
-        .no-print { text-align: center; margin: 20px auto; }
-        .btn-print { background: #0ea5e9; color: white; border: none; padding: 12px 32px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
+        .no-print { text-align: center; margin: 20px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 800px; display: flex; justify-content: center; gap: 15px; }
+        .btn { padding: 12px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; text-decoration: none; border: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-print { background: #0ea5e9; color: white; }
         .btn-print:hover { background: #0284c7; }
-        .btn-voltar { background: #64748b; color: white; border: none; padding: 12px 32px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; text-decoration: none; margin-left: 10px; }
+        .btn-voltar { background: #f1f5f9; color: #475569; }
+        .btn-voltar:hover { background: #e2e8f0; }
         
+        @media screen and (max-width: 768px) {
+            .page { width: 100%; margin: 10px auto; padding: 15px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .periodo { width: 100%; text-align: left; }
+            .kpis { grid-template-columns: 1fr !important; gap: 15px; }
+            .status-grid { grid-template-columns: 1fr !important; gap: 15px; }
+            .mini-cards { grid-template-columns: 1fr; }
+            .footer { flex-direction: column; gap: 10px; text-align: center; }
+            table { display: block; overflow-x: auto; white-space: nowrap; }
+            .no-print { flex-direction: column; padding: 15px; gap: 10px; }
+            .btn { width: 100%; justify-content: center; margin-left: 0 !important; }
+        }
+
         @media print {
             body { background: white; }
             .page { margin: 0; box-shadow: none; width: 100%; padding: 12mm; }
@@ -95,8 +110,13 @@
 <body>
 
 <div class="no-print">
-    <button class="btn-print" onclick="window.print()">🖨️ Imprimir Relatório</button>
-    <a href="<?= base_url('admin') ?>" class="btn-voltar">← Voltar</a>
+    <button class="btn btn-print" onclick="window.print()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Imprimir Relatório
+    </button>
+    <a href="<?= base_url('admin') ?>" class="btn btn-voltar">
+        Voltar para o Dashboard
+    </a>
 </div>
 
 <div class="page">
@@ -113,25 +133,44 @@
     </div>
     
     <!-- KPIs Principais -->
-    <div class="kpis" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="kpis" style="grid-template-columns: repeat(2, 1fr);">
         <div class="kpi">
             <label>Total Atendimentos</label>
-            <span class="valor"><?= $stats['total'] ?></span>
-            <?php if($comparativo['variacao_atendimentos'] != 0): ?>
-                <span class="variacao <?= $comparativo['variacao_atendimentos'] > 0 ? 'positiva' : 'negativa' ?>">
-                    <?= $comparativo['variacao_atendimentos'] > 0 ? '↑' : '↓' ?> <?= number_format(abs($comparativo['variacao_atendimentos']), 1) ?>%
-                </span>
-            <?php endif; ?>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="valor"><?= $stats['total'] ?></span>
+                <?php if($comparativo['variacao_atendimentos'] != 0): ?>
+                    <span class="variacao <?= $comparativo['variacao_atendimentos'] > 0 ? 'positiva' : 'negativa' ?>" style="margin-left: 0;">
+                        <?= $comparativo['variacao_atendimentos'] > 0 ? '↑' : '↓' ?> <?= number_format(abs($comparativo['variacao_atendimentos']), 1) ?>%
+                    </span>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="kpi" style="background: #f0fdf4; border-color: #bbf7d0;">
+            <label style="color: #166534;">Faturamento</label>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <div>
+                    <span class="unidade" style="color: #166534; margin-left: 0; margin-right: 2px; font-weight: 600;">R$</span><span class="valor" style="color: #15803d;"><?= number_format($stats['faturamento'], 2, ',', '.') ?></span>
+                </div>
+                <?php if(isset($comparativo['variacao_faturamento']) && $comparativo['variacao_faturamento'] != 0): ?>
+                    <span class="variacao <?= $comparativo['variacao_faturamento'] > 0 ? 'positiva' : 'negativa' ?>" style="margin-left: 0;">
+                        <?= $comparativo['variacao_faturamento'] > 0 ? '↑' : '↓' ?> <?= number_format(abs($comparativo['variacao_faturamento']), 1) ?>%
+                    </span>
+                <?php endif; ?>
+            </div>
         </div>
         <div class="kpi destaque">
             <label>Taxa Conversão</label>
-            <span class="valor"><?= number_format($stats['conversao'], 1, ',', '.') ?></span>
-            <span class="unidade">%</span>
+            <div style="display: flex; align-items: baseline; gap: 2px;">
+                <span class="valor"><?= number_format($stats['conversao'], 1, ',', '.') ?></span>
+                <span class="unidade" style="margin-left: 0;">%</span>
+            </div>
         </div>
         <div class="kpi verde">
             <label>Taxa de Retorno</label>
-            <span class="valor"><?= number_format($retorno['taxa'], 1, ',', '.') ?></span>
-            <span class="unidade">%</span>
+            <div style="display: flex; align-items: baseline; gap: 2px;">
+                <span class="valor"><?= number_format($retorno['taxa'], 1, ',', '.') ?></span>
+                <span class="unidade" style="margin-left: 0;">%</span>
+            </div>
         </div>
     </div>
     
@@ -150,6 +189,21 @@
             <div class="status-item pendente">
                 <div class="numero"><?= $stats['pendentes'] ?></div>
                 <div class="rotulo">Pendentes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Saúde e Prevenção -->
+    <div class="section">
+        <h2 class="section-title">Saúde e Prevenção (Mês Atual)</h2>
+        <div class="status-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="status-item" style="background: #e0f2fe; border: 1px solid #bae6fd;">
+                <div class="numero" style="color: #0284c7;"><?= $prevencao['vacinas'] ?></div>
+                <div class="rotulo" style="color: #0369a1;">Vacinas Aplicadas</div>
+            </div>
+            <div class="status-item" style="background: #fdf4ff; border: 1px solid #fae8ff;">
+                <div class="numero" style="color: #c026d3;"><?= $prevencao['medicamentos'] ?></div>
+                <div class="rotulo" style="color: #a21caf;">Medicamentos Entregues</div>
             </div>
         </div>
     </div>
@@ -193,6 +247,7 @@
                     <th style="width: 40px">#</th>
                     <th>Serviço</th>
                     <th>Execuções</th>
+                    <th>Faturamento</th>
                 </tr>
             </thead>
             <tbody>
@@ -201,6 +256,7 @@
                     <td><span class="rank"><?= $i + 1 ?></span></td>
                     <td><?= $s['nome'] ?></td>
                     <td><?= $s['total_realizados'] ?></td>
+                    <td>R$ <?= number_format($s['faturamento_servico'] ?? 0, 2, ',', '.') ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -241,20 +297,29 @@
         <p style="font-size: 10px; color: #64748b; margin-bottom: 10px;">
             Comparando com: <?= date('d/m', strtotime(explode(' a ', $comparativo['periodo_anterior'])[0])) ?> a <?= date('d/m/Y', strtotime(explode(' a ', $comparativo['periodo_anterior'])[1])) ?>
         </p>
-        <div class="status-grid">
+        <div class="status-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <!-- Atendimentos -->
             <div class="status-item" style="background: #f1f5f9; border-color: #e2e8f0;">
                 <div class="numero" style="color: #0f172a;"><?= $comparativo['atendimentos_anterior'] ?></div>
-                <div class="rotulo">Atendimentos Anterior</div>
-            </div>
-            <div class="status-item finalizado">
-                <div class="numero"><?= $stats['finalizados'] ?></div>
-                <div class="rotulo">Atendimentos Atual</div>
+                <div class="rotulo">Atend. Ant.</div>
             </div>
             <div class="status-item" style="background: <?= $comparativo['variacao_atendimentos'] >= 0 ? '#d1fae5' : '#fee2e2' ?>; border-color: <?= $comparativo['variacao_atendimentos'] >= 0 ? '#a7f3d0' : '#fecaca' ?>;">
                 <div class="numero" style="color: <?= $comparativo['variacao_atendimentos'] >= 0 ? '#059669' : '#dc2626' ?>;">
                     <?= $comparativo['variacao_atendimentos'] >= 0 ? '+' : '' ?><?= number_format($comparativo['variacao_atendimentos'], 1) ?>%
                 </div>
-                <div class="rotulo">Variação</div>
+                <div class="rotulo">Variação Atendimentos</div>
+            </div>
+
+            <!-- Faturamento -->
+            <div class="status-item" style="background: #f1f5f9; border-color: #e2e8f0;">
+                <div class="numero" style="font-size: 20px; color: #0f172a; margin-top: 6px;">R$ <?= number_format($comparativo['faturamento_anterior'], 2, ',', '.') ?></div>
+                <div class="rotulo">Fatur. Ant.</div>
+            </div>
+            <div class="status-item" style="background: <?= $comparativo['variacao_faturamento'] >= 0 ? '#d1fae5' : '#fee2e2' ?>; border-color: <?= $comparativo['variacao_faturamento'] >= 0 ? '#a7f3d0' : '#fecaca' ?>;">
+                <div class="numero" style="color: <?= $comparativo['variacao_faturamento'] >= 0 ? '#059669' : '#dc2626' ?>;">
+                    <?= $comparativo['variacao_faturamento'] >= 0 ? '+' : '' ?><?= number_format($comparativo['variacao_faturamento'], 1) ?>%
+                </div>
+                <div class="rotulo">Variação Faturamento</div>
             </div>
         </div>
     </div>

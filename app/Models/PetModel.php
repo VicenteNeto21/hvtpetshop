@@ -10,7 +10,8 @@ class PetModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
+    protected $deletedField     = 'deleted_at';
     protected $allowedFields    = ['nome', 'tutor_id', 'especie', 'raca', 'idade', 'sexo', 'nascimento', 'peso', 'cor', 'observacoes'];
     
     // Dates

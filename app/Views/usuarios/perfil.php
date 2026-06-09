@@ -36,7 +36,7 @@
                 <h2 class="text-xl font-bold text-slate-800"><?= $user['nome'] ?></h2>
                 <p class="text-slate-500 text-sm mb-4"><?= $user['email'] ?></p>
                 
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider <?= $user['tipo'] == 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-brand-100 text-brand-700' ?>">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider <?= $user['tipo'] == 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-brand-100 text-brand-700' ?>">
                     <i data-lucide="<?= $user['tipo'] == 'admin' ? 'shield' : 'user' ?>" class="w-3 h-3"></i>
                     <?= $user['tipo'] == 'admin' ? 'Administrador' : 'Funcionário' ?>
                 </div>

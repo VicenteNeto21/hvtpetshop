@@ -43,11 +43,11 @@
                         <?php if(empty($tutores)): ?>
                             <tr>
                                 <td colspan="3" class="p-12 text-center text-slate-400">
-                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-slate-200">
-                                        <i data-lucide="user-x" class="w-8 h-8 text-slate-300"></i>
+                                    <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100">
+                                        <i data-lucide="users" class="w-8 h-8 text-brand-400"></i>
                                     </div>
-                                    <h3 class="text-lg font-medium text-slate-900">Nenhum tutor encontrado</h3>
-                                    <p class="text-slate-500">Tente buscar por outro termo ou cadastre um novo.</p>
+                                    <h3 class="text-lg font-bold text-slate-900">Nenhum tutor encontrado</h3>
+                                    <p class="text-slate-500">Tente buscar por outro termo ou cadastre um novo tutor.</p>
                                 </td>
                             </tr>
                         <?php else: ?>
@@ -55,8 +55,8 @@
                                 <tr class="hover:bg-slate-50/80 transition-colors group">
                                     <td class="p-5">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-sm">
-                                                <?= substr($tutor['nome'], 0, 2) ?>
+                                            <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 shadow-sm shrink-0">
+                                                <i data-lucide="user" class="w-5 h-5"></i>
                                             </div>
                                             <div>
                                                 <h3 class="font-bold text-slate-800">
@@ -64,14 +64,23 @@
                                                         <?= $tutor['nome'] ?>
                                                     </a>
                                                 </h3>
-                                                <div class="flex items-center gap-2 text-sm text-slate-500 mt-0.5">
-                                                    <a href="https://wa.me/55<?= preg_replace('/\D/', '', $tutor['telefone']) ?>" target="_blank" class="hover:text-green-600 flex items-center gap-1 transition-colors">
-                                                        <i data-lucide="phone" class="w-3 h-3"></i>
-                                                        <?= $tutor['telefone'] ?>
-                                                    </a>
+                                                <div class="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                                                    <?php if(!empty($tutor['telefone'])): ?>
+                                                        <?php 
+                                                            $numZap = preg_replace('/[^0-9]/', '', $tutor['telefone']);
+                                                            if (strlen($numZap) >= 10):
+                                                        ?>
+                                                            <a href="https://wa.me/55<?= $numZap ?>" target="_blank" class="flex items-center gap-1 bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs border border-green-100 hover:bg-green-100 transition-colors font-medium">
+                                                                <i data-lucide="message-circle" class="w-3 h-3"></i> <?= $tutor['telefone'] ?>
+                                                            </a>
+                                                        <?php else: ?>
+                                                            <span class="flex items-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> <?= $tutor['telefone'] ?></span>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
+                                                    
                                                     <?php if($tutor['email']): ?>
                                                         <span class="text-slate-300">•</span>
-                                                        <span class="truncate max-w-[150px]" title="<?= $tutor['email'] ?>"><?= $tutor['email'] ?></span>
+                                                        <span class="truncate max-w-[150px] flex items-center gap-1" title="<?= $tutor['email'] ?>"><i data-lucide="mail" class="w-3 h-3 text-slate-400"></i> <?= $tutor['email'] ?></span>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -79,12 +88,12 @@
                                     </td>
                                     <td class="p-5 text-sm text-slate-600">
                                         <?php if($tutor['cidade']): ?>
-                                            <div class="flex items-center gap-1">
-                                                <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+                                            <div class="flex items-center gap-1.5 font-medium">
+                                                <i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i>
                                                 <?= $tutor['cidade'] ?> <?= $tutor['uf'] ? '- ' . $tutor['uf'] : '' ?>
                                             </div>
                                             <?php if($tutor['bairro']): ?>
-                                                <div class="text-xs text-slate-400 ml-4 mt-0.5"><?= $tutor['bairro'] ?></div>
+                                                <div class="text-xs text-slate-400 ml-5 mt-0.5"><?= $tutor['bairro'] ?></div>
                                             <?php endif; ?>
                                         <?php else: ?>
                                             <span class="text-slate-400 italic">Não informado</span>
@@ -92,14 +101,14 @@
                                     </td>
                                     <td class="p-5">
                                         <div class="flex justify-end gap-2 transition-opacity">
-                                            <a href="<?= base_url('tutores/ver/' . $tutor['id']) ?>" class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Ver Detalhes">
+                                            <a href="<?= base_url('tutores/ver/' . $tutor['id']) ?>" class="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors tooltip-action" title="Ver Detalhes">
                                                 <i data-lucide="eye" class="w-5 h-5"></i>
                                             </a>
-                                            <a href="<?= base_url('tutores/editar/' . $tutor['id']) ?>" class="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors" title="Editar">
+                                            <a href="<?= base_url('tutores/editar/' . $tutor['id']) ?>" class="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-brand-600 hover:bg-brand-50 hover:border-brand-200 transition-colors tooltip-action" title="Editar">
                                                 <i data-lucide="edit-2" class="w-5 h-5"></i>
                                             </a>
                                             <button onclick="openConfirmModal('<?= base_url('tutores/excluir/' . $tutor['id']) ?>', 'Excluir Tutor', 'Tem certeza que deseja excluir <?= addslashes($tutor['nome']) ?>? Isso pode afetar os pets vinculados.', 'danger', 'trash-2')" 
-                                                class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Excluir">
+                                                class="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors tooltip-action" title="Excluir">
                                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                                             </button>
                                         </div>
@@ -115,59 +124,69 @@
             <div class="sm:hidden p-4 space-y-3">
                 <?php if(empty($tutores)): ?>
                     <div class="p-8 text-center text-slate-400">
-                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-slate-200">
-                            <i data-lucide="user-x" class="w-8 h-8 text-slate-300"></i>
+                        <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100">
+                            <i data-lucide="users" class="w-8 h-8 text-brand-400"></i>
                         </div>
-                        <h3 class="text-lg font-medium text-slate-900">Nenhum tutor encontrado</h3>
+                        <h3 class="text-lg font-bold text-slate-900">Nenhum tutor encontrado</h3>
                         <p class="text-slate-500">Tente buscar por outro termo.</p>
                     </div>
                 <?php else: ?>
                     <?php foreach($tutores as $tutor): ?>
-                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
                             <!-- Tutor Info -->
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-base shrink-0">
-                                    <?= substr($tutor['nome'], 0, 2) ?>
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shadow-sm shrink-0 border border-slate-200">
+                                    <i data-lucide="user" class="w-6 h-6"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h3 class="font-bold text-slate-800 text-lg truncate"><?= $tutor['nome'] ?></h3>
+                                    <?php if($tutor['email']): ?>
+                                        <div class="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                                            <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i>
+                                            <span class="truncate"><?= $tutor['email'] ?></span>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             
                             <!-- Contact -->
-                            <div class="space-y-1 mb-3 pb-3 border-b border-slate-200">
-                                <a href="https://wa.me/55<?= preg_replace('/\D/', '', $tutor['telefone']) ?>" target="_blank" class="flex items-center gap-2 text-sm text-slate-600 hover:text-green-600 transition-colors">
-                                    <i data-lucide="phone" class="w-4 h-4 text-green-500"></i>
-                                    <?= $tutor['telefone'] ?>
-                                </a>
-                                <?php if($tutor['email']): ?>
-                                    <div class="flex items-center gap-2 text-sm text-slate-500">
-                                        <i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>
-                                        <span class="truncate"><?= $tutor['email'] ?></span>
-                                    </div>
-                                <?php endif; ?>
+                            <div class="flex items-center justify-between gap-2 mb-4 pb-4 border-b border-slate-100">
                                 <?php if($tutor['cidade']): ?>
-                                    <div class="flex items-center gap-2 text-sm text-slate-500">
+                                    <div class="flex items-center gap-2 text-sm text-slate-600 font-medium">
                                         <i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i>
                                         <?= $tutor['cidade'] ?><?= $tutor['uf'] ? ' - ' . $tutor['uf'] : '' ?>
-                                        <?= $tutor['bairro'] ? ', ' . $tutor['bairro'] : '' ?>
                                     </div>
+                                <?php else: ?>
+                                    <div class="text-sm text-slate-400 italic">Sem endereço</div>
+                                <?php endif; ?>
+                                
+                                <?php if(!empty($tutor['telefone'])): ?>
+                                    <?php 
+                                        $numZap = preg_replace('/[^0-9]/', '', $tutor['telefone']);
+                                        if (strlen($numZap) >= 10):
+                                    ?>
+                                        <a href="https://wa.me/55<?= $numZap ?>" target="_blank" class="flex items-center gap-1.5 bg-green-50 text-green-700 px-2 py-1 rounded-md text-xs font-bold border border-green-100 hover:bg-green-100 transition-colors">
+                                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Zap
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="flex items-center gap-1.5 text-sm text-slate-500 bg-slate-50 px-2 py-1 border border-slate-100 rounded-md">
+                                            <i data-lucide="phone" class="w-3.5 h-3.5"></i> <?= $tutor['telefone'] ?>
+                                        </span>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                             
                             <!-- Actions -->
                             <div class="flex gap-2">
-                                <a href="<?= base_url('tutores/ver/' . $tutor['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-blue-100 text-blue-600 text-xs font-medium hover:bg-blue-200 transition-colors">
-                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                                    Ver
+                                <a href="<?= base_url('tutores/ver/' . $tutor['id']) ?>" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors font-medium">
+                                    <i data-lucide="eye" class="w-4 h-4 text-slate-400"></i> Ver
                                 </a>
-                                <a href="<?= base_url('tutores/editar/' . $tutor['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-100 text-brand-600 text-xs font-medium hover:bg-brand-200 transition-colors">
-                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
-                                    Editar
+                                <a href="<?= base_url('tutores/editar/' . $tutor['id']) ?>" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors font-medium">
+                                    <i data-lucide="edit-2" class="w-4 h-4 text-slate-400"></i> Editar
                                 </a>
                                 <button onclick="openConfirmModal('<?= base_url('tutores/excluir/' . $tutor['id']) ?>', 'Excluir Tutor', 'Tem certeza que deseja excluir <?= addslashes($tutor['nome']) ?>?', 'danger', 'trash-2')"
-                                        class="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-red-100 text-red-600 text-xs font-medium hover:bg-red-200 transition-colors">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        class="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors font-medium">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
                         </div>

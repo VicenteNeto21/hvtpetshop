@@ -126,11 +126,10 @@ _modules/*
 /phpunit*.xml
 
 #-------------------------
-# Projeto CereniaPet
+# Custom Project Excludes
 #-------------------------
-*.sql
-check_db.php
-composer.phar
-_legacy_backup/
-.env.bak
-.env.example
+legacy_history/
+Backup/
+htdocs/
+assets/img/
+.agents/agent/*

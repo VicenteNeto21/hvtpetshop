@@ -22,7 +22,7 @@ class Usuarios extends BaseController
         // Verificar se é admin
         $usuarioLogado = $this->usuarioModel->find(session()->get('usuario_id'));
         if ($usuarioLogado['tipo'] !== 'admin') {
-            return redirect()->to('/dashboard')->with('error', 'Acesso negado.');
+            return redirect()->to('/inicio')->with('error', 'Acesso negado.');
         }
 
         $status = $this->request->getGet('status') ?? 'todos';

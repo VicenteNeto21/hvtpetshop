@@ -12,7 +12,7 @@ class Utils extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Não autorizado'])->setStatusCode(401);
         }
 
-        $versaoAtual = '3.1.0-PRO';
+        $versaoAtual = $this->request->getPost('versao') ?? '3.4.0';
         
         $usuarioModel = new \App\Models\UsuarioModel();
         $usuarioModel->update(session()->get('usuario_id'), [
