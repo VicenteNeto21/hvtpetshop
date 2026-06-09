@@ -23,6 +23,11 @@
             <span class="font-medium sidebar-text">Início</span>
         </a>
 
+        <a href="<?= base_url('pdv') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= strpos(uri_string(), 'pdv') !== false ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="PDV">
+            <i data-lucide="shopping-cart" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="font-medium sidebar-text">Frente de Caixa (PDV)</span>
+        </a>
+
         <a href="<?= base_url('agenda') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'agenda' ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Agenda">
             <i data-lucide="calendar" class="w-5 h-5 flex-shrink-0"></i>
             <span class="font-medium sidebar-text">Agenda</span>
@@ -31,6 +36,11 @@
         <div class="pt-4">
             <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 sidebar-text">Gestão</p>
         </div>
+
+        <a href="<?= base_url('produtos') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= strpos(uri_string(), 'produtos') !== false ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Estoque / Produtos">
+            <i data-lucide="package" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="font-medium sidebar-text">Estoque / Produtos</span>
+        </a>
 
         <a href="<?= base_url('pets') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= strpos(uri_string(), 'pets') !== false ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Pets">
             <i data-lucide="dog" class="w-5 h-5 flex-shrink-0"></i>

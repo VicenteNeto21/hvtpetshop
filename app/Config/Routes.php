@@ -66,6 +66,19 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->post('/servicos/salvar', 'Servicos::salvar');
     $routes->get('/servicos/editar/(:num)', 'Servicos::editar/$1');
     $routes->get('/servicos/excluir/(:num)', 'Servicos::excluir/$1');
+
+    // Produtos (Estoque)
+    $routes->get('/produtos', 'Produtos::index');
+    $routes->get('/produtos/cadastrar', 'Produtos::cadastrar');
+    $routes->post('/produtos/salvar', 'Produtos::salvar');
+    $routes->get('/produtos/editar/(:num)', 'Produtos::editar/$1');
+    $routes->get('/produtos/excluir/(:num)', 'Produtos::excluir/$1');
+    
+    // PDV (Ponto de Venda)
+    $routes->get('/pdv', 'Pdv::index');
+    $routes->get('/pdv/buscar_item', 'Pdv::buscar_item');
+    $routes->post('/pdv/finalizar', 'Pdv::finalizar');
+    $routes->get('/pdv/comprovante/(:num)', 'Pdv::comprovante/$1'); 
 });
 
 // Rotas Administrativas (Admin)
@@ -73,9 +86,13 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('/admin', 'Admin::index'); 
     $routes->get('/admin/relatorio', 'Admin::relatorio');
     
-    $routes->get('/usuarios', 'Usuarios::index');
-    $routes->post('/usuarios/aprovar/(:num)', 'Usuarios::aprovar/$1');
-    $routes->post('/usuarios/rejeitar/(:num)', 'Usuarios::rejeitar/$1');
-    $routes->post('/usuarios/excluir/(:num)', 'Usuarios::excluir/$1');
-    $routes->post('/usuarios/alternar-tipo/(:num)', 'Usuarios::alternarTipo/$1'); 
+    // Usuários (Admin)
+    $routes->get('usuarios', 'Usuarios::index');
+    $routes->get('usuarios/cadastrar', 'Usuarios::cadastrar');
+    $routes->post('usuarios/salvar', 'Usuarios::salvar');
+    $routes->get('usuarios/editar/(:num)', 'Usuarios::editar/$1');
+    $routes->get('usuarios/excluir/(:num)', 'Usuarios::excluir/$1');
+    $routes->post('usuarios/aprovar/(:num)', 'Usuarios::aprovar/$1');
+    $routes->post('usuarios/rejeitar/(:num)', 'Usuarios::rejeitar/$1');
+    $routes->post('usuarios/alternar-tipo/(:num)', 'Usuarios::alternarTipo/$1'); 
 });
