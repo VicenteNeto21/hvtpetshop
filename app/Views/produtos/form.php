@@ -6,15 +6,16 @@
 
 <?= $this->section('content') ?>
 
-<div class="mb-8 flex items-center gap-4">
-    <a href="<?= base_url('produtos') ?>" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
-        <i data-lucide="arrow-left" class="w-5 h-5"></i>
-    </a>
-    <div>
-        <h1 class="text-2xl font-bold text-slate-800 tracking-tight"><?= isset($produto) ? 'Editar Produto' : 'Cadastrar Produto' ?></h1>
-        <p class="text-sm text-slate-500 mt-1"><?= isset($produto) ? 'Atualize as informações do estoque.' : 'Preencha os dados do novo produto para vendas no PDV.' ?></p>
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8 flex items-center gap-4">
+        <a href="<?= base_url('produtos') ?>" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight"><?= isset($produto) ? 'Editar Produto' : 'Cadastrar Produto' ?></h1>
+            <p class="text-sm text-slate-500 mt-1"><?= isset($produto) ? 'Atualize as informações do estoque.' : 'Preencha os dados do novo produto para vendas no PDV.' ?></p>
+        </div>
     </div>
-</div>
 
 <?php if(session()->get('errors')): ?>
     <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-700">
@@ -145,6 +146,7 @@
         </button>
     </div>
 </form>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>

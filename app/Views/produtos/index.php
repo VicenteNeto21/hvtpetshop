@@ -6,6 +6,7 @@ Estoque e Produtos
 
 <?= $this->section('content') ?>
 
+<div class="max-w-7xl mx-auto">
 <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
         <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Estoque de Produtos</h1>
@@ -128,5 +129,6 @@ function confirmarExclusao(id) {
     }
 }
 </script>
+</div>
 
 <?= $this->endSection() ?>
