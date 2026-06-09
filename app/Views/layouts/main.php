@@ -336,15 +336,20 @@
         
         // Função para fechar modal de novidades
         function fecharAvisoNovidades() {
-            fetch('<?= base_url('utils/marcar-aviso-visto') ?>', { method: 'POST' })
+            const formData = new FormData();
+            formData.append('versao', '<?= $versaoAtualAviso ?>');
+
+            fetch('<?= base_url('utils/marcar-aviso-visto') ?>', { 
+                method: 'POST',
+                body: formData
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        document.getElementById('aviso-funcionalidades').remove();
+                        document.getElementById('aviso-funcionalidades')?.remove();
                     }
                 })
                 .catch(() => {
-                    // Remove mesmo em caso de erro
                     document.getElementById('aviso-funcionalidades')?.remove();
                 });
         }
