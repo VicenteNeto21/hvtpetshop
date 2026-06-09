@@ -124,3 +124,10 @@ _modules/*
 
 /results/
 /phpunit*.xml
+
+#-------------------------
+# Custom Project Excludes
+#-------------------------
+Backup/
+htdocs/
+assets/img/
