@@ -186,7 +186,7 @@
                                         <?php endif; ?>
                                         
                                         <div class="mt-3 flex gap-2">
-                                            <a href="<?= base_url('agenda/concluir/' . $item['id']) ?>" class="text-xs font-medium text-slate-400 hover:text-brand-600 flex items-center gap-1 transition-colors">
+                                            <a href="<?= base_url('agenda/ficha/' . $item['id']) ?>" class="text-xs font-medium text-slate-400 hover:text-brand-600 flex items-center gap-1 transition-colors">
                                                 <i data-lucide="file-text" class="w-3 h-3"></i>
                                                 Ver Detalhes
                                             </a>

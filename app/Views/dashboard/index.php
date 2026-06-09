@@ -168,7 +168,7 @@
                                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                                     </button>
                                                 <?php elseif($ag['status'] == 'Finalizado'): ?>
-                                                    <a href="<?= base_url('agenda/concluir/' . $ag['id']) ?>" 
+                                                    <a href="<?= base_url('agenda/ficha/' . $ag['id']) ?>" 
                                                        class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" 
                                                        title="Ver Ficha">
                                                         <i data-lucide="file-text" class="w-4 h-4"></i>
@@ -239,7 +239,7 @@
                                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                         </button>
                                     <?php elseif($ag['status'] == 'Finalizado'): ?>
-                                        <a href="<?= base_url('agenda/concluir/' . $ag['id']) ?>" 
+                                        <a href="<?= base_url('agenda/ficha/' . $ag['id']) ?>" 
                                            class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
                                             <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
                                             Ver Ficha
@@ -454,12 +454,12 @@
                         `;
                     } else if (ag.status === 'Finalizado') {
                         acoes = `
-                            <a href="${base_url}/agenda/concluir/${ag.id}" class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" title="Ver Ficha">
+                            <a href="${base_url}/agenda/ficha/${ag.id}" class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" title="Ver Ficha">
                                 <i data-lucide="file-text" class="w-4 h-4"></i>
                             </a>
                         `;
                         acoesMobile = `
-                            <a href="${base_url}/agenda/concluir/${ag.id}" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
+                            <a href="${base_url}/agenda/ficha/${ag.id}" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
                                 <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Ver Ficha
                             </a>
                         `;

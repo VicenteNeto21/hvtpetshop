@@ -145,9 +145,9 @@
                                     <i data-lucide="edit-2" class="w-5 h-5"></i>
                                 </a>
                                 
-                                <!-- Botão Concluir (Leva para Ficha) -->
-                                <a href="<?= base_url('agenda/concluir/' . $item['id']) ?>" 
-                                   class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-brand-50 hover:text-brand-600 transition-colors" title="Ficha / Concluir">
+                                <!-- Botão Ficha (não finaliza automaticamente) -->
+                                <a href="<?= base_url('agenda/ficha/' . $item['id']) ?>" 
+                                   class="flex-1 md:flex-none p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-brand-50 hover:text-brand-600 transition-colors" title="Ficha">
                                     <i data-lucide="clipboard-list" class="w-5 h-5 mx-auto"></i>
                                 </a>
 

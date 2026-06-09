@@ -124,13 +124,3 @@ _modules/*
 
 /results/
 /phpunit*.xml
-
-#-------------------------
-# Projeto CereniaPet
-#-------------------------
-*.sql
-check_db.php
-composer.phar
-_legacy_backup/
-.env.bak
-.env.example
