@@ -128,7 +128,8 @@ _modules/*
 #-------------------------
 # Custom Project Excludes
 #-------------------------
+legacy_history/
 Backup/
 htdocs/
 assets/img/
-.agents/agent/
+.agents/agent/*
