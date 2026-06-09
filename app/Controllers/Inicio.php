@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 
-class Dashboard extends BaseController
+class Inicio extends BaseController
 {
     public function index()
     {
@@ -76,10 +76,15 @@ class Dashboard extends BaseController
             ->limit(5)
             ->findAll();
 
-        return view('dashboard/index', [
+        // Vacinas Vencendo (Próximos 15 dias ou já vencidas)
+        $vacinaModel = new \App\Models\VacinaModel();
+        $vacinasVencendo = $vacinaModel->getVacinasVencendo(15);
+
+        return view('inicio/index', [
             'stats' => $stats,
             'agenda' => $agenda,
             'aniversariantes' => $aniversariantes,
+            'vacinasVencendo' => $vacinasVencendo,
             'proximosAgendamentos' => $proximosAgendamentos,
             'dataSelecionada' => $dataSelecionada,
             'statusSelecionado' => $status,

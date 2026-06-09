@@ -103,11 +103,17 @@
     <?= $this->renderSection('styles') ?>
 </head>
 <body class="bg-[#f1f5f9] text-slate-800 antialiased min-h-screen">
+    <!-- Evitar piscar menu na troca de tela -->
+    <script>
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.body.classList.add('sidebar-collapsed');
+        }
+    </script>
 
     <?php if (session()->get('isLoggedIn')): ?>
         <!-- Mobile Header com Hamburger -->
         <header class="md:hidden fixed top-0 left-0 right-0 z-30 bg-slate-900 px-4 py-3 flex items-center justify-between shadow-lg">
-            <a href="<?= base_url('dashboard') ?>" class="flex items-center gap-2">
+            <a href="<?= base_url('inicio') ?>" class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white">
                     <i data-lucide="cat" class="w-4 h-4"></i>
                 </div>

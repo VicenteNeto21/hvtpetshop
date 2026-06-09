@@ -18,11 +18,11 @@ class Agenda extends BaseController
         $agendamentoModel = new AgendamentoModel();
 
         // Usando query agrupada para evitar duplicidade de serviços por linha
-        $query = $agendamentoModel->select('MIN(agendamentos.id) as id, pets.nome as pet_nome, pets.especie as pet_especie, tutores.nome as tutor_nome, GROUP_CONCAT(servicos.nome SEPARATOR ", ") as servico_nome, agendamentos.data_hora, agendamentos.status, agendamentos.transporte, agendamentos.observacoes')
+        $query = $agendamentoModel->select('MIN(agendamentos.id) as id, pets.nome as pet_nome, pets.especie as pet_especie, tutores.nome as tutor_nome, tutores.telefone as tutor_telefone, GROUP_CONCAT(servicos.nome SEPARATOR ", ") as servico_nome, agendamentos.data_hora, agendamentos.status, agendamentos.transporte, agendamentos.observacoes')
                     ->join('pets', 'pets.id = agendamentos.pet_id')
                     ->join('tutores', 'tutores.id = pets.tutor_id')
                     ->join('servicos', 'servicos.id = agendamentos.servico_id')
-                    ->groupBy('agendamentos.pet_id, agendamentos.data_hora, pets.nome, pets.especie, tutores.nome, agendamentos.status, agendamentos.transporte, agendamentos.observacoes');
+                    ->groupBy('agendamentos.pet_id, agendamentos.data_hora, pets.nome, pets.especie, tutores.nome, tutores.telefone, agendamentos.status, agendamentos.transporte, agendamentos.observacoes');
 
         if ($status === 'Pendente') {
             $query->where('agendamentos.status', $status);

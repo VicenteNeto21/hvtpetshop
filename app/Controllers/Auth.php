@@ -16,7 +16,7 @@ class Auth extends BaseController
     {
         // Se já estiver logado, redireciona para dashboard
         if (session()->get('usuario_id')) {
-            return redirect()->to('/dashboard');
+            return redirect()->to('/inicio');
         }
         return view('auth/login');
     }
@@ -90,7 +90,7 @@ class Auth extends BaseController
     {
         // Se já estiver logado, redireciona para dashboard
         if (session()->get('usuario_id')) {
-            return redirect()->to('/dashboard');
+            return redirect()->to('/inicio');
         }
         return view('auth/register');
     }

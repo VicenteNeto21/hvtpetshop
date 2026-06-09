@@ -46,10 +46,10 @@
                         <?php if(empty($pets)): ?>
                             <tr>
                                 <td colspan="3" class="p-12 text-center text-slate-400">
-                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-slate-200">
-                                        <i data-lucide="search-x" class="w-8 h-8 text-slate-300"></i>
+                                    <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100">
+                                        <i data-lucide="search-x" class="w-8 h-8 text-brand-400"></i>
                                     </div>
-                                    <h3 class="text-lg font-medium text-slate-900">Nenhum pet encontrado</h3>
+                                    <h3 class="text-lg font-bold text-slate-900">Nenhum pet encontrado</h3>
                                     <p class="text-slate-500">Tente buscar por outro termo ou cadastre um novo pet.</p>
                                 </td>
                             </tr>
@@ -58,7 +58,7 @@
                                 <tr class="hover:bg-slate-50/80 transition-colors group">
                                     <td class="p-5">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-50 text-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-500 flex items-center justify-center text-lg font-bold shrink-0">
+                                            <div class="w-12 h-12 rounded-xl bg-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-50 text-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-500 flex items-center justify-center text-lg font-bold shrink-0 shadow-sm border border-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-100">
                                                 <?php if(isset($pet['especie']) && $pet['especie'] == 'Gato'): ?>
                                                     <i data-lucide="cat" class="w-6 h-6"></i>
                                                 <?php else: ?>
@@ -72,35 +72,45 @@
                                                     </a>
                                                 </h3>
                                                 <div class="flex items-center gap-2 text-sm text-slate-500">
-                                                    <span class="bg-slate-100 px-2 py-0.5 rounded-full text-xs font-medium">
+                                                    <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider text-slate-600">
                                                         <?= $pet['raca'] ?: 'SRD' ?>
                                                     </span>
-                                                    <span><?= $pet['sexo'] == 'M' ? 'Macho' : 'Fêmea' ?></span>
+                                                    <span class="text-xs"><?= $pet['sexo'] == 'M' ? 'Macho' : 'Fêmea' ?></span>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="p-5">
-                                        <div class="flex items-center gap-2 text-slate-700">
-                                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                        <div class="flex items-center gap-3 text-slate-700">
+                                            <div class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
                                                 <i data-lucide="user" class="w-4 h-4"></i>
                                             </div>
-                                            <div>
-                                                <a href="<?= base_url('tutores/ver/' . $pet['tutor_id']) ?>" class="font-medium hover:text-brand-600 transition-colors">
+                                            <div class="flex flex-col items-start gap-1">
+                                                <a href="<?= base_url('tutores/ver/' . $pet['tutor_id']) ?>" class="font-medium text-sm hover:text-brand-600 transition-colors">
                                                     <?= $pet['tutor_nome'] ?>
                                                 </a>
+                                                <?php if(!empty($pet['tutor_telefone'])): ?>
+                                                    <?php 
+                                                        $numZap = preg_replace('/[^0-9]/', '', $pet['tutor_telefone']);
+                                                        if (strlen($numZap) >= 10):
+                                                    ?>
+                                                        <a href="https://wa.me/55<?= $numZap ?>" target="_blank" class="flex items-center gap-1 bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs border border-green-100 hover:bg-green-100 transition-colors">
+                                                            <i data-lucide="message-circle" class="w-3 h-3"></i> WhatsApp
+                                                        </a>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="p-5">
                                         <div class="flex justify-end gap-2 transition-opacity">
-                                            <a href="<?= base_url('pets/ver/' . $pet['id']) ?>" class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Ver Detalhes">
+                                            <a href="<?= base_url('pets/ver/' . $pet['id']) ?>" class="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors tooltip-action" title="Ver Detalhes">
                                                 <i data-lucide="eye" class="w-5 h-5"></i>
                                             </a>
-                                            <a href="<?= base_url('pets/editar/' . $pet['id']) ?>" class="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors" title="Editar">
+                                            <a href="<?= base_url('pets/editar/' . $pet['id']) ?>" class="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-brand-600 hover:bg-brand-50 hover:border-brand-200 transition-colors tooltip-action" title="Editar">
                                                 <i data-lucide="edit-2" class="w-5 h-5"></i>
                                             </a>
-                                            <a href="<?= base_url('agenda/novo?pet=' . $pet['id']) ?>" class="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors" title="Novo Agendamento">
+                                            <a href="<?= base_url('agenda/novo?pet=' . $pet['id']) ?>" class="px-3 py-2 rounded-lg bg-brand-50 border border-brand-100 text-brand-600 hover:bg-brand-500 hover:text-white transition-colors flex items-center justify-center tooltip-action" title="Novo Agendamento">
                                                 <i data-lucide="calendar-plus" class="w-5 h-5"></i>
                                             </a>
                                         </div>
@@ -116,18 +126,18 @@
             <div class="sm:hidden p-4 space-y-3">
                 <?php if(empty($pets)): ?>
                     <div class="p-8 text-center text-slate-400">
-                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-slate-200">
-                            <i data-lucide="search-x" class="w-8 h-8 text-slate-300"></i>
+                        <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100">
+                            <i data-lucide="search-x" class="w-8 h-8 text-brand-400"></i>
                         </div>
-                        <h3 class="text-lg font-medium text-slate-900">Nenhum pet encontrado</h3>
+                        <h3 class="text-lg font-bold text-slate-900">Nenhum pet encontrado</h3>
                         <p class="text-slate-500">Tente buscar por outro termo.</p>
                     </div>
                 <?php else: ?>
                     <?php foreach($pets as $pet): ?>
-                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
                             <!-- Pet Info -->
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-xl bg-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-50 text-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-500 flex items-center justify-center shrink-0">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-50 text-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-500 flex items-center justify-center shrink-0 border border-<?= isset($pet['especie']) && $pet['especie'] == 'Gato' ? 'orange' : 'blue' ?>-100">
                                     <?php if(isset($pet['especie']) && $pet['especie'] == 'Gato'): ?>
                                         <i data-lucide="cat" class="w-6 h-6"></i>
                                     <?php else: ?>
@@ -136,34 +146,43 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h3 class="font-bold text-slate-800 text-lg truncate"><?= $pet['nome'] ?></h3>
-                                    <div class="flex items-center gap-2 text-sm text-slate-500">
-                                        <span class="bg-slate-200 px-2 py-0.5 rounded-full text-xs font-medium">
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase text-slate-600">
                                             <?= $pet['raca'] ?: 'SRD' ?>
                                         </span>
-                                        <span><?= $pet['sexo'] == 'M' ? 'Macho' : 'Fêmea' ?></span>
+                                        <span class="text-xs text-slate-500"><?= $pet['sexo'] == 'M' ? 'Macho' : 'Fêmea' ?></span>
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- Tutor -->
-                            <div class="flex items-center gap-2 text-sm text-slate-600 mb-3 pb-3 border-b border-slate-200">
-                                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
-                                <span><?= $pet['tutor_nome'] ?></span>
+                            <div class="flex items-center justify-between gap-2 mb-4 pb-4 border-b border-slate-100">
+                                <div class="flex items-center gap-2 text-sm text-slate-600">
+                                    <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                                    <span class="font-medium text-slate-700"><?= $pet['tutor_nome'] ?></span>
+                                </div>
+                                <?php if(!empty($pet['tutor_telefone'])): ?>
+                                    <?php 
+                                        $numZap = preg_replace('/[^0-9]/', '', $pet['tutor_telefone']);
+                                        if (strlen($numZap) >= 10):
+                                    ?>
+                                        <a href="https://wa.me/55<?= $numZap ?>" target="_blank" class="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-1 rounded-md text-xs font-bold border border-green-100 hover:bg-green-100 transition-colors">
+                                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Zap
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <!-- Actions -->
                             <div class="flex gap-2">
-                                <a href="<?= base_url('pets/ver/' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-blue-100 text-blue-600 text-xs font-medium hover:bg-blue-200 transition-colors">
-                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                                    Ver
+                                <a href="<?= base_url('pets/ver/' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors font-medium">
+                                    <i data-lucide="eye" class="w-4 h-4 text-slate-400"></i> Ver
                                 </a>
-                                <a href="<?= base_url('pets/editar/' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-100 text-brand-600 text-xs font-medium hover:bg-brand-200 transition-colors">
-                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
-                                    Editar
+                                <a href="<?= base_url('pets/editar/' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors font-medium">
+                                    <i data-lucide="edit-2" class="w-4 h-4 text-slate-400"></i> Editar
                                 </a>
-                                <a href="<?= base_url('agenda/novo?pet=' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-500 text-white text-xs font-medium hover:bg-brand-600 transition-colors">
-                                    <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
-                                    Agendar
+                                <a href="<?= base_url('agenda/novo?pet=' . $pet['id']) ?>" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white shadow-lg shadow-brand-500/20 transition-colors font-bold">
+                                    <i data-lucide="calendar-plus" class="w-4 h-4"></i> Agendar
                                 </a>
                             </div>
                         </div>

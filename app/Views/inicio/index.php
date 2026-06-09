@@ -1,12 +1,12 @@
 <?= $this->extend('layouts/main') ?>
 
-<?= $this->section('title') ?>Dashboard<?= $this->endSection() ?>
+<?= $this->section('title') ?>Início<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <!-- Topbar -->
 <header class="mb-6 animate-enter">
-    <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Visão Geral</h1>
-    <p class="text-slate-500 text-sm">Bem-vindo, <?= session()->get('usuario_nome') ?>!</p>
+    <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Início</h1>
+    <p class="text-slate-500 text-sm">Resumo de Atendimentos do Dia</p>
 </header>
 
 <!-- Stats Grid -->
@@ -118,8 +118,14 @@
                         <tbody id="agenda-tbody-desktop" class="divide-y divide-slate-50">
                             <?php if(empty($agenda)): ?>
                                 <tr>
-                                    <td colspan="5" class="p-8 text-center text-slate-400 text-sm italic">
-                                        Nenhum agendamento para hoje.
+                                    <td colspan="5" class="p-12 text-center">
+                                        <div class="flex flex-col items-center justify-center text-slate-400">
+                                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                                                <i data-lucide="sun" class="w-8 h-8 text-slate-300"></i>
+                                            </div>
+                                            <p class="text-sm font-medium text-slate-500">A agenda está livre por enquanto.</p>
+                                            <p class="text-xs mt-1">Aproveite para organizar o espaço!</p>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php else: ?>
@@ -127,11 +133,42 @@
                                     <tr class="hover:bg-slate-50/80 transition-colors group">
                                         <td class="p-3 font-semibold text-slate-700"><?= date('H:i', strtotime($ag['data_hora'])) ?></td>
                                         <td class="p-3">
-                                            <div class="font-medium text-slate-800"><?= $ag['pet_nome'] ?></div>
-                                            <div class="text-xs text-slate-400"><?= $ag['tutor_nome'] ?></div>
+                                            <div class="flex items-center gap-3">
+                                                <?php
+                                                    $inicial = strtoupper(substr($ag['pet_nome'], 0, 1));
+                                                    $cores = ['bg-indigo-100 text-indigo-600', 'bg-pink-100 text-pink-600', 'bg-amber-100 text-amber-600', 'bg-emerald-100 text-emerald-600', 'bg-cyan-100 text-cyan-600'];
+                                                    $corIdx = hexdec(substr(md5($ag['pet_nome']), 0, 1)) % count($cores);
+                                                    $corClasse = $cores[$corIdx];
+                                                ?>
+                                                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 <?= $corClasse ?>">
+                                                    <?= $inicial ?>
+                                                </div>
+                                                <div>
+                                                    <div class="font-bold text-slate-800"><?= $ag['pet_nome'] ?></div>
+                                                    <div class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                                                        <i data-lucide="user" class="w-3 h-3"></i> <?= $ag['tutor_nome'] ?>
+                                                        <?php if($ag['tutor_telefone']): ?>
+                                                            <?php 
+                                                                $fone = preg_replace('/[^0-9]/', '', $ag['tutor_telefone']);
+                                                                if(strlen($fone) >= 10 && substr($fone, 0, 2) !== '55') $fone = '55'.$fone;
+                                                                
+                                                                $hora = date('H:i', strtotime($ag['data_hora']));
+                                                                if ($ag['status'] === 'Finalizado') {
+                                                                    $msg = urlencode("Olá {$ag['tutor_nome']}! O(a) {$ag['pet_nome']} já finalizou o serviço de {$ag['servico_nome']} e está pronto(a) para ir para casa. Pode vir buscar! 🐾");
+                                                                } else {
+                                                                    $msg = urlencode("Olá {$ag['tutor_nome']}! Tudo bem? Passando para lembrar do nosso horário para o(a) {$ag['pet_nome']} hoje às {$hora}. Qualquer dúvida estamos à disposição! 🐶");
+                                                                }
+                                                            ?>
+                                                            <a href="https://wa.me/<?= $fone ?>?text=<?= $msg ?>" target="_blank" class="ml-1 inline-flex text-[#25D366] hover:bg-[#25D366]/10 p-0.5 rounded transition-colors" title="Avisar pelo WhatsApp">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="p-3 text-sm text-slate-600">
-                                            <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium">
+                                            <span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap">
                                                 <?= $ag['servico_nome'] ?>
                                             </span>
                                         </td>
@@ -145,7 +182,7 @@
                                                 ];
                                                 $colorClass = $statusColors[$ag['status']] ?? 'bg-slate-100 text-slate-700';
                                             ?>
-                                            <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border <?= $colorClass ?>">
+                                            <span class="inline-block px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold border <?= $colorClass ?>">
                                                 <?= $ag['status'] ?>
                                             </span>
                                         </td>
@@ -170,7 +207,7 @@
                                                 <?php elseif($ag['status'] == 'Finalizado'): ?>
                                                     <a href="<?= base_url('agenda/ficha/' . $ag['id']) ?>" 
                                                        class="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" 
-                                                       title="Ver Ficha">
+                                                       title="Ver Ficha Clínica">
                                                         <i data-lucide="file-text" class="w-4 h-4"></i>
                                                     </a>
                                                 <?php endif; ?>
@@ -256,6 +293,70 @@
 
             <!-- Aniversariantes & Quick Actions -->
             <div class="space-y-6">
+                <!-- Vacinas Vencendo Alerta -->
+                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 relative overflow-hidden <?= !empty($vacinasVencendo) ? 'border-amber-200 bg-amber-50/30' : '' ?>">
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <i data-lucide="shield-alert" class="w-16 h-16 <?= !empty($vacinasVencendo) ? 'text-amber-500' : 'text-slate-400' ?>"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 relative z-10">
+                        <i data-lucide="syringe" class="w-5 h-5 <?= !empty($vacinasVencendo) ? 'text-amber-500' : 'text-brand-500' ?>"></i>
+                         Lembretes de Vacinas
+                    </h2>
+                    
+                    <div class="space-y-3 relative z-10 max-h-64 overflow-y-auto pr-2">
+                         <?php if(empty($vacinasVencendo)): ?>
+                            <p class="text-sm text-slate-400 italic">Tudo em dia! Nenhuma vacina pendente para os próximos 15 dias.</p>
+                         <?php else: ?>
+                            <?php foreach($vacinasVencendo as $vacina): ?>
+                                <?php 
+                                    $dias = (strtotime($vacina['data_proxima_dose']) - strtotime('today')) / (60 * 60 * 24);
+                                    $isAtrasada = $dias < 0;
+                                ?>
+                                <div class="flex items-center gap-3 bg-white p-3 rounded-xl border <?= $isAtrasada ? 'border-red-200' : 'border-amber-100' ?>">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 <?= $isAtrasada ? 'bg-red-100 text-red-500' : 'bg-amber-100 text-amber-500' ?>">
+                                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-start">
+                                            <p class="font-bold text-slate-800 text-sm truncate w-full flex items-center gap-1">
+                                                <a href="<?= base_url('pets/ver/'.$vacina['pet_id']) ?>" class="hover:text-brand-600 transition-colors" title="Ver ficha de <?= $vacina['pet_nome'] ?>"><?= $vacina['pet_nome'] ?></a>
+                                                <span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded ml-1"><?= $vacina['nome_vacina'] ?></span>
+                                            </p>
+                                        </div>
+                                        <p class="text-xs text-slate-500 truncate flex items-center gap-1 mt-0.5">
+                                            <i data-lucide="phone" class="w-3 h-3 text-slate-400"></i>
+                                            <?= $vacina['tutor_nome'] ?> (<?= $vacina['tutor_telefone'] ?: 'S/N' ?>)
+                                            <?php if($vacina['tutor_telefone']): ?>
+                                                <?php 
+                                                    $foneLimpo = preg_replace('/[^0-9]/', '', $vacina['tutor_telefone']);
+                                                    if (strlen($foneLimpo) >= 10 && substr($foneLimpo, 0, 2) !== '55') {
+                                                        $foneLimpo = '55' . $foneLimpo;
+                                                    }
+                                                    $textoWhats = urlencode("Olá {$vacina['tutor_nome']}! Aqui é da HVT Petshop. Vimos que o registro de {$vacina['nome_vacina']} do(a) {$vacina['pet_nome']} vence dia " . date('d/m/Y', strtotime($vacina['data_proxima_dose'])) . ". Podemos agendar um horário para mantermos a saúde dele em dia?");
+                                                ?>
+                                                <a href="https://wa.me/<?= $foneLimpo ?>?text=<?= $textoWhats ?>" target="_blank" class="ml-1 inline-flex items-center justify-center bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 p-1 rounded-full transition-colors" title="Enviar WhatsApp">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                                </a>
+                                            <?php endif; ?>
+                                        </p>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <?php if($isAtrasada): ?>
+                                            <span class="text-[10px] font-bold text-red-600 uppercase bg-red-50 px-1.5 py-0.5 rounded block text-center">Atrasada</span>
+                                            <span class="text-xs text-red-500 font-medium"><?= abs(floor($dias)) ?> dias</span>
+                                        <?php elseif($dias == 0): ?>
+                                            <span class="text-[10px] font-bold text-amber-600 uppercase bg-amber-50 px-1.5 py-0.5 rounded block text-center">Hoje!</span>
+                                        <?php else: ?>
+                                            <span class="text-[10px] font-bold text-slate-500 uppercase bg-slate-100 px-1.5 py-0.5 rounded block text-center">Em</span>
+                                            <span class="text-xs text-slate-600 font-medium"><?= floor($dias) ?> dias</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                         <?php endif; ?>
+                    </div>
+                 </div>
+
                 <!-- Aniversariantes -->
                  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-4 opacity-10">
@@ -382,7 +483,7 @@
         document.getElementById('agenda-tbody').innerHTML = loadingMobile;
         
         try {
-            const response = await fetch('<?= base_url('dashboard/agenda-data') ?>?data=' + data);
+            const response = await fetch('<?= base_url('inicio/agenda-data') ?>?data=' + data);
             const dados = await response.json();
             
             // Atualizar display de data no header
@@ -400,8 +501,8 @@
             
             // Atualizar tabela de agenda (Desktop e Mobile)
             if (dados.agenda.length === 0) {
-                const emptyDesktop = `<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm italic">Nenhum agendamento para este dia.</td></tr>`;
-                const emptyMobile = `<div class="p-6 text-center text-slate-400 text-sm italic">Nenhum agendamento para hoje.</div>`;
+                const emptyDesktop = `<tr><td colspan="5" class="p-12 text-center"><div class="flex flex-col items-center justify-center text-slate-400"><div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3"><i data-lucide="sun" class="w-8 h-8 text-slate-300"></i></div><p class="text-sm font-medium text-slate-500">A agenda está livre por enquanto.</p><p class="text-xs mt-1">Aproveite para organizar o espaço!</p></div></td></tr>`;
+                const emptyMobile = `<div class="p-12 text-center flex flex-col items-center"><div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3"><i data-lucide="sun" class="w-8 h-8 text-slate-300"></i></div><p class="text-sm font-medium text-slate-500">A agenda está livre.</p></div>`;
                 
                 document.getElementById('agenda-tbody-desktop').innerHTML = emptyDesktop;
                 document.getElementById('agenda-tbody').innerHTML = emptyMobile;
@@ -421,6 +522,30 @@
                         'Cancelado': 'bg-red-100 text-red-700 border-red-200'
                     };
                     const colorClass = statusColors[ag.status] || 'bg-slate-100 text-slate-700';
+                    
+                    // Logic for Pet Avatar
+                    const inicial = ag.pet_nome.substring(0, 1).toUpperCase();
+                    const bgColors = ['bg-indigo-100 text-indigo-600', 'bg-pink-100 text-pink-600', 'bg-amber-100 text-amber-600', 'bg-emerald-100 text-emerald-600', 'bg-cyan-100 text-cyan-600'];
+                    // Simple hash for index
+                    let hash = 0;
+                    for (let i = 0; i < ag.pet_nome.length; i++) hash += ag.pet_nome.charCodeAt(i);
+                    const avatarClass = bgColors[hash % bgColors.length];
+                    
+                    // Logic for WhatsApp
+                    let whatsHtml = '';
+                    if (ag.tutor_telefone) {
+                        let fone = ag.tutor_telefone.replace(/[^0-9]/g, '');
+                        if(fone.length >= 10 && !fone.startsWith('55')) fone = '55' + fone;
+                        let msg = '';
+                        if (ag.status === 'Finalizado') {
+                            msg = encodeURIComponent(`Olá ${ag.tutor_nome}! O(a) ${ag.pet_nome} já finalizou o serviço de ${ag.servico_nome} e está pronto(a) para ir para casa. Pode vir buscar! 🐾`);
+                        } else {
+                            msg = encodeURIComponent(`Olá ${ag.tutor_nome}! Tudo bem? Passando para lembrar do nosso horário para o(a) ${ag.pet_nome} hoje às ${horario}. Qualquer dúvida estamos à disposição! 🐶`);
+                        }
+                        whatsHtml = `<a href="https://wa.me/${fone}?text=${msg}" target="_blank" class="ml-1 inline-flex text-[#25D366] hover:bg-[#25D366]/10 p-0.5 rounded transition-colors" title="Avisar pelo WhatsApp">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                    </a>`;
+                    }
                     
                     let acoes = '';
                     let acoesMobile = '';
@@ -443,14 +568,6 @@
                             <a href="${base_url}/agenda/concluir/${ag.id}" class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-brand-500 text-white text-xs font-medium hover:bg-brand-600 transition-colors">
                                 <i data-lucide="play" class="w-3.5 h-3.5"></i> Iniciar
                             </a>
-                            <button onclick="openConfirmModal('${base_url}/agenda/cancelar/${ag.id}', 'Cancelar Agendamento', 'Tem certeza que deseja cancelar este agendamento?', 'danger', 'x-circle')"
-                                    class="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-red-100 text-red-600 text-xs font-medium hover:bg-red-200 transition-colors">
-                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <button onclick="openConfirmModal('${base_url}/agenda/excluir/${ag.id}', 'EXCLUIR Agendamento', 'Deseja excluir permanentemente este agendamento?', 'danger', 'trash-2')"
-                                    class="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-slate-200 text-slate-600 text-xs font-medium hover:bg-red-100 hover:text-red-700 transition-colors">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            </button>
                         `;
                     } else if (ag.status === 'Finalizado') {
                         acoes = `
@@ -470,16 +587,25 @@
                         <tr class="hover:bg-slate-50/80 transition-colors group">
                             <td class="p-3 font-semibold text-slate-700">${horario}</td>
                             <td class="p-3">
-                                <div class="font-medium text-slate-800">${ag.pet_nome}</div>
-                                <div class="text-xs text-slate-400">${ag.tutor_nome}</div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${avatarClass}">
+                                        ${inicial}
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-slate-800">${ag.pet_nome}</div>
+                                        <div class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                                            <i data-lucide="user" class="w-3 h-3"></i> ${ag.tutor_nome} ${whatsHtml}
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                             <td class="p-3 text-sm text-slate-600">
-                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium">
+                                <span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap">
                                     ${ag.servico_nome}
                                 </span>
                             </td>
                             <td class="p-3 text-center">
-                                <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border ${colorClass}">
+                                <span class="inline-block px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold border ${colorClass}">
                                     ${ag.status}
                                 </span>
                             </td>
@@ -494,14 +620,19 @@
                         <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <div class="flex justify-between items-center mb-3">
                                 <span class="text-lg font-bold text-slate-800">${horario}</span>
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold border ${colorClass}">${ag.status}</span>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border ${colorClass}">${ag.status}</span>
                             </div>
-                            <div class="mb-2">
-                                <p class="font-semibold text-slate-800">${ag.pet_nome}</p>
-                                <p class="text-xs text-slate-500">${ag.tutor_nome}</p>
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${avatarClass}">
+                                    ${inicial}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-800">${ag.pet_nome}</p>
+                                    <p class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> ${ag.tutor_nome} ${whatsHtml}</p>
+                                </div>
                             </div>
                             <div class="mb-3">
-                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium">${ag.servico_nome}</span>
+                                <span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-semibold">${ag.servico_nome}</span>
                             </div>
                             <div class="flex gap-2 pt-2 border-t border-slate-200">${acoesMobile || '<span class="text-xs text-slate-400 italic">Sem ações disponíveis</span>'}</div>
                         </div>
@@ -545,6 +676,13 @@
             console.error('Erro ao carregar agenda:', error);
         }
     }
+    
+    // Auto-refresh a cada 5 minutos para recepção
+    setInterval(() => {
+        if (dataSelecionada === hoje) {
+            carregarAgenda(hoje);
+        }
+    }, 5 * 60 * 1000);
 </script>
 <?= view('components/modal_confirm') ?>
 <?= $this->endSection() ?>

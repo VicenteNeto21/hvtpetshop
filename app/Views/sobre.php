@@ -156,6 +156,15 @@
                         <p class="text-sm text-slate-500">Feedback visual instantâneo em todas as telas: confirmações de cadastro, atualizações e alertas de erro.</p>
                     </div>
                 </div>
+                <div class="flex items-start gap-4">
+                    <div class="p-2 bg-slate-50 rounded-lg text-brand-500">
+                        <i data-lucide="syringe" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Controle de Vacinas Inteligente</h4>
+                        <p class="text-sm text-slate-500">Gestão completa de imunizações com recálculo automático de doses futuras, histórico cronológico e carteira digital pronta para impressão.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -170,10 +179,10 @@
             <div class="space-y-6">
                 <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
                     <div class="flex justify-between items-center mb-2">
-                        <h4 class="font-bold text-brand-400">Controle de Vacinas</h4>
-                        <span class="text-[10px] font-bold bg-brand-500 text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">60%</span>
+                        <h4 class="font-bold text-brand-400">Lembretes por WhatsApp</h4>
+                        <span class="text-[10px] font-bold bg-brand-500 text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">Em planejamento</span>
                     </div>
-                    <p class="text-sm text-slate-400">Módulo exclusivo para gestão de ciclos vacinais com alertas automáticos para os tutores via WhatsApp.</p>
+                    <p class="text-sm text-slate-400">Integração para envio automático de lembretes de agendamentos e alertas de vacinas vencendo diretamente para o tutor.</p>
                 </div>
                 <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
                     <div class="flex justify-between items-center mb-2">
@@ -203,10 +212,10 @@
             "Para nós, Cerenia não é apenas um nome, é a promessa de que cada detalhe do sistema foi feito com amor."
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="<?= base_url('dashboard') ?>" class="w-full sm:w-auto px-8 py-4 bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition-all">
-                Voltar ao Dashboard
+            <a href="<?= base_url('inicio') ?>" class="w-full sm:w-auto px-8 py-4 bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition-all">
+                Voltar ao Início
             </a>
-            <p class="text-[10px] text-slate-400">Versão 3.3.0 - Em honra à Cerenia</p>
+            <p class="text-[10px] text-slate-400">Versão 3.4.0 - Em honra à Cerenia</p>
         </div>
     </div>
 </div>

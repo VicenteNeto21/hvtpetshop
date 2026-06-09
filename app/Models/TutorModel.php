@@ -10,7 +10,8 @@ class TutorModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
+    protected $deletedField     = 'deleted_at';
     protected $allowedFields    = [
         'nome', 'telefone', 'telefone_is_whatsapp', 'email', 
         'cep', 'rua', 'numero', 'bairro', 'cidade', 'uf', 'observacoes'

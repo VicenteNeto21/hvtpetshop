@@ -24,6 +24,14 @@ abstract class BaseController extends Controller
      * Be sure to declare properties for any property fetch you initialized.
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
+     /**
+     * An array of helpers to be loaded automatically upon
+     * class instantiation. These helpers will be available
+     * to all other controllers that extend BaseController.
+     *
+     * @var list<string>
+     */
+    protected $helpers = ['format'];
 
     /**
      * Se true, pula a verificação de autenticação.
@@ -39,12 +47,7 @@ abstract class BaseController extends Controller
         // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
 
-        // Verificação centralizada de autenticação
-        if (!$this->skipAuth && !session()->get('usuario_id')) {
-            // Redireciona para login se não autenticado
-            $response->redirect(site_url('/login'));
-            $response->send();
-            exit;
-        }
+        // Removida checagem manual legada de sessão. Agora usamos o AuthFilter.
+        // O CodeIgniter 4 recomenda Filters (Middlewares) no lugar de redirects manuais no construtor.
     }
 }

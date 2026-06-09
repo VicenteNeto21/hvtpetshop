@@ -1,7 +1,7 @@
 <aside id="sidebar" class="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-800 overflow-y-auto z-40 transition-transform duration-300 -translate-x-full md:translate-x-0 flex flex-col">
     <!-- Logo -->
-    <div class="p-4 flex items-center justify-between border-b border-slate-800/50">
-        <a href="<?= base_url('dashboard') ?>" class="flex items-center gap-3 sidebar-logo">
+    <div class="sidebar-header p-4 flex items-center justify-between border-b border-slate-800/50">
+        <a href="<?= base_url('inicio') ?>" class="flex items-center gap-3 sidebar-logo">
             <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 flex-shrink-0">
             <i data-lucide="cat" class="w-5 h-5"></i>
             </div>
@@ -18,9 +18,9 @@
         <!-- Seção: Principal -->
         <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 sidebar-text">Principal</p>
         
-        <a href="<?= base_url('dashboard') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'dashboard' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Dashboard">
-            <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
-            <span class="font-medium sidebar-text">Dashboard</span>
+        <a href="<?= base_url('inicio') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'inicio' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Início">
+            <i data-lucide="home" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="font-medium sidebar-text">Início</span>
         </a>
 
         <a href="<?= base_url('agenda') ?>" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all <?= uri_string() == 'agenda' ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>" title="Agenda">
@@ -97,7 +97,7 @@
                 © <?= date('Y') ?> CereniaPet. Todos os direitos reservados.
             </p>
             <p class="text-[10px] text-slate-500 text-center mt-1">
-                <span class="font-semibold text-brand-500">AMPN 3.3.0</span>
+                <span class="font-semibold text-brand-500">AMPN 3.4.0</span>
             </p>
             <p class="text-[9px] text-slate-600 text-center mt-0.5">
                 Desenvolvido com ☕ por: Vicente Neto
@@ -108,52 +108,42 @@
 
 <style>
     /* Sidebar collapsed state */
-    #sidebar.collapsed {
+    .sidebar-collapsed #sidebar {
         width: 72px;
     }
     
-    #sidebar.collapsed .sidebar-text {
+    .sidebar-collapsed #sidebar .sidebar-text {
         display: none;
     }
     
-    #sidebar.collapsed .sidebar-logo {
-        justify-content: center;
+    /* Esconde o logo quando encolhido para dar espaço ao botão */
+    .sidebar-collapsed #sidebar .sidebar-logo {
+        display: none;
     }
     
-    #sidebar.collapsed .sidebar-link {
+    /* Centraliza o header (que agora só tem o botão) */
+    .sidebar-collapsed #sidebar .sidebar-header {
         justify-content: center;
         padding-left: 0;
         padding-right: 0;
     }
     
-    #sidebar.collapsed .sidebar-toggle {
-        display: none;
+    .sidebar-collapsed #sidebar .sidebar-link {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
     }
     
-    #sidebar.collapsed .sidebar-icon-collapse {
-        display: none;
-    }
-    
-    #sidebar.collapsed .sidebar-icon-expand {
+    /* Mostra o botão quando encolhido */
+    .sidebar-collapsed #sidebar .sidebar-toggle {
         display: block;
     }
     
-    /* Hover expand when collapsed */
-    #sidebar.collapsed:hover {
-        width: 256px;
+    .sidebar-collapsed #sidebar .sidebar-icon-collapse {
+        display: none;
     }
     
-    #sidebar.collapsed:hover .sidebar-text {
-        display: inline;
-    }
-    
-    #sidebar.collapsed:hover .sidebar-link {
-        justify-content: flex-start;
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-    }
-    
-    #sidebar.collapsed:hover .sidebar-toggle {
+    .sidebar-collapsed #sidebar .sidebar-icon-expand {
         display: block;
     }
     
@@ -161,22 +151,9 @@
     body.sidebar-collapsed main {
         margin-left: 72px !important;
     }
-    
-    body.sidebar-collapsed main:has(#sidebar:hover) {
-        margin-left: 256px !important;
-    }
 </style>
 
 <script>
-    // Check saved state on load
-    document.addEventListener('DOMContentLoaded', function() {
-        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-        if (isCollapsed) {
-            document.getElementById('sidebar').classList.add('collapsed');
-            document.body.classList.add('sidebar-collapsed');
-        }
-    });
-    
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const isCollapsed = sidebar.classList.toggle('collapsed');
@@ -188,6 +165,7 @@
             setTimeout(() => lucide.createIcons(), 100);
         }
     }
+
     
     // Mobile sidebar toggle
     function toggleMobileSidebar() {

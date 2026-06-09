@@ -52,14 +52,14 @@
         </div>
 
         <!-- Filtro -->
-        <div class="flex gap-2 mb-6 animate-enter" style="animation-delay: 0.15s">
+        <div class="flex flex-wrap gap-2 mb-6 animate-enter" style="animation-delay: 0.15s">
             <a href="?status=todos" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors <?= $statusSelecionado == 'todos' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200' ?>">
                 Todos
             </a>
             <a href="?status=pendente" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors <?= $statusSelecionado == 'pendente' ? 'bg-amber-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200' ?>">
                 Pendentes
             </a>
-            <a href="?status=aprovado" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors <?= $statusSelecionado == 'aprovado' ? 'bg-green-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200' ?>">
+            <a href="?status=aprovado" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors <?= $statusSelecionado == 'aprovado' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200' ?>">
                 Aprovados
             </a>
             <a href="?status=rejeitado" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors <?= $statusSelecionado == 'rejeitado' ? 'bg-red-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200' ?>">
@@ -92,11 +92,11 @@
                             </tr>
                         <?php else: ?>
                             <?php foreach($usuarios as $user): ?>
-                                <tr id="user-<?= $user['id'] ?>" class="hover:bg-slate-50/50 transition-colors">
+                                <tr class="hover:bg-slate-50/50 transition-colors">
                                     <td class="p-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold">
-                                                <?= strtoupper(substr($user['nome'], 0, 1)) ?>
+                                            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200">
+                                                <i data-lucide="user" class="w-5 h-5"></i>
                                             </div>
                                             <div>
                                                 <p class="font-medium text-slate-800"><?= $user['nome'] ?></p>
@@ -109,14 +109,13 @@
                                     <td class="p-4 text-slate-600"><?= $user['email'] ?></td>
                                     <td class="p-4">
                                         <?php if($user['id'] != session()->get('usuario_id')): ?>
-                                            <button onclick="alternarTipo(<?= $user['id'] ?>)" 
-                                                    id="tipo-<?= $user['id'] ?>"
-                                                    class="px-2 py-1 rounded-lg text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity <?= $user['tipo'] == 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600' ?>"
+                                            <button onclick="openConfirmModal('<?= base_url('usuarios/alternar-tipo/'.$user['id']) ?>', 'Alterar Permissão', 'Tem certeza que deseja alterar o nível de acesso deste usuário para <?= $user['tipo'] == 'admin' ? 'Funcionário' : 'Administrador' ?>?', 'warning', 'shield')"
+                                                    class="px-2 py-1 rounded-lg text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity <?= $user['tipo'] == 'admin' ? 'bg-slate-800 text-slate-100' : 'bg-slate-100 text-slate-600' ?>"
                                                     title="Clique para alternar tipo">
                                                 <?= ucfirst($user['tipo'] ?? 'funcionario') ?>
                                             </button>
                                         <?php else: ?>
-                                            <span class="px-2 py-1 rounded-lg text-xs font-medium <?= $user['tipo'] == 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600' ?>">
+                                            <span class="px-2 py-1 rounded-lg text-xs font-medium <?= $user['tipo'] == 'admin' ? 'bg-slate-800 text-slate-100' : 'bg-slate-100 text-slate-600' ?>">
                                                 <?= ucfirst($user['tipo'] ?? 'funcionario') ?>
                                             </span>
                                         <?php endif; ?>
@@ -140,27 +139,27 @@
                                     <td class="p-4">
                                         <div class="flex justify-center gap-2">
                                             <?php if($user['status'] == 'pendente'): ?>
-                                                <button onclick="aprovarUsuario(<?= $user['id'] ?>)" 
-                                                        class="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors" 
+                                                <button onclick="openConfirmModal('<?= base_url('usuarios/aprovar/'.$user['id']) ?>', 'Aprovar Usuário', 'Deseja conceder acesso ao sistema para este usuário?', 'primary', 'check')" 
+                                                        class="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors tooltip-action" 
                                                         title="Aprovar">
                                                     <i data-lucide="check" class="w-4 h-4"></i>
                                                 </button>
-                                                <button onclick="rejeitarUsuario(<?= $user['id'] ?>)" 
-                                                        class="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" 
+                                                <button onclick="openConfirmModal('<?= base_url('usuarios/rejeitar/'.$user['id']) ?>', 'Rejeitar Usuário', 'Deseja negar o acesso deste usuário ao sistema?', 'danger', 'x')" 
+                                                        class="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors tooltip-action" 
                                                         title="Rejeitar">
                                                     <i data-lucide="x" class="w-4 h-4"></i>
                                                 </button>
                                             <?php elseif($user['status'] == 'rejeitado'): ?>
-                                                <button onclick="aprovarUsuario(<?= $user['id'] ?>)" 
-                                                        class="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors" 
+                                                <button onclick="openConfirmModal('<?= base_url('usuarios/aprovar/'.$user['id']) ?>', 'Aprovar Usuário', 'Deseja conceder acesso ao sistema para este usuário?', 'primary', 'check')" 
+                                                        class="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors tooltip-action" 
                                                         title="Aprovar">
                                                     <i data-lucide="check" class="w-4 h-4"></i>
                                                 </button>
                                             <?php endif; ?>
                                             
                                             <?php if($user['id'] != session()->get('usuario_id')): ?>
-                                                <button onclick="excluirUsuario(<?= $user['id'] ?>, '<?= addslashes($user['nome']) ?>')" 
-                                                        class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-red-100 hover:text-red-600 transition-colors" 
+                                                <button onclick="openConfirmModal('<?= base_url('usuarios/excluir/'.$user['id']) ?>', 'Excluir Usuário', 'Tem certeza que deseja excluir permanentemente o usuário <?= addslashes($user['nome']) ?>?', 'danger', 'trash-2')" 
+                                                        class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-red-100 hover:text-red-600 transition-colors tooltip-action" 
                                                         title="Excluir">
                                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                                 </button>
@@ -190,11 +189,11 @@
                             ];
                             $config = $statusConfig[$user['status']] ?? ['bg-slate-100 text-slate-700', $user['status']];
                         ?>
-                        <div id="user-mobile-<?= $user['id'] ?>" class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <!-- Header: Avatar + Name + Status -->
                             <div class="flex items-center gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-lg shrink-0">
-                                    <?= strtoupper(substr($user['nome'], 0, 1)) ?>
+                                <div class="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 font-bold text-lg shrink-0">
+                                    <i data-lucide="user" class="w-6 h-6"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h3 class="font-bold text-slate-800 truncate">
@@ -217,13 +216,12 @@
                                     <?= date('d/m/Y', strtotime($user['criado_em'])) ?>
                                 </span>
                                 <?php if($user['id'] != session()->get('usuario_id')): ?>
-                                    <button onclick="alternarTipo(<?= $user['id'] ?>)" 
-                                            id="tipo-mobile-<?= $user['id'] ?>"
-                                            class="px-2 py-0.5 rounded text-xs font-medium <?= $user['tipo'] == 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-600' ?>">
+                                    <button onclick="openConfirmModal('<?= base_url('usuarios/alternar-tipo/'.$user['id']) ?>', 'Alterar Permissão', 'Tem certeza que deseja alterar o nível de acesso deste usuário para <?= $user['tipo'] == 'admin' ? 'Funcionário' : 'Administrador' ?>?', 'warning', 'shield')" 
+                                            class="px-2 py-0.5 rounded text-xs font-medium <?= $user['tipo'] == 'admin' ? 'bg-slate-800 text-slate-100' : 'bg-slate-200 text-slate-600' ?>">
                                         <?= ucfirst($user['tipo'] ?? 'funcionario') ?>
                                     </button>
                                 <?php else: ?>
-                                    <span class="px-2 py-0.5 rounded text-xs font-medium <?= $user['tipo'] == 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-600' ?>">
+                                    <span class="px-2 py-0.5 rounded text-xs font-medium <?= $user['tipo'] == 'admin' ? 'bg-slate-800 text-slate-100' : 'bg-slate-200 text-slate-600' ?>">
                                         <?= ucfirst($user['tipo'] ?? 'funcionario') ?>
                                     </span>
                                 <?php endif; ?>
@@ -232,18 +230,18 @@
                             <!-- Actions -->
                             <div class="flex gap-2">
                                 <?php if($user['status'] == 'pendente'): ?>
-                                    <button onclick="aprovarUsuario(<?= $user['id'] ?>)" 
+                                    <button onclick="openConfirmModal('<?= base_url('usuarios/aprovar/'.$user['id']) ?>', 'Aprovar Usuário', 'Deseja conceder acesso ao sistema para este usuário?', 'primary', 'check')" 
                                             class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-green-100 text-green-600 text-xs font-medium hover:bg-green-200 transition-colors">
                                         <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                         Aprovar
                                     </button>
-                                    <button onclick="rejeitarUsuario(<?= $user['id'] ?>)" 
+                                    <button onclick="openConfirmModal('<?= base_url('usuarios/rejeitar/'.$user['id']) ?>', 'Rejeitar Usuário', 'Deseja negar o acesso deste usuário ao sistema?', 'danger', 'x')" 
                                             class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-red-100 text-red-600 text-xs font-medium hover:bg-red-200 transition-colors">
                                         <i data-lucide="x" class="w-3.5 h-3.5"></i>
                                         Rejeitar
                                     </button>
                                 <?php elseif($user['status'] == 'rejeitado'): ?>
-                                    <button onclick="aprovarUsuario(<?= $user['id'] ?>)" 
+                                    <button onclick="openConfirmModal('<?= base_url('usuarios/aprovar/'.$user['id']) ?>', 'Aprovar Usuário', 'Deseja conceder acesso ao sistema para este usuário?', 'primary', 'check')" 
                                             class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-green-100 text-green-600 text-xs font-medium hover:bg-green-200 transition-colors">
                                         <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                         Aprovar
@@ -253,7 +251,7 @@
                                 <?php endif; ?>
                                 
                                 <?php if($user['id'] != session()->get('usuario_id')): ?>
-                                    <button onclick="excluirUsuario(<?= $user['id'] ?>, '<?= addslashes($user['nome']) ?>')" 
+                                    <button onclick="openConfirmModal('<?= base_url('usuarios/excluir/'.$user['id']) ?>', 'Excluir Usuário', 'Tem certeza que deseja excluir permanentemente o usuário <?= addslashes($user['nome']) ?>?', 'danger', 'trash-2')" 
                                             class="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-slate-200 text-slate-600 text-xs font-medium hover:bg-red-100 hover:text-red-600 transition-colors">
                                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                     </button>
@@ -266,95 +264,5 @@
         </div>
 </div>
 
-<script>
-    async function aprovarUsuario(id) {
-        if (!confirm('Tem certeza que deseja aprovar este usuário?')) return;
-        
-        try {
-            const response = await fetch('<?= base_url('usuarios/aprovar') ?>/' + id, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(data.message || 'Erro ao aprovar usuário');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erro ao aprovar usuário');
-        }
-    }
-    
-    async function rejeitarUsuario(id) {
-        if (!confirm('Tem certeza que deseja rejeitar este usuário?')) return;
-        
-        try {
-            const response = await fetch('<?= base_url('usuarios/rejeitar') ?>/' + id, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(data.message || 'Erro ao rejeitar usuário');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erro ao rejeitar usuário');
-        }
-    }
-    
-    async function excluirUsuario(id, nome) {
-        if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente o usuário "${nome}"?`)) return;
-        
-        try {
-            const response = await fetch('<?= base_url('usuarios/excluir') ?>/' + id, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                document.getElementById('user-' + id).remove();
-            } else {
-                alert(data.message || 'Erro ao excluir usuário');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erro ao excluir usuário');
-        }
-    }
-    
-    async function alternarTipo(id) {
-        try {
-            const response = await fetch('<?= base_url('usuarios/alternar-tipo') ?>/' + id, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                const btn = document.getElementById('tipo-' + id);
-                btn.textContent = data.novoTipo.charAt(0).toUpperCase() + data.novoTipo.slice(1);
-                
-                // Atualizar classes de cor
-                if (data.novoTipo === 'admin') {
-                    btn.className = 'px-2 py-1 rounded-lg text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity bg-purple-100 text-purple-700';
-                } else {
-                    btn.className = 'px-2 py-1 rounded-lg text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity bg-slate-100 text-slate-600';
-                }
-            } else {
-                alert(data.message || 'Erro ao alterar tipo');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erro ao alterar tipo');
-        }
-    }
-</script>
+<?= view('components/modal_confirm') ?>
 <?= $this->endSection() ?>

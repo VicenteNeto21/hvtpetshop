@@ -149,7 +149,7 @@
 
         <!-- Rodapé do Documento (Apenas para Impressão) -->
         <div class="hidden print-footer mt-12 pt-6 border-t border-slate-200 flex justify-between items-center text-[9px] text-slate-400">
-            <div>Ficha gerada via <strong>CereniaPet v3.3.0</strong> em <?= date('d/m/Y') ?></div>
+            <div>Ficha gerada via <strong>CereniaPet v3.4.0</strong> em <?= date('d/m/Y') ?></div>
             <div>Assinatura do Responsável: ____________________________________</div>
         </div>
 

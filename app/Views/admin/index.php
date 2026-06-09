@@ -475,8 +475,8 @@
     
     // Gradient fill
     const gradient = ctxTimeline.getContext('2d').createLinearGradient(0, 0, 0, 280);
-    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.25)');
-    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.01)');
+    gradient.addColorStop(0, 'rgba(14, 165, 233, 0.25)'); // bg-brand-500
+    gradient.addColorStop(1, 'rgba(14, 165, 233, 0.01)');
     
     const chartTimeline = new Chart(ctxTimeline, {
         type: 'line',
@@ -485,10 +485,10 @@
             datasets: [{
                 label: 'Atendimentos',
                 data: <?= json_encode($charts['timeline']['data']) ?>,
-                borderColor: '#8b5cf6',
+                borderColor: '#0ea5e9', // text-brand-500
                 backgroundColor: gradient,
                 borderWidth: 2.5,
-                pointBackgroundColor: '#8b5cf6',
+                pointBackgroundColor: '#0ea5e9',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
                 pointRadius: 4,

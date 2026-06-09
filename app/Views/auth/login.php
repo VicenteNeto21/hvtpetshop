@@ -7,7 +7,7 @@
     <!-- Background Decorativo -->
     <div class="absolute inset-0 z-0">
         <div class="absolute -top-20 -left-20 w-96 h-96 bg-brand-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-        <div class="absolute top-0 right-0 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-amber-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
         <div class="absolute -bottom-32 left-20 w-96 h-96 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
     </div>
 
@@ -173,7 +173,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = baseUrl + 'dashboard';
+                    window.location.href = baseUrl + 'inicio';
                 } else {
                     showStatus(data.message || 'Erro ao entrar.', 'error');
                     submitButton.classList.add('animate-shake');
